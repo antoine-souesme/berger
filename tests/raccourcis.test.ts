@@ -250,3 +250,32 @@ test('touches refusées pour un raccourci personnel', () => {
   expect(refusTouches('cmd-alt-d')).toBeNull()
   expect(refusTouches('ctrl-1')).toBeNull()
 })
+
+// Disposition française (AZERTY) de macOS : A/Q, Z/W et M permutés.
+const azerty = new Map([
+  ['KeyQ', 'a'],
+  ['KeyA', 'q'],
+  ['KeyW', 'z'],
+  ['KeyZ', 'w'],
+  ['Semicolon', 'm'],
+  ['KeyM', ','],
+  ['Digit1', '&'],
+  ['KeyD', 'd'],
+  ['BracketRight', '$']
+])
+
+test('en AZERTY, ⌘Z ne ferme pas l’onglet et ⌘W le ferme', () => {
+  expect(actionDe(t('KeyW', cmd), 'editeur', undefined, azerty)).toBeNull()
+  expect(actionDe(t('KeyZ', cmd), 'editeur', undefined, azerty)).toEqual({ type: 'onglet.fermer' })
+})
+
+test('touchesDe suit la disposition pour les lettres et la ponctuation', () => {
+  expect(touchesDe(t('KeyW', cmd), azerty)).toBe('cmd-z')
+  expect(touchesDe(t('KeyM', cmd), azerty)).toBe('cmd-,')
+  expect(touchesDe(t('Semicolon', cmd), azerty)).toBe('cmd-m')
+  expect(touchesDe(t('KeyW', { altKey: true }), azerty)).toBe('alt-z')
+  // Chiffres et caractères qui ne nomment pas une touche : par position.
+  expect(touchesDe(t('Digit1', cmd), azerty)).toBe('cmd-1')
+  expect(touchesDe(t('BracketRight', cmd), azerty)).toBe('cmd-]')
+  expect(touchesDe(t('Tab', { ctrlKey: true }), azerty)).toBe('ctrl-tab')
+})

@@ -18,6 +18,7 @@ import { modifierReglage, reglagesActuels, surReglages } from './apparence'
 import { apresThemeEditeur, lireThemeVsCode } from './coloration'
 import { changer, ouvrirChemins } from './etat'
 import { icone } from './icones'
+import { dispositionActuelle } from './table-raccourcis'
 
 export type Section = 'apparence' | 'editeur' | 'terminal' | 'raccourcis'
 
@@ -462,7 +463,7 @@ function toucheAttente(ev: KeyboardEvent): void {
     void changerReglage(['raccourcis', id], valeur)
     return
   }
-  const t = touchesDe(ev)
+  const t = touchesDe(ev, dispositionActuelle())
   if (!t) return // une touche de modification seule
   attente.touches = t
   ouvert?.dessiner()
@@ -551,7 +552,7 @@ export function ouvrirReglages(section: Section = 'apparence'): void {
       etat.fermer()
       return
     }
-    if (ev.metaKey && ev.code === 'Comma') {
+    if (touchesDe(ev, dispositionActuelle()) === 'cmd-,') {
       ev.preventDefault()
       etat.fermer()
       return

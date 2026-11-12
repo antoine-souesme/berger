@@ -19,6 +19,9 @@ const berger = {
     verifier(canal)
     return ipcRenderer.invoke(canal, donnees)
   },
+  // Un scénario de vérification est joué : ses touches synthétiques sont des
+  // positions QWERTY, à lire sans la disposition du clavier.
+  scenario: Boolean(process.env['BERGER_SCENARIO']),
   // Le chemin d'un fichier déposé depuis le Finder.
   cheminDe(f: File): string {
     return webUtils.getPathForFile(f)
