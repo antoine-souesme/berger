@@ -83,7 +83,7 @@ body {
   background: var(--gris);
 }
 .entete {
-  height: 52px;
+  height: 42px; /* comme la barre d'onglets */
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -508,14 +508,13 @@ body {
   color: var(--vif);
 }
 #barre-onglets {
-  /* Onglets centrés sur les en-têtes des colonnes (52 px), 6 px au-dessus du panneau
-     comme sur les côtés. */
-  height: 36px; /* + 11 px de marge en haut : 47 px */
+  /* 6 px au-dessus et au-dessous des onglets, comme sur les côtés (42 px en tout). */
+  height: 30px;
   flex-shrink: 0;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 4px;
-  padding: 11px 6px 0;
+  padding: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-app-region: drag;
@@ -578,7 +577,7 @@ body {
 .trait-onglets {
   width: 1px;
   height: 20px;
-  margin: 0 8px;
+  margin: 0 3px;
   background: var(--bord);
   flex-shrink: 0;
 }
@@ -910,7 +909,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 52px 0 16px;
+  padding: 42px 0 16px;
   box-sizing: border-box;
 }
 #workspaces button {
