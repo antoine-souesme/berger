@@ -932,7 +932,6 @@ body {
 #workspaces .outil {
   display: grid;
   place-items: center;
-  cursor: default;
 }
 #workspaces .outil.actif {
   background: var(--actif);
@@ -941,7 +940,6 @@ body {
 #workspaces .outil.nouveau {
   background: var(--actif);
   color: #a6e22e;
-  cursor: pointer;
 }
 .trait-workspaces {
   width: 28px;
