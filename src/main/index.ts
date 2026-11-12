@@ -18,6 +18,12 @@ import { brancherEtatFichiers } from './etat-fichiers'
 import { brancherLangage } from './services/langage'
 import { brancherSchemas } from './services/schemas'
 import { brancherReglages } from './reglages'
+import { completerPath } from './chemin'
+
+// Dossier de données : `Berger` pour la version installée, `Berger-dev` pour le
+// développement (jamais l'un dans l'autre). Avant tout `getPath('userData')`.
+app.setPath('userData', join(app.getPath('appData'), app.isPackaged ? 'Berger' : 'Berger-dev'))
+completerPath()
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
