@@ -25,5 +25,5 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | Scripts du presse-papiers de macOS (`CLIP_WRITE`, `CLIP_READ` dans `src/main/fichiers.ts`) | `explorer.js` du mod `antoine`, copiés tels quels | code personnel d'Antoine |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
-(`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT), Lucide (`lucide`, icônes
+(`@xterm/xterm`, `@xterm/addon-fit`, `@xterm/addon-webgl`, MIT), Electron (MIT), Lucide (`lucide`, icônes
 d’interface, ISC).
