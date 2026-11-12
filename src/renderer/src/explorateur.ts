@@ -359,7 +359,8 @@ export function initExplorateur(m: string): void {
   el('ajouter-dossier').prepend(icone('folder-plus', 'currentColor', 14, 1.75))
   el('ajouter-dossier').onclick = () => void ajouterUnDossier()
   el('tout-replier').replaceChildren(icone('chevrons-down-up', 'currentColor', 15, 1.75))
-  el('tout-replier').onclick = () => changerFichiers((x, ws) => toutReplier(x, ws))
+  el('tout-replier').onclick = () =>
+    changerFichiers((x, ws) => toutReplier(x, ws, racinesDuWorkspace()))
   el('vide-ajouter').onclick = () => void ajouterUnDossier()
   surChangement(dessiner)
   window.berger.ecouter('berger:disque', ({ chemins }: { chemins: string[] }) => {

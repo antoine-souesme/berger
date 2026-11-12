@@ -1109,3 +1109,13 @@ body {
   width: 220px;
   box-sizing: border-box;
 }
+
+/* L'icône d'un agent au travail tourne. */
+.tourne {
+  animation: tourner 1s linear infinite;
+}
+@keyframes tourner {
+  to {
+    transform: rotate(360deg);
+  }
+}

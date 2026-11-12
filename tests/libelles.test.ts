@@ -76,9 +76,12 @@ test('onglet sans nom', () => {
 
 test("état d'un agent", () => {
   expect(etatAgent(t({ status: { state: 'working' } }))).toBe('travail')
-  expect(etatAgent(t({ status: { state: 'idle' } }))).toBe('attente')
+  expect(etatAgent(t({ status: { state: 'idle' } }))).toBeNull()
   expect(etatAgent(t({ status: { state: 'blocked' } }))).toBe('attente')
   expect(etatAgent(t({ status: { state: 'done' } }))).toBe('fini')
+  // Comme Herdr : un agent fini qu'on a regardé n'a plus de point.
+  expect(etatAgent(t({ status: { state: 'done' } }), true)).toBeNull()
+  expect(etatAgent(t({ status: { state: 'working' } }), true)).toBe('travail')
   expect(etatAgent(t())).toBeNull()
   expect(etatAgent(t({ state: 'finished', status: { state: 'working' } }))).toBeNull()
 })

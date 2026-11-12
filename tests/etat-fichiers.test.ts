@@ -137,8 +137,9 @@ test('basculerDeplie, toutReplier, oublierWorkspace, ajouter et retirer un dossi
   let e = basculerDeplie({}, ws, '/p/src')
   expect(deWorkspace(e, ws).deplies).toEqual(['/p/src'])
   e = basculerRacine(e, ws, '/p')
-  e = toutReplier(ajouterDossier(e, ws, '/d'), ws)
-  expect(deWorkspace(e, ws)).toMatchObject({ deplies: [], replies: ['/p'], dossiers: ['/d'] })
+  e = toutReplier(ajouterDossier(e, ws, '/d'), ws, ['/p', '/d'])
+  // Comme VS Code : les racines se replient aussi.
+  expect(deWorkspace(e, ws)).toMatchObject({ deplies: [], replies: ['/p', '/d'], dossiers: ['/d'] })
   expect(deWorkspace(retirerDossier(e, ws, '/d'), ws).dossiers).toEqual([])
   expect(oublierWorkspace(e, ws)[ws]).toBeUndefined()
 })

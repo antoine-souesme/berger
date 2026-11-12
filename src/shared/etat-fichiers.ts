@@ -232,8 +232,9 @@ export function basculerRacine(e: EtatFichiers, ws: string, racine: string): Eta
   return modifier(e, ws, (w) => ({ replies: basculer(w.replies, racine) }))
 }
 
-export function toutReplier(e: EtatFichiers, ws: string): EtatFichiers {
-  return modifier(e, ws, () => ({ deplies: [] }))
+// Tout replier, racines comprises (comme « Réduire les dossiers » de VS Code).
+export function toutReplier(e: EtatFichiers, ws: string, racines: string[]): EtatFichiers {
+  return modifier(e, ws, () => ({ deplies: [], replies: [...racines] }))
 }
 
 // Libellés des onglets : le nom, et quand plusieurs fichiers le partagent,

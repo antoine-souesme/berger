@@ -151,6 +151,7 @@ export function lignesAgents(): LigneAgent[] {
 function iconeEtat(agent: LigneAgent['agent']): Node | null {
   if (agent === 'travail') {
     const i = icone('loader-circle', COULEUR_ETAT.travail, 13)
+    i.classList.add('tourne')
     i.setAttribute('aria-label', 'au travail')
     return i
   }
@@ -165,7 +166,10 @@ function iconeEtat(agent: LigneAgent['agent']): Node | null {
     p.setAttribute('aria-label', "t'attend")
     return p
   }
-  return null
+  // Au repos (ou fini et déjà regardé) : un cercle vide, comme dans Herdr.
+  const i = icone('circle', 'var(--gris)', 10)
+  i.setAttribute('aria-label', 'au repos')
+  return i
 }
 
 function iconeProgramme(l: LigneAgent): SVGElement {

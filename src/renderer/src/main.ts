@@ -117,6 +117,17 @@ surChangement((e) => {
   }
 })
 
+// Comme dans Herdr : un agent fini perd son point vert une fois regardé (son
+// terminal dans l'onglet affiché, la fenêtre au premier plan).
+surChangement((e) => {
+  if (!document.hasFocus()) return
+  const regardes = [...adressesDeLOngletAffiche()].filter(
+    (a) => e.vue.terminaux[a]?.agent === 'fini'
+  )
+  if (regardes.length) window.berger.envoyer('berger:vu', { adresses: regardes })
+})
+window.addEventListener('focus', () => redessiner())
+
 window.berger.ecouter('berger:connexion', ({ etat: c }) =>
   changer((e) => (e.connecte = c === 'connecte'))
 )
