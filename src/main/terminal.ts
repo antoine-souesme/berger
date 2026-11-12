@@ -23,7 +23,7 @@ export class TerminalOuvert {
   private fini = false
 
   constructor(
-    adresse: string,
+    private adresse: string,
     cols: number,
     rows: number,
     private rappels: Rappels
@@ -49,7 +49,7 @@ export class TerminalOuvert {
           this.terminer(erreur)
           return
         }
-        this.envoyerRequete(1, 'terminal.attach', { terminal: adresse, cols, rows })
+        this.envoyerRequete(1, 'terminal.attach', { terminal: this.adresse, cols, rows })
         morceau = reste
       }
       for (const trame of decode(new Uint8Array(morceau))) this.recevoir(trame)
@@ -69,6 +69,7 @@ export class TerminalOuvert {
   }
 
   redimensionner(cols: number, rows: number): void {
+    if (process.env['BERGER_TRACE']) console.log(`[berger] RESIZE ${this.adresse} ${cols}x${rows}`)
     this.envoyer(TYPE.RESIZE, taille(cols, rows))
   }
 

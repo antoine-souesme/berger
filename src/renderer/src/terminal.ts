@@ -6,16 +6,23 @@ import '@xterm/xterm/css/xterm.css'
 const zone = (): HTMLElement => document.getElementById('terminal')!
 let terminal: Terminal | null = null
 let ajustement: FitAddon | null = null
+let adresseOuverte = ''
 const encodeur = new TextEncoder()
 
 function annoncerTaille(): void {
   if (!terminal || !ajustement) return
   ajustement.fit()
-  window.berger.envoyer('berger:taille', { cols: terminal.cols, rows: terminal.rows })
+  window.berger.envoyer('berger:taille', {
+    adresse: adresseOuverte,
+    cols: terminal.cols,
+    rows: terminal.rows
+  })
 }
 
 export function initTerminal(): void {
-  window.berger.ecouter('berger:sortie', (octets: Uint8Array) => terminal?.write(octets))
+  window.berger.ecouter('berger:sortie', ({ adresse, octets }) => {
+    if (adresse === adresseOuverte) terminal?.write(octets)
+  })
   window.berger.ecouter('berger:fin-terminal', () => {
     terminal?.dispose()
     terminal = null
@@ -38,6 +45,8 @@ function message(texte: string): HTMLElement {
 }
 
 export function ouvrirTerminal(adresse: string): void {
+  if (adresseOuverte) window.berger.envoyer('berger:detacher', { adresse: adresseOuverte })
+  adresseOuverte = adresse
   terminal?.dispose()
   zone().replaceChildren()
   terminal = new Terminal({
@@ -51,10 +60,14 @@ export function ouvrirTerminal(adresse: string): void {
   terminal.open(zone())
   ajustement.fit()
   terminal.onData((texte) =>
-    window.berger.envoyer('berger:touches', { octets: encodeur.encode(texte) })
+    window.berger.envoyer('berger:touches', {
+      adresse: adresseOuverte,
+      octets: encodeur.encode(texte)
+    })
   )
   terminal.onBinary((texte) =>
     window.berger.envoyer('berger:touches', {
+      adresse: adresseOuverte,
       octets: Uint8Array.from(texte, (c) => c.charCodeAt(0))
     })
   )

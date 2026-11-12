@@ -26,3 +26,7 @@ void window.berger
 
 window.berger.ecouter('berger:ouvrir', ({ adresse }) => ouvrirTerminal(adresse))
 window.berger.ecouter('berger:dossier', ({ dossier }) => void montrerFichiersDe(dossier))
+
+window.berger.ecouter('berger:non-enregistres', () =>
+  window.berger.envoyer('berger:reponse-quitter', { quitter: true })
+)

@@ -1,4 +1,6 @@
+import { homedir } from 'os'
 import type { Coeur } from './coeur'
+import { brancheDe } from './git'
 import { construireVue, VUE_VIDE, type TerminalCore, type Vue } from '../shared/spaces'
 import { appliquerEvenement, evenementNeuf, type EvenementCore } from '../shared/terminaux'
 
@@ -9,8 +11,30 @@ export function suivreLaVue(coeur: Coeur, envoyer: (vue: Vue) => void): () => Vu
   let doc: unknown = null
   let derniere: Vue = VUE_VIDE
 
+  // Branche git de chaque dossier de space, relue au plus toutes les 5 s.
+  const branches = new Map<string, { branche?: string; lue: number; enCours: boolean }>()
+  const brancheDuDossier = (dossier: string): string | undefined => {
+    if (!dossier) return undefined
+    const connue = branches.get(dossier)
+    if (!connue || (!connue.enCours && Date.now() - connue.lue > 5000)) {
+      const entree = { branche: connue?.branche, lue: Date.now(), enCours: true }
+      branches.set(dossier, entree)
+      void brancheDe(dossier).then((branche) => {
+        entree.enCours = false
+        entree.lue = Date.now()
+        if (branche !== entree.branche) {
+          entree.branche = branche
+          publier()
+        }
+      })
+    }
+    return branches.get(dossier)!.branche
+  }
+
   const publier = (): void => {
-    derniere = construireVue(doc, [...table.values()])
+    const vue = construireVue(doc, [...table.values()], homedir())
+    for (const space of vue.spaces) space.branche = brancheDuDossier(space.dossier)
+    derniere = vue
     envoyer(derniere)
   }
 
