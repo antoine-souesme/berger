@@ -18,6 +18,7 @@ import { brancherEtatFichiers } from './etat-fichiers'
 import { brancherLangage } from './services/langage'
 import { brancherSchemas } from './services/schemas'
 import { brancherReglages, themeApplication } from './reglages'
+import { brancherSons } from './sons'
 import { couleursFenetre } from '../shared/themes'
 import { completerPath } from './chemin'
 import { cadreRetenu, suivreCadre } from './cadre'
@@ -166,6 +167,7 @@ app.whenReady().then(() => {
   const etatFichiers = brancherEtatFichiers()
   const langage = brancherLangage(() => fenetre)
   brancherSchemas()
+  brancherSons()
   app.on('will-quit', () => langage.arreter())
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>

@@ -19,6 +19,9 @@ export type Reglages = {
     tabulations: number
   }
   terminal: { police: string; taille: number }
+  // Sons des agents ; `fini` et `attente` : un fichier son à la place de celui
+  // de macOS (null : celui de macOS).
+  sons: { actifs: boolean; fini: string | null; attente: string | null }
   raccourcis: Record<string, string[]> // id de commande → touches ('cmd-shift-d'), [] = aucun
 }
 
@@ -48,6 +51,7 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
     tabulations: 2
   },
   terminal: { police: "'IBM Plex Mono', Menlo, monospace", taille: 12 },
+  sons: { actifs: true, fini: null, attente: null },
   raccourcis: {}
 }
 
@@ -75,6 +79,8 @@ export function lireReglages(brut: unknown): Reglages {
   const a = objet(o['apparence'])
   const e = objet(o['editeur'])
   const t = objet(o['terminal'])
+  const s = objet(o['sons'])
+  const fichier = (x: unknown): string | null => (typeof x === 'string' && x.trim() ? x : null)
   const d = REGLAGES_PAR_DEFAUT
   const sel = e['couleurSelection']
   return {
@@ -100,6 +106,11 @@ export function lireReglages(brut: unknown): Reglages {
     terminal: {
       police: texte(t['police'], d.terminal.police),
       taille: entier(t['taille'], 8, 32, d.terminal.taille)
+    },
+    sons: {
+      actifs: booleen(s['actifs'], d.sons.actifs),
+      fini: fichier(s['fini']),
+      attente: fichier(s['attente'])
     },
     raccourcis: raccourcis(o['raccourcis'])
   }
