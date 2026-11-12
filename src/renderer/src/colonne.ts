@@ -3,7 +3,8 @@
 // phase 0), puis les spaces et les agents.
 import { filtrerFichiers, LIMITE_FICHIERS, type ListeFichiers } from '../../shared/fichiers'
 import { COULEUR_ETAT } from '../../shared/libelles'
-import { agents, type PlaceAgent } from '../../shared/onglets'
+import { listeAgents, type LigneAgent } from '../../shared/agents'
+import type { PlaceAgent } from '../../shared/onglets'
 import type { VueSpace } from '../../shared/spaces'
 import { afficherSpace, changer, etat, spaceAffiche, surChangement } from './etat'
 import { icone } from './icones'
@@ -138,8 +139,16 @@ function ligneSpace(space: VueSpace, affiche: boolean): HTMLElement {
   return ligne
 }
 
-function ligneAgent(a: PlaceAgent): HTMLElement {
+let lignes: LigneAgent[] = []
+
+// La liste des agents dessinée (pour ⌘] / ⌘[).
+export function lignesAgents(): LigneAgent[] {
+  return lignes
+}
+
+function ligneAgent(l: LigneAgent): HTMLElement {
   const e = etat()
+  const a = l.place!
   const t = e.vue.terminaux[a.adresse]
   const space = e.vue.spaces.find((s) => s.id === a.space)
   const ligne = document.createElement('div')
@@ -169,7 +178,12 @@ function dessiner(): void {
   el('liste-spaces').replaceChildren(
     ...e.vue.spaces.map((space) => ligneSpace(space, space.id === s?.id))
   )
-  el('liste-agents').replaceChildren(...agents(e.vue).map(ligneAgent))
+  lignes = listeAgents(
+    e.vue,
+    e.vue.spaces.map((x) => x.id),
+    'spaces'
+  ).filter((l) => l.place)
+  el('liste-agents').replaceChildren(...lignes.map(ligneAgent))
 }
 
 export function renommerSpaceEnPlace(): void {

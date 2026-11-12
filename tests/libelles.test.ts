@@ -4,7 +4,8 @@ import {
   dossierAffiche,
   etatAgent,
   nomOnglet,
-  programme
+  programme,
+  titreAgent
 } from '../src/shared/libelles'
 import type { TerminalCore } from '../src/shared/spaces'
 
@@ -84,3 +85,19 @@ test("état d'un agent", () => {
 
 test('couleurs des états', () =>
   expect(COULEUR_ETAT).toEqual({ travail: '#e6db74', attente: '#f92672', fini: '#a6e22e' }))
+
+test('titreAgent : titre du statut, sinon titre nettoyé, jamais un chemin ni user@machine', () => {
+  expect(titreAgent(t({ status: { state: 'working', app: 'claude', title: 'Maquettes' } }))).toBe(
+    'Maquettes'
+  )
+  expect(
+    titreAgent(t({ title: '✳ Tests des trames', status: { state: 'idle', app: 'claude' } }))
+  ).toBe('Tests des trames')
+  expect(titreAgent(t({ title: '✳ ~/dev/berger' }))).toBe('')
+  expect(titreAgent(t({ title: '/usr/bin' }))).toBe('')
+  expect(titreAgent(t({ title: 'antoine@machine:~/x' }))).toBe('')
+  expect(titreAgent(t({ title: '✳ Claude Code', status: { state: 'idle', app: 'claude' } }))).toBe(
+    ''
+  )
+  expect(titreAgent(t({ title: '', status: { state: 'idle', title: '  ' } }))).toBe('')
+})

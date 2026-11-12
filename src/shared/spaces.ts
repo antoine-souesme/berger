@@ -7,9 +7,11 @@ import {
   nomOnglet,
   plusPressant,
   programme,
+  titreAgent,
   type EtatAgent,
   type Icone
 } from './libelles'
+import { sousAgentsHooks, type SousAgentHook } from './sous-agents'
 
 export type TerminalCore = {
   address: string
@@ -17,7 +19,11 @@ export type TerminalCore = {
   title: string
   cwd: string
   state: string
-  status?: { state: string; app?: string } | null
+  status?: { state: string; app?: string; title?: string } | null
+  /** Quand le mot d'état a changé pour la dernière fois (ms). */
+  status_ms?: number | null
+  /** Le terminal qui l'a lancé (`hc run`). */
+  parent?: string | null
   foreground?: { cwd: string; name?: string; argv?: string[] } | null
   labels: Record<string, string>
   argv?: string[]
@@ -34,6 +40,12 @@ export type VueTerminal = {
   agent: EtatAgent
   vivant: boolean
   clicsDroitsAuProgramme: boolean
+  parent: string | null
+  /** Depuis quand il est dans son état (ms), null si inconnu. */
+  depuis: number | null
+  titre: string
+  /** Sous-agents posés par les hooks de Claude Code (vide pour un autre programme). */
+  hooks: SousAgentHook[]
 }
 export type VueOnglet = { id: string; nom: string; racine: Noeud; agent: EtatAgent }
 export type VueSpace = {
@@ -41,6 +53,8 @@ export type VueSpace = {
   nom: string
   dossier: string
   branche?: string
+  /** Commits à pousser vers l'amont. */
+  aPousser?: number
   onglets: VueOnglet[]
   terminaux: VueTerminal[]
 }
@@ -88,9 +102,13 @@ export function dossierDuSpace(space: SpaceDoc, terminaux: Map<string, TerminalC
   return premier?.foreground?.cwd || premier?.cwd || space.folder || ''
 }
 
-function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
+const estClaude = (t: TerminalCore, nom: string): boolean =>
+  t.status?.app ? /^claude/i.test(t.status.app) : nom === 'Claude Code'
+
+function vueTerminal(t: TerminalCore, maison: string, maintenant: number): VueTerminal {
   const prog = programme(t)
   const cwd = t.foreground?.cwd || t.cwd || ''
+  const vivant = t.state === 'live'
   return {
     adresse: t.address,
     libelle: t.name || prog.nom,
@@ -99,8 +117,12 @@ function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
     dossier: dossierAffiche(cwd, maison),
     cwd,
     agent: etatAgent(t),
-    vivant: t.state === 'live',
-    clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program'
+    vivant,
+    clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program',
+    parent: t.parent ?? null,
+    depuis: typeof t.status_ms === 'number' ? t.status_ms : null,
+    titre: titreAgent(t),
+    hooks: vivant && estClaude(t, prog.nom) ? sousAgentsHooks(t.labels, maintenant) : []
   }
 }
 
@@ -108,10 +130,15 @@ function dernierSegment(chemin: string): string {
   return chemin.split('/').filter(Boolean).pop() ?? chemin
 }
 
-export function construireVue(doc: unknown, terminaux: TerminalCore[], maison = ''): Vue {
+export function construireVue(
+  doc: unknown,
+  terminaux: TerminalCore[],
+  maison = '',
+  maintenant = Date.now()
+): Vue {
   const parAdresse = new Map(terminaux.map((t) => [t.address, t]))
   const vues: Record<string, VueTerminal> = {}
-  for (const t of terminaux) vues[t.address] = vueTerminal(t, maison)
+  for (const t of terminaux) vues[t.address] = vueTerminal(t, maison, maintenant)
   const spacesDoc = ((doc as { spaces?: SpaceDoc[] } | null)?.spaces ?? []) as SpaceDoc[]
   const ranges = new Set<string>()
   const spaces = spacesDoc.map((space) => {

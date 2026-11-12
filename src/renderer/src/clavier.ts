@@ -1,7 +1,8 @@
 // Les raccourcis de Berger : un écouteur en phase de capture, avant le
 // terminal et l'éditeur. La table et le partage des touches sont dans
 // `src/shared/raccourcis.ts`.
-import { agentVoisin, ongletN, ongletVoisin, type PlaceAgent } from '../../shared/onglets'
+import { agentVoisin } from '../../shared/agents'
+import { ongletN, ongletVoisin, type PlaceAgent } from '../../shared/onglets'
 import { actionDe, type ActionClavier, type Cible } from '../../shared/raccourcis'
 import { afficherSpace, changer, etat, ongletAffiche, ongletsAffiches, spaceAffiche } from './etat'
 import {
@@ -10,7 +11,7 @@ import {
   nouvelOnglet,
   renommerOngletEnPlace
 } from './barre-onglets'
-import { renommerSpaceEnPlace } from './colonne'
+import { lignesAgents, renommerSpaceEnPlace } from './colonne'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
@@ -72,7 +73,7 @@ function executer(a: ActionClavier): void {
       return
     }
     case 'agent.voisin': {
-      const p = agentVoisin(e.vue, terminalActuel(), a.pas)
+      const p = agentVoisin(lignesAgents(), terminalActuel(), a.pas)
       if (p) choisirPlace(p)
       return
     }
