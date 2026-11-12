@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Berger, recherche de fichiers</title>
+</head>
+<body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap">
+<style>
+body{margin:0;background:#1e1f1c}
+a{color:#66d9ef}a:hover{color:#a6e22e}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+b{color:#e6db74;font-weight:600}
+</style>
+<div style="width: 1440px; height: 900px; box-sizing: border-box; position: relative; background: #1e1f1c; color: #d0d0c8; font-family: 'IBM Plex Sans', system-ui, sans-serif; font-size: 13px; overflow: hidden">
+
+<!-- Fenêtre en arrière-plan, assombrie -->
+<div style="position: absolute; inset: 0; display: flex; flex-direction: column; opacity: 0.4" aria-hidden="true">
+<div style="height: 52px; display: flex; align-items: center; gap: 8px; padding: 0 16px">
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #ff5f57"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #febc2e"></span>
+<span style="width: 12px; height: 12px; border-radius: 50%; background: #28c840"></span>
+</div>
+<div style="flex: 1; display: flex; gap: 16px; padding: 0 16px 16px 0">
+<div style="width: 60px; margin-top: -52px; border-right: 1px solid #34352f"></div>
+<div style="width: 240px; margin-top: -52px; margin-left: -16px; border-right: 1px solid #34352f"></div>
+<div style="flex: 1; border-radius: 12px; background: #272822; border: 1px solid #34352f"></div>
+<div style="width: 560px; border-radius: 12px; background: #272822; border: 1px solid #34352f"></div>
+</div>
+</div>
+<div style="position: absolute; inset: 0; background: #0e0f0c99" aria-hidden="true"></div>
+
+<!-- Palette de recherche -->
+<div style="position: absolute; top: 140px; left: 50%; width: 600px; margin-left: -300px; display: flex; flex-direction: column; border-radius: 14px; background: #1e1f1c; border: 1px solid #34352f; box-shadow: 0 24px 60px #00000080; overflow: hidden">
+<label for="recherche" style="display: flex; align-items: center; gap: 14px; height: 56px; padding: 0 20px; border-bottom: 1px solid #34352f">
+<svg width="18" height="18" viewBox="0 0 16 16" fill="none" stroke="#a59f85" stroke-width="1.5" aria-hidden="true"><circle cx="7" cy="7" r="4.5"></circle><path d="M10.5 10.5 14 14"></path></svg>
+<input id="recherche" value="edit" style="flex: 1; background: none; border: 0; outline: none; color: #f2f2ea; font: 400 16px 'IBM Plex Sans', sans-serif">
+</label>
+
+<div style="display: flex; flex-direction: column; gap: 2px; padding: 10px">
+<button style="display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 12px; border-radius: 8px; background: #414339; text-align: left">
+<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex-shrink: 0"><path fill="#0288d1" d="M2 2v12h12V2zm4 6h3v1H8v4H7V9H6zm5 0h2v1h-2v1h1a1.003 1.003 0 0 1 1 1v1a1.003 1.003 0 0 1-1 1h-2v-1h2v-1h-1a1.003 1.003 0 0 1-1-1V9a1.003 1.003 0 0 1 1-1"></path></svg><span style="color: #f2f2ea"><b>edit</b>eur.ts</span><span style="color: #a59f85; font-size: 12px">src/renderer/src</span></button>
+<button style="display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 12px; border-radius: 8px; text-align: left">
+<svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" style="flex-shrink: 0"><path fill="#7e57c2" d="M20 18h-2v-2h-2v2c0 .193 0 .703 1.254 1.033A3.345 3.345 0 0 1 20 22h2v2h2v-2c0-.388-.562-.851-1.254-1.034C20.356 20.34 20 18.84 20 18m-3.254 2.966C14.356 20.34 14 18.84 14 18h-2v-2h-2v8h2v-2h4v2h2v-2c0-.388-.562-.851-1.254-1.034"></path><path fill="#7e57c2" d="M24 4H4v20a4 4 0 0 0 4 4h16.16A3.84 3.84 0 0 0 28 24.16V8a4 4 0 0 0-4-4m2 14h-2v-2h-2v2c0 .193 0 .703 1.254 1.033A3.345 3.345 0 0 1 26 22v2a2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2 2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2 2 2 0 0 1-2 2h-2a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2 2 2 0 0 1 2-2h2a2 2 0 0 1 2 2 2 2 0 0 1 2-2h2a2 2 0 0 1 2 2Z"></path></svg><span><b>edit</b>eur.css</span><span style="color: #a59f85; font-size: 12px">src/renderer/src</span></button>
+<button style="display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 12px; border-radius: 8px; text-align: left">
+<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex-shrink: 0"><path fill="#0288d1" d="M2 2v12h12V2zm4 6h3v1H8v4H7V9H6zm5 0h2v1h-2v1h1a1.003 1.003 0 0 1 1 1v1a1.003 1.003 0 0 1-1 1h-2v-1h2v-1h-1a1.003 1.003 0 0 1-1-1V9a1.003 1.003 0 0 1 1-1"></path></svg><span><b>edit</b>eur.test.ts</span><span style="color: #a59f85; font-size: 12px">tests</span></button>
+
+<div style="display: flex; align-items: center; gap: 8px; padding: 14px 12px 6px; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #a59f85"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>Récents</div>
+<button style="display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 12px; border-radius: 8px; text-align: left">
+<svg width="16" height="16" viewBox="0 0 32 32" aria-hidden="true" style="flex-shrink: 0"><path fill="#42a5f5" d="m14 10-4 3.5L6 10H4v12h4v-6l2 2 2-2v6h4V10zm12 6v-6h-4v6h-4l6 8 6-8z"></path></svg><span>VISION.md</span><span style="color: #a59f85; font-size: 12px">docs</span></button>
+<button style="display: flex; align-items: center; gap: 14px; height: 40px; padding: 0 12px; border-radius: 8px; text-align: left">
+<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" style="flex-shrink: 0"><path fill="#0288d1" d="M2 2v12h12V2zm4 6h3v1H8v4H7V9H6zm5 0h2v1h-2v1h1a1.003 1.003 0 0 1 1 1v1a1.003 1.003 0 0 1-1 1h-2v-1h2v-1h-1a1.003 1.003 0 0 1-1-1V9a1.003 1.003 0 0 1 1-1"></path></svg><span>coeur.ts</span><span style="color: #a59f85; font-size: 12px">src/main</span></button>
+</div>
+</div>
+
+</div>
+</body>
+</html>

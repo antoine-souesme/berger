@@ -6,6 +6,9 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 |---|---|---|
 | Couleurs du thème Monaco `antoine-monokai` (`src/renderer/src/editeur.ts`) | `~/.config/herdr-app/themes/antoine-monokai.json` (thème personnel d'Antoine, lui-même dérivé de Monokai) | thème personnel ; Monokai sous licence libre de son auteur |
 | Squelette du projet (configuration electron-vite, tsconfig) | modèle `vanilla-ts` de `@quick-start/create-electron` | MIT |
+| Icônes de fichiers des maquettes (`docs/maquettes/`) | Material Icon Theme, copiées depuis `~/.config/herdr-app/mods/antoine/icons/material/` | MIT |
+| Icônes d'interface des maquettes (`docs/maquettes/`) | Lucide | ISC |
+| Chevrons et icône « tout replier » des maquettes | mod `antoine` (`~/.config/herdr-app/mods/antoine/`) | code personnel d'Antoine |
 | Format des trames de herdr-core (`src/shared/trames.ts`) | observé sur `hc` 0.1.20, aucun code repris | herdr-core : Apache 2.0 |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
