@@ -125,8 +125,10 @@ export async function ouvrirWorkspace(id: string): Promise<void> {
   else changer((x) => (x.space = null))
 }
 
+// Workspace vide : aucun onglet (les fichiers ouverts reviennent avec un space).
 export function ongletsAffiches(): RefOnglet[] {
-  return barre(spaceAffiche()?.onglets ?? [], e.fichiers)
+  const s = spaceAffiche()
+  return s ? barre(s.onglets, e.fichiers) : []
 }
 
 export function ongletAffiche(): RefOnglet | null {

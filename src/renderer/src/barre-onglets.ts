@@ -135,7 +135,8 @@ export function dessinerBarre(): void {
   const enfants: HTMLElement[] = []
   for (const o of space?.onglets ?? [])
     enfants.push(ongletTerminal(space!, o, memeOnglet(actif, { type: 'terminal', id: o.id })))
-  const fichiers = etat().fichiers
+  // Workspace vide : aucun onglet, pas même les fichiers ouverts.
+  const fichiers = space ? etat().fichiers : []
   if (fichiers.length) {
     const trait = document.createElement('div')
     trait.className = 'trait-onglets'
