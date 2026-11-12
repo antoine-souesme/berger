@@ -67,11 +67,11 @@ function remplirBandeau(bandeau: HTMLElement, bloc: Bloc): void {
     const mod = document.createElement('span')
     mod.className = 'gris'
     mod.textContent = bloc.content?.mod ?? ''
-    bandeau.replaceChildren(icone('puzzle', '#a59f85'), nom, mod, croixPanneau())
+    bandeau.replaceChildren(icone('puzzle', 'var(--gris-clair)'), nom, mod, croixPanneau())
     return
   }
   const t = etat().vue.terminaux[adresse]
-  const couleur = t?.agent ? COULEUR_ETAT[t.agent] : '#a59f85'
+  const couleur = t?.agent ? COULEUR_ETAT[t.agent] : 'var(--gris-clair)'
   const nom = document.createElement('span')
   nom.className = 'programme'
   nom.textContent = t?.programme.nom ?? adresse

@@ -1,11 +1,13 @@
 // Un xterm par terminal affiché, branché sur le processus principal. Il est
 // gardé tant que son onglet est affiché ; les autres sont détachés (jamais
 // tués) et rattachés au retour.
-import { Terminal } from '@xterm/xterm'
+import { Terminal, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
-import { AFFICHAGE } from '../../shared/terminaux'
+import { tableActuelle } from './table-raccourcis'
+import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
+import { THEMES_FOURNIS } from '../../shared/themes-fournis'
 
 type Ouvert = {
   el: HTMLElement
@@ -15,30 +17,10 @@ type Ouvert = {
   ouvert: boolean
 }
 
-// Police et couleurs du terminal de Herdr (`~/.config/herdr-app/settings.json`,
-// thème `antoine-monokai`).
-const THEME = {
-  background: AFFICHAGE.bg,
-  foreground: AFFICHAGE.fg,
-  cursor: AFFICHAGE.cursor,
-  selectionBackground: '#49483e',
-  black: '#333333',
-  red: '#c4265e',
-  green: '#86b42b',
-  yellow: '#b3b42b',
-  blue: '#6a7ec8',
-  magenta: '#8c6bc8',
-  cyan: '#56adbc',
-  white: '#c4c4be',
-  brightBlack: '#666666',
-  brightRed: '#f92672',
-  brightGreen: '#a6e22e',
-  brightYellow: '#e2e22e',
-  brightBlue: '#819aff',
-  brightMagenta: '#ae81ff',
-  brightCyan: '#66d9ef',
-  brightWhite: '#d8d8d2'
-}
+// Couleurs, police et taille courantes (thème de l'application, réglages).
+let THEME: ITheme = couleursTerminal(THEMES_FOURNIS[0].theme)
+let POLICE = "'IBM Plex Mono', Menlo, monospace"
+let TAILLE = 12
 
 // Le rendu graphique de xterm donne au canevas une police qui commence par une
 // espace quand le texte n'est pas en italique (« ␣normal 12px … ») ; le Chromium
@@ -57,8 +39,6 @@ for (const proto of [
     }
   })
 }
-
-const POLICE = "'IBM Plex Mono', Menlo, monospace"
 
 const ouverts = new Map<string, Ouvert>()
 
@@ -94,6 +74,9 @@ function ouvrir(adresse: string, o: Ouvert): void {
     } catch {
       // Pas de WebGL : rendu ordinaire.
     }
+    // La carte graphique arrondit les cases au pixel (7 px au lieu de 7,2) : le
+    // nombre de colonnes et de lignes calculé avant elle laissait une marge.
+    ajuster(adresse, o)
   })
 }
 
@@ -159,6 +142,30 @@ export function initTerminaux(rappels: { fin: (adresse: string) => void }): void
   window.addEventListener('blur', () => window.berger.envoyer('berger:focus', { actif: false }))
 }
 
+// Couleurs (thème de l'application), police et taille : appliquées aux
+// terminaux ouverts, qui sont remesurés, et prises par les suivants.
+export function appliquerTerminal(
+  couleurs: CouleursTerminal,
+  police: string,
+  taille: number
+): void {
+  const policeChange = police !== POLICE || taille !== TAILLE
+  THEME = couleurs
+  POLICE = police
+  TAILLE = taille
+  for (const [adresse, o] of ouverts) {
+    o.xterm.options.theme = couleurs
+    if (!policeChange) continue
+    o.xterm.options.fontFamily = police
+    o.xterm.options.fontSize = taille
+    // Remesurer une fois la police chargée (sinon les cases sont mal mesurées).
+    void document.fonts
+      .load(`${taille}px ${police}`)
+      .catch(() => [])
+      .then(() => ajuster(adresse, o))
+  }
+}
+
 export function raisonArret(adresse: string): string | undefined {
   return arretes.get(adresse)
 }
@@ -173,7 +180,7 @@ export function vueTerminal(adresse: string): HTMLElement {
   el.style.height = '100%'
   const xterm = new Terminal({
     fontFamily: POLICE,
-    fontSize: 12,
+    fontSize: TAILLE,
     // Le rendu natif de Herdr (Ghostty) est plus épais et ses lignes plus hautes :
     // graisse « SemiBold » et lignes de 16 px s'en approchent.
     fontWeight: '600',
@@ -195,7 +202,7 @@ export function vueTerminal(adresse: string): HTMLElement {
     })
   )
   // Les raccourcis de Berger ne partent pas au terminal.
-  xterm.attachCustomKeyEventHandler((e) => actionDe(e, 'terminal') === null)
+  xterm.attachCustomKeyEventHandler((e) => actionDe(e, 'terminal', tableActuelle()) === null)
   new ResizeObserver(() => ajuster(adresse, o)).observe(el)
   return el
 }

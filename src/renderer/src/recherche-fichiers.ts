@@ -87,7 +87,7 @@ export function ouvrirRechercheFichiers(): void {
   champ.id = 'recherche-fichiers'
   champ.spellcheck = false
   champ.placeholder = 'Rechercher un fichier par son nom'
-  tete.append(icone('search', '#a59f85', 18, 1.75), champ)
+  tete.append(icone('search', 'var(--gris-clair)', 18, 1.75), champ)
   const liste = creer('div', 'palette-liste')
   palette.append(tete, liste)
   voile.append(palette)

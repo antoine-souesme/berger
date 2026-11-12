@@ -1,0 +1,40 @@
+{
+  "background": "#18223a",
+  "foreground": "#d4def0",
+  "selection": "#2c3b5c",
+  "cursor": "#e6ecf7",
+  "ansi": [
+    "#24304a",
+    "#e07a8a",
+    "#8fc99a",
+    "#e6c88a",
+    "#7aa2d6",
+    "#b98ee0",
+    "#6ccbd9",
+    "#c4cee0",
+    "#5a6a8a",
+    "#f08c9b",
+    "#a3d4a8",
+    "#f0d69c",
+    "#94b8e6",
+    "#c79be6",
+    "#7fd0e0",
+    "#e6ecf7"
+  ],
+  "colors": {
+    "canvas": "#0f1626",
+    "surface": "#18223a"
+  },
+  "editeur": {
+    "commentaire": "#6b7fa3",
+    "chaine": "#a3d4a8",
+    "motCle": "#7aa2d6",
+    "fonction": "#e6c88a",
+    "type": "#7fd0e0",
+    "nombre": "#c79be6",
+    "constante": "#c79be6",
+    "balise": "#7aa2d6",
+    "attribut": "#e6c88a",
+    "operateur": "#94b8e6"
+  }
+}

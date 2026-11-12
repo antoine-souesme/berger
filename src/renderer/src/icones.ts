@@ -37,6 +37,12 @@ import {
   FolderMinus,
   FolderOpen,
   Link,
+  Settings,
+  Palette,
+  Keyboard,
+  FileCog,
+  RotateCcw,
+  TriangleAlert,
   type IconNode
 } from 'lucide'
 
@@ -58,6 +64,12 @@ const ICONES: Record<string, IconNode> = {
   'loader-circle': LoaderCircle,
   'maximize-2': Maximize2,
   monitor: Monitor,
+  settings: Settings,
+  palette: Palette,
+  keyboard: Keyboard,
+  'file-cog': FileCog,
+  'rotate-ccw': RotateCcw,
+  'triangle-alert': TriangleAlert,
   pencil: Pencil,
   pin: Pin,
   'pin-off': PinOff,
@@ -94,13 +106,15 @@ export function icone(
     height: String(taille),
     viewBox: '0 0 24 24',
     fill: 'none',
-    stroke: couleur,
+    // Une variable CSS ne se lit pas dans un attribut SVG : elle passe par `color`.
+    stroke: couleur.startsWith('var(') ? 'currentColor' : couleur,
     'stroke-width': String(epaisseur),
     'stroke-linecap': 'round',
     'stroke-linejoin': 'round',
     class: 'icone'
   }
   for (const [k, v] of Object.entries(attributs)) svg.setAttribute(k, v)
+  if (couleur.startsWith('var(')) svg.style.color = couleur
   for (const [balise, attrs] of ICONES[nom] ?? ICONES['square-terminal']) {
     const el = document.createElementNS(SVG, balise)
     for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v))
@@ -120,3 +134,8 @@ export function iconeMaterial(nom: string, taille = 16): HTMLImageElement {
   img.draggable = false
   return img
 }
+
+// L'anneau qui tourne d'un agent au travail (comme Herdr), pour la liste des
+// agents et la barre des workspaces ; il tourne avec la classe `tourne`.
+export const ANNEAU_TRAVAIL =
+  '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.4" stroke-opacity="0.24"/><path d="M12 2.6a9.4 9.4 0 0 1 9.4 9.4"/></svg>'

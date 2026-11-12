@@ -1,6 +1,7 @@
 // La coloration de VS Code dans Monaco : les grammaires TextMate de VS Code
 // (copiées par scripts/copier-grammaires.mjs dans public/vscode/), lues par
-// vscode-textmate et vscode-oniguruma, et le thème Monokai de VS Code tel quel.
+// vscode-textmate et vscode-oniguruma. Le thème de l'éditeur change à chaud
+// (réglages) : les fichiers ouverts sont alors recoloriés.
 import * as monaco from 'monaco-editor'
 import { INITIAL, parseRawGrammar, Registry, type IGrammar, type StateStack } from 'vscode-textmate'
 import { createOnigScanner, createOnigString, loadWASM } from 'vscode-oniguruma'
@@ -39,10 +40,14 @@ const lireTexte = async (chemin: string): Promise<string> => (await lire(chemin,
 // Le service JSON de Monaco ne connaît que `json` : `jsonc` y est rangé.
 const idMonaco = (id: string): string => (id === 'jsonc' ? 'json' : id)
 
-let theme: ThemeVsCode | null = null
+let theme: (ThemeVsCode & { type: 'dark' | 'light' }) | null = null
 let langagesVsCode: LangageVsCode[] | undefined
 let registre: Registry | null = null
-let selection = '#878b9180'
+let selection: string | null = null
+// Les fabriques de jetons, par langage, et les langages déjà chargés (à recolorier
+// quand le thème change).
+const fabriques = new Map<string, monaco.languages.TokensProviderFactory>()
+const charges = new Set<string>()
 
 const TYPES_STANDARD: Record<string, number> = { other: 0, comment: 1, string: 2, regex: 3 }
 const SUFFIXES_TYPE = ['', '.comment', '.string', '.regex']
@@ -161,11 +166,7 @@ function configurationMonaco(c: any): monaco.languages.LanguageConfiguration {
 }
 
 export async function initColoration(): Promise<LangageVsCode[]> {
-  const [reg, th] = await Promise.all([
-    lireTexte(BASE + 'langages.json').then((t) => JSON.parse(t) as Registre),
-    lireTexte(BASE + 'monokai-color-theme.json').then((t) => JSON.parse(t) as ThemeVsCode)
-  ])
-  theme = th
+  const reg = await lireTexte(BASE + 'langages.json').then((t) => JSON.parse(t) as Registre)
   await loadWASM((await lire(urlOnig, 'arraybuffer')) as ArrayBuffer)
   const parPortee = new Map<string, Grammaire>()
   for (const g of reg.grammaires) if (!parPortee.has(g.scopeName)) parPortee.set(g.scopeName, g)
@@ -181,7 +182,7 @@ export async function initColoration(): Promise<LangageVsCode[]> {
       return parseRawGrammar(await lireTexte(BASE + 'grammaires/' + g.fichier), g.fichier)
     },
     getInjections: (portee) => injections.get(portee),
-    theme: { name: 'Monokai', settings: th.tokenColors }
+    ...(theme ? { theme: { name: 'berger', settings: theme.tokenColors } } : {})
   })
 
   // Les numéros de langage des grammaires imbriquées (seulement pour vscode-textmate).
@@ -218,8 +219,9 @@ export async function initColoration(): Promise<LangageVsCode[]> {
     const g = grammaireDe(id)
     if (!g) continue
     // Remplace la fabrique Monarch de Monaco : chargé à la première utilisation.
-    monaco.languages.registerTokensProviderFactory(id, {
+    fabriques.set(id, {
       create: async () => {
+        charges.add(id)
         const grammaire = await registre!.loadGrammarWithConfiguration(g.scopeName, numero(id), {
           embeddedLanguages: Object.fromEntries(
             Object.entries(g.embeddedLanguages ?? {}).map(([p, l]) => [p, numero(l)])
@@ -233,7 +235,8 @@ export async function initColoration(): Promise<LangageVsCode[]> {
       }
     })
   }
-  definirTheme(selection)
+  enregistrerFabriques()
+  definirTheme()
   langagesVsCode = reg.langages
   return reg.langages
 }
@@ -245,9 +248,44 @@ export function langageDuFichier(chemin: string): string {
 
 const sansDiese = (c: string): string => c.replace(/^#/, '')
 
-// Le thème Monaco « vscode-monokai » : couleurs et jetons du thème de VS Code.
-export function definirTheme(couleurSelection: string): void {
+// Remplace la fabrique Monarch de Monaco : chargé à la première utilisation.
+function enregistrerFabriques(): void {
+  for (const [id, f] of fabriques) monaco.languages.registerTokensProviderFactory(id, f)
+}
+
+// Les jetons portent un numéro de couleur propre à la table du thème : après un
+// changement de thème, chaque langage déjà chargé reçoit un fournisseur neuf,
+// ce qui fait recolorier ses modèles.
+async function recolorier(): Promise<void> {
+  for (const id of charges) {
+    const f = fabriques.get(id)
+    const p = await f?.create()
+    if (p) monaco.languages.setTokensProvider(id, p as monaco.languages.TokensProvider)
+  }
+}
+
+// Change le thème de l'éditeur : table des couleurs de vscode-textmate, thème
+// Monaco, puis recoloration des fichiers ouverts (leurs jetons portent un
+// numéro de couleur propre à l'ancienne table).
+export function appliquerThemeEditeur(
+  nouveau: ThemeVsCode & { type: 'dark' | 'light' },
+  couleurSelection: string | null
+): void {
+  const change = theme !== nouveau && JSON.stringify(theme) !== JSON.stringify(nouveau)
+  theme = nouveau
   selection = couleurSelection
+  if (!registre) return
+  if (change) {
+    registre.setTheme({ name: 'berger', settings: nouveau.tokenColors })
+    definirTheme()
+    void recolorier()
+    return
+  }
+  definirTheme()
+}
+
+// Le thème Monaco « berger-editeur » : couleurs et jetons du thème choisi.
+function definirTheme(): void {
   if (!theme || !registre) return
   const couleurs = registre.getColorMap()
   // Le fond vient des couleurs de l'éditeur (les règles TextMate n'en donnent pas).
@@ -279,13 +317,33 @@ export function definirTheme(couleurSelection: string): void {
       ...(r.foreground ? { foreground: sansDiese(r.foreground) } : {}),
       ...(r.fontStyle !== undefined ? { fontStyle: r.fontStyle } : {})
     })
-  monaco.editor.defineTheme('vscode-monokai', {
-    base: 'vs-dark',
+  const colors = { ...theme.colors }
+  if (selection) colors['editor.selectionBackground'] = selection
+  monaco.editor.defineTheme('berger-editeur', {
+    base: theme.type === 'light' ? 'vs' : 'vs-dark',
     inherit: false,
     rules,
-    colors: { ...theme.colors, 'editor.selectionBackground': couleurSelection }
+    colors
   })
-  monaco.editor.setTheme('vscode-monokai')
+  monaco.editor.setTheme('berger-editeur')
+  for (const f of apres) f()
+}
+
+// Appelé après chaque changement du thème de l'éditeur (l'aperçu des réglages).
+const apres: (() => void)[] = []
+export function apresThemeEditeur(f: () => void): void {
+  apres.push(f)
+}
+
+// Un thème de VS Code copié dans public/vscode/ (gardé une fois lu).
+const lus = new Map<string, Promise<ThemeVsCode & { type?: string }>>()
+export function lireThemeVsCode(fichier: string): Promise<ThemeVsCode & { type?: string }> {
+  let p = lus.get(fichier)
+  if (!p) {
+    p = lireTexte(BASE + fichier).then((t) => JSON.parse(t))
+    lus.set(fichier, p)
+  }
+  return p
 }
 
 // Les noms Monaco des jetons sémantiques qui ont un style (les autres gardent la

@@ -9,7 +9,8 @@ export type EtatFenetre = {
   onglet: RefOnglet | null
   explorateurMasque: boolean
   triAgents: TriAgents
-  retourLigne: boolean
+  // null : suivre le réglage « Retour à la ligne par défaut » ; ⌥Z y écrit un booléen.
+  retourLigne: boolean | null
 }
 
 export const LARGEUR_MIN = 160
@@ -22,7 +23,7 @@ export const ETAT_PAR_DEFAUT: EtatFenetre = {
   onglet: null,
   explorateurMasque: false,
   triAgents: 'spaces',
-  retourLigne: false
+  retourLigne: null
 }
 
 export const bornerLargeur = (n: number): number =>
@@ -58,6 +59,16 @@ export function lireEtatFenetre(brut: unknown): EtatFenetre {
     onglet: onglet(e['onglet']),
     explorateurMasque: e['explorateurMasque'] === true,
     triAgents: e['triAgents'] === 'urgence' ? 'urgence' : 'spaces',
-    retourLigne: e['retourLigne'] === true
+    retourLigne: typeof e['retourLigne'] === 'boolean' ? e['retourLigne'] : null
   }
+}
+
+// Quand le réglage « Retour à la ligne par défaut » change (fenêtre ou fichier),
+// il reprend la main sur ⌥Z ; `avant` absent : premier réglage connu.
+export function retourLigneApresReglage(
+  etat: boolean | null,
+  avant: boolean | undefined,
+  apres: boolean
+): boolean | null {
+  return avant !== undefined && avant !== apres ? null : etat
 }

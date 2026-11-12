@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Copie de VS Code (licence MIT) ce qu'il faut pour colorier comme lui :
 // les grammaires TextMate de ses extensions livrées, le registre de ses
-// langages (tiré de leurs package.json), le thème Monokai et la licence.
+// langages (tiré de leurs package.json), le thème Monokai, les thèmes Dark Modern
+// et Light Modern, et la licence.
 // Produit src/renderer/public/vscode/. Usage : node scripts/copier-grammaires.mjs
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { basename, dirname, join } from 'path'
@@ -102,6 +103,43 @@ copyFileSync(
   join(EXTENSIONS, 'theme-monokai/themes/monokai-color-theme.json'),
   join(SORTIE, 'monokai-color-theme.json')
 )
+// Les thèmes Dark Modern et Light Modern (proposés pour l'éditeur seul) :
+// leurs `include` résolus, parent d'abord (couleurs fusionnées, règles mises bout à bout).
+const THEMES_VSCODE = join(EXTENSIONS, 'theme-defaults/themes')
+function lireThemeVsCode(fichier) {
+  const t = lireJsonc(readFileSync(fichier, 'utf8'))
+  const parent = t.include
+    ? lireThemeVsCode(join(dirname(fichier), t.include))
+    : { colors: {}, tokenColors: [] }
+  return {
+    type: t.type ?? parent.type,
+    colors: { ...parent.colors, ...(t.colors ?? {}) },
+    tokenColors: [...parent.tokenColors, ...(t.tokenColors ?? [])]
+  }
+}
+mkdirSync(join(SORTIE, 'themes'), { recursive: true })
+for (const [source, nom] of [
+  ['dark_modern.json', 'dark-modern.json'],
+  ['light_modern.json', 'light-modern.json']
+]) {
+  const t = lireThemeVsCode(join(THEMES_VSCODE, source))
+  // Comme VS Code : le texte ordinaire prend editor.foreground (vscode-textmate
+  // mettrait du noir).
+  if (!t.tokenColors.some((r) => !r.scope))
+    t.tokenColors.unshift({ settings: { foreground: t.colors['editor.foreground'] } })
+  writeFileSync(
+    join(SORTIE, 'themes', nom),
+    JSON.stringify(
+      {
+        type: t.type ?? (nom.startsWith('light') ? 'light' : 'dark'),
+        colors: t.colors,
+        tokenColors: t.tokenColors
+      },
+      null,
+      1
+    )
+  )
+}
 // L'application VS Code est livrée sous la licence produit de Microsoft
 // (LICENSE.rtf) ; les extensions copiées ici viennent du dépôt libre
 // microsoft/vscode, sous licence MIT : c'est elle qu'on reproduit. Les

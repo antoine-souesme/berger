@@ -27,6 +27,8 @@ import {
   raisonEchecImage
 } from './visionneuse'
 import { initBarreEtat } from './barre-etat'
+import { initApparence } from './apparence'
+import { initReglages } from './reglages'
 import { brancherFichiers, dessinerBarre } from './barre-onglets'
 import type { PlaceAgent } from '../../shared/onglets'
 import {
@@ -61,6 +63,8 @@ import { brancherClavier, choisirPlace } from './clavier'
 import { initWorkspaces } from './workspaces'
 import type { EtatWorkspaces } from '../../shared/workspaces'
 
+const apparence = initApparence()
+initReglages()
 initFenetre()
 initBarreEtat()
 initTerminaux({ fin: () => redessiner() })
@@ -153,6 +157,7 @@ void (async () => {
     maison: string
     workspaces: EtatWorkspaces | null
   }>('berger:etat')
+  await apparence
   initEditeur(maison)
   initLangage({
     // Comme ⌘P : l'onglet s'ouvre, puis la définition est montrée.

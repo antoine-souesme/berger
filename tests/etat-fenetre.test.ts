@@ -1,5 +1,9 @@
 import { expect, test } from 'vitest'
-import { ETAT_PAR_DEFAUT, lireEtatFenetre } from '../src/shared/etat-fenetre'
+import {
+  ETAT_PAR_DEFAUT,
+  lireEtatFenetre,
+  retourLigneApresReglage
+} from '../src/shared/etat-fenetre'
 
 test('état par défaut quand le fichier est illisible', () =>
   expect(lireEtatFenetre("n'importe quoi")).toEqual(ETAT_PAR_DEFAUT))
@@ -38,5 +42,17 @@ test('tri des agents retenu, valeur inconnue ramenée à « spaces »', () => {
 
 test('retour à la ligne retenu', () => {
   expect(lireEtatFenetre({ retourLigne: true }).retourLigne).toBe(true)
-  expect(lireEtatFenetre({}).retourLigne).toBe(false)
+  expect(lireEtatFenetre({ retourLigne: false }).retourLigne).toBe(false)
+  // Absent : suivre le réglage « Retour à la ligne par défaut ».
+  expect(lireEtatFenetre({}).retourLigne).toBeNull()
+})
+
+test('le réglage du retour à la ligne changé reprend la main sur ⌥Z', () => {
+  // Premier réglage connu : l'état est gardé.
+  expect(retourLigneApresReglage(false, undefined, true)).toBe(false)
+  // Réglage inchangé : l'état est gardé.
+  expect(retourLigneApresReglage(false, true, true)).toBe(false)
+  // Réglage changé (fenêtre ou fichier) : l'état suit le réglage.
+  expect(retourLigneApresReglage(false, false, true)).toBeNull()
+  expect(retourLigneApresReglage(true, true, false)).toBeNull()
 })

@@ -4,6 +4,7 @@ import { envoyerA } from './envoi'
 // Le menu de l'application. Il ne porte aucun des raccourcis de Berger
 // (⌘W, ⌘T, ⌘=, ⌘-, ⌘0, ⌘B, ⌘D…) : sinon macOS les prend avant la fenêtre.
 // Seule exception : ⌘O, « Fichier › Ouvrir un fichier… » (sélecteur de macOS).
+// « Réglages… » montre ⌘, sans l'enregistrer.
 export function poserMenu(fenetre: () => BrowserWindow | null): void {
   const ouvrirUnFichier = async (): Promise<void> => {
     const w = fenetre()
@@ -18,6 +19,14 @@ export function poserMenu(fenetre: () => BrowserWindow | null): void {
         label: 'Berger',
         submenu: [
           { role: 'about', label: 'À propos de Berger' },
+          { type: 'separator' },
+          {
+            // ⌘, affiché seulement : la touche passe par la table des raccourcis.
+            label: 'Réglages…',
+            accelerator: 'CmdOrCtrl+,',
+            registerAccelerator: false,
+            click: () => envoyerA(fenetre(), 'berger:ouvrir-reglages', {})
+          },
           { type: 'separator' },
           { role: 'hide', label: 'Masquer Berger' },
           { role: 'hideOthers', label: 'Masquer les autres' },

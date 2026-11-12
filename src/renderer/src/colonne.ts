@@ -15,7 +15,7 @@ import {
   workspaceOuvert
 } from './etat'
 import { glisseEnCours, rendreGlissable } from './glisser'
-import { icone } from './icones'
+import { ANNEAU_TRAVAIL, icone } from './icones'
 import { ouvrirDialogue } from './dialogue'
 import { ouvrirMenu } from './menus'
 
@@ -151,19 +151,21 @@ export function lignesAgents(): LigneAgent[] {
 // travail, l'anneau qui tourne de Herdr ; t'attend, un point rose ; fini, une
 // coche verte ; au repos, un anneau gris. Toutes dans une case de 14 px, pour
 // rester alignées d'une ligne à l'autre.
-const ANNEAU =
-  '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.4" stroke-opacity="0.24"/><path d="M12 2.6a9.4 9.4 0 0 1 9.4 9.4"/></svg>'
 
 function iconeEtat(agent: LigneAgent['agent']): HTMLElement {
   const c = document.createElement('span')
   c.className = 'etat-agent'
   if (agent === 'travail') {
-    c.innerHTML = ANNEAU
+    c.innerHTML = ANNEAU_TRAVAIL
     c.classList.add('tourne')
     c.style.color = COULEUR_ETAT.travail
     c.setAttribute('aria-label', 'au travail')
   } else if (agent === 'fini') {
-    c.append(icone('check', COULEUR_ETAT.fini, 13))
+    // Un rond vert, comme dans Herdr.
+    const p = document.createElement('span')
+    p.className = 'point-fini'
+    p.style.background = COULEUR_ETAT.fini
+    c.append(p)
     c.setAttribute('aria-label', 'fini')
   } else if (agent === 'attente') {
     const p = document.createElement('span')

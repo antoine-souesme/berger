@@ -17,7 +17,15 @@ import { brancherWorkspaces } from './workspaces'
 import { brancherEtatFichiers } from './etat-fichiers'
 import { brancherLangage } from './services/langage'
 import { brancherSchemas } from './services/schemas'
-import { brancherReglages } from './reglages'
+import { brancherReglages, themeApplication } from './reglages'
+import { couleursFenetre } from '../shared/themes'
+import { completerPath } from './chemin'
+import { cadreRetenu, suivreCadre } from './cadre'
+
+// Dossier de données : `Berger` pour la version installée, `Berger-dev` pour le
+// développement (jamais l'un dans l'autre). Avant tout `getPath('userData')`.
+app.setPath('userData', join(app.getPath('appData'), app.isPackaged ? 'Berger' : 'Berger-dev'))
+completerPath()
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -32,12 +40,17 @@ const terminaux = new Terminaux({
   fin: (adresse, raison) => envoyerA(fenetre, 'berger:fin-terminal', { adresse, raison })
 })
 
+let cadre: { vider: () => void } | null = null
+
 function createWindow(): void {
+  const retenu = cadreRetenu()
   const mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 900,
+    // Sans cadre retenu (ou hors des écrans) : taille par défaut, centrée.
+    ...(retenu
+      ? { x: retenu.x, y: retenu.y, width: retenu.largeur, height: retenu.hauteur }
+      : { width: 1440, height: 900, center: true }),
     title: 'Berger',
-    backgroundColor: '#1e1f1c',
+    backgroundColor: couleursFenetre(themeApplication().theme).fond,
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 14, y: 16 },
     show: false,
@@ -56,7 +69,18 @@ function createWindow(): void {
   })
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    // macOS recentre la fenêtre à sa première apparition : on la remet à sa place.
+    if (retenu)
+      mainWindow.setBounds({
+        x: retenu.x,
+        y: retenu.y,
+        width: retenu.largeur,
+        height: retenu.hauteur
+      })
+    if (retenu?.pleinEcran) mainWindow.setFullScreen(true)
+    else if (retenu?.agrandie) mainWindow.maximize()
   })
+  cadre = suivreCadre(mainWindow)
   // Avant de fermer : la fenêtre demande quoi faire des fichiers non enregistrés.
   // Une fenêtre dont la page a planté ne répondra pas : on la laisse fermer.
   mainWindow.webContents.on('render-process-gone', () => (fermetureAccordee = true))
@@ -101,7 +125,14 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('fr.antoine.berger')
+  // En développement, le Dock montre l'icône de Electron : on y met celle de Berger.
+  if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(icon)
   poserMenu(() => fenetre)
+  brancherReglages((e) => {
+    envoyerA(fenetre, 'berger:reglages', e)
+    if (fenetre && !fenetre.isDestroyed())
+      fenetre.setBackgroundColor(couleursFenetre(themeApplication().theme).fond)
+  })
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -135,7 +166,6 @@ app.whenReady().then(() => {
   const etatFichiers = brancherEtatFichiers()
   const langage = brancherLangage(() => fenetre)
   brancherSchemas()
-  brancherReglages()
   app.on('will-quit', () => langage.arreter())
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
@@ -161,12 +191,14 @@ app.whenReady().then(() => {
     etat.vider()
     workspaces.vider()
     etatFichiers.vider()
+    cadre?.vider()
     fermetureAccordee = true
     fenetre?.close()
     if (quitter) app.quit()
   })
   app.on('before-quit', () => {
     quitter = true
+    cadre?.vider()
     etat.vider()
     workspaces.vider()
     etatFichiers.vider()

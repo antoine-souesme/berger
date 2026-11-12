@@ -1,4 +1,5 @@
-/* Couleurs du thème `antoine-monokai` de Herdr (voir docs/maquettes/README.md). */
+/* Couleurs du thème de l'application, posées par apparence.ts (valeurs par
+   défaut : thème `antoine-monokai` de Herdr, voir docs/maquettes/README.md). */
 :root {
   --fond: #1e1f1c;
   --panneau: #272822;
@@ -8,7 +9,14 @@
   --gris: #75715e;
   --gris-clair: #a59f85;
   --actif: #414339;
+  --survol: #3e3d32;
+  --popover: #1e1f1c;
   --clavier: #66d9ef;
+  --vert: #a6e22e;
+  --rouge: #f92672;
+  --jaune: #e6db74;
+  --police-interface: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --taille-interface: 13px;
 }
 
 html,
@@ -17,11 +25,8 @@ body {
   height: 100%;
   background: var(--fond);
   color: var(--texte);
-  font:
-    13px -apple-system,
-    BlinkMacSystemFont,
-    'Helvetica Neue',
-    sans-serif;
+  font-family: var(--police-interface);
+  font-size: var(--taille-interface);
   -webkit-font-smoothing: antialiased;
 }
 body {
@@ -103,7 +108,7 @@ body {
   gap: 8px;
 }
 #explorateur {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  font-family: var(--police-interface);
 }
 .entete-explorateur {
   gap: 2px;
@@ -153,7 +158,7 @@ body {
   color: var(--vif);
 }
 .ligne-arbre:hover {
-  background: #2a2b26;
+  background: color-mix(in srgb, var(--fond), var(--texte) 7%);
 }
 .ligne-arbre.choisie {
   background: var(--actif);
@@ -239,9 +244,13 @@ body {
   margin: 6px 8px;
   background: var(--bord);
 }
+/* Même hauteur que le pied de la colonne des spaces : les deux traits s'alignent. */
 #pied-explorateur {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
-  padding: 6px 0 8px;
+  box-sizing: border-box;
+  height: 48px;
   border-top: 1px solid var(--bord);
 }
 .ajouter-dossier {
@@ -393,7 +402,7 @@ body {
   align-items: center;
   gap: 2px;
   font-size: 12px;
-  color: #a6e22e;
+  color: var(--vert);
   flex-shrink: 0;
 }
 .etat-agent {
@@ -407,7 +416,12 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f92672;
+  background: var(--rouge);
+}
+.point-fini {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
 }
 .anneau-repos {
   width: 7px;
@@ -519,7 +533,7 @@ body {
 }
 #deconnecte {
   padding: 6px 12px;
-  background: #5c2b2b;
+  background: color-mix(in srgb, var(--rouge) 35%, var(--fond));
   color: var(--vif);
 }
 #barre-onglets {
@@ -719,12 +733,28 @@ body {
   place-items: center;
   padding: 24px;
   overflow: hidden;
-  background-color: #272822;
+  background-color: var(--panneau);
   background-image:
-    linear-gradient(45deg, #2d2e28 25%, transparent 25%),
-    linear-gradient(-45deg, #2d2e28 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #2d2e28 75%),
-    linear-gradient(-45deg, transparent 75%, #2d2e28 75%);
+    linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 75%,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 75%
+    );
   background-size: 20px 20px;
   background-position:
     0 0,
@@ -814,7 +844,7 @@ body {
   color: var(--vif);
 }
 .palette-nom b {
-  color: #e6db74;
+  color: var(--jaune);
   font-weight: 600;
 }
 .palette-ou {
@@ -852,6 +882,8 @@ body {
 #editeur {
   flex: 1;
   min-height: 0;
+  /* Lissage des lettres par défaut de macOS, comme VS Code (le reste de la fenêtre est plus fin). */
+  -webkit-font-smoothing: auto;
 }
 #fichier-etat {
   height: 26px;
@@ -865,7 +897,7 @@ body {
 }
 #fichier-message {
   flex: 1;
-  color: #a6e22e;
+  color: var(--vert);
 }
 
 /* Barre d'état */
@@ -884,6 +916,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 #barre-etat .droite {
   margin-left: auto;
@@ -979,7 +1012,7 @@ body {
 }
 #workspaces .outil.nouveau {
   background: var(--actif);
-  color: #a6e22e;
+  color: var(--vert);
 }
 .trait-workspaces {
   width: 28px;
@@ -1000,7 +1033,7 @@ body {
 #workspaces .workspace.ouvert {
   opacity: 1;
   background: var(--actif);
-  box-shadow: inset 0 0 0 1.5px #a6e22e;
+  box-shadow: inset 0 0 0 1.5px var(--clavier);
 }
 #workspaces .workspace.glisse {
   z-index: 3;
@@ -1016,16 +1049,24 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 0 2px var(--fond);
 }
+.pastille-etat.anneau {
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  background: var(--fond);
+}
 #workspaces .espace {
   flex: 1;
 }
 
 /* Menus : entrée rose, entrée grisée */
 .menu .entree.danger {
-  color: #f92672;
+  color: var(--rouge);
 }
 .menu .entree.danger.designee {
-  color: #f92672;
+  color: var(--rouge);
 }
 .menu .entree.inactif {
   opacity: 0.4;
@@ -1135,13 +1176,13 @@ body {
 .bouton-dialogue.principal {
   border-color: transparent;
   background: var(--actif);
-  color: #a6e22e;
+  color: var(--vert);
   font-weight: 600;
 }
 .bouton-dialogue.principal.danger {
-  background: #f9267224;
-  border: 1px solid #f9267266;
-  color: #f92672;
+  background: color-mix(in srgb, var(--rouge) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rouge) 40%, transparent);
+  color: var(--rouge);
 }
 
 .menu[aria-label='Actions du workspace'] {
@@ -1182,4 +1223,552 @@ body {
 .fermer-panneau:hover {
   background: var(--actif);
   color: var(--vif);
+}
+
+#barre-etat .erreur-reglages {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--rouge);
+}
+
+/* Bas de la colonne des spaces : « Réglages » (maquette reglages.html). */
+.pied-spaces {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  justify-content: center;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 10px;
+  border-top: 1px solid var(--bord);
+}
+.bouton-pied {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.bouton-pied:hover {
+  background: var(--survol);
+  color: var(--texte);
+}
+
+/* La fenêtre des réglages (maquette reglages.html). */
+.voile-reglages {
+  z-index: 250;
+}
+.fenetre-reglages {
+  width: 880px;
+  height: 640px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  box-shadow: 0 24px 60px #000000a0;
+  overflow: hidden;
+  outline: none;
+  font-size: 13px;
+}
+.fenetre-reglages button,
+.fenetre-reglages input,
+.fenetre-reglages select {
+  font: inherit;
+  color: inherit;
+}
+.tete-reglages {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px 0 20px;
+  border-bottom: 1px solid var(--bord);
+}
+.tete-reglages .titre {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vif);
+}
+.raccourci-titre {
+  margin-right: 10px;
+  font-size: 12px;
+  color: var(--gris);
+}
+.fermer-reglages {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--gris-clair);
+  cursor: pointer;
+}
+.fermer-reglages:hover {
+  background: var(--survol);
+}
+.alerte-reglages {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--bord);
+  background: color-mix(in srgb, var(--rouge) 12%, var(--fond));
+  color: var(--rouge);
+  font-size: 12px;
+}
+.corps-reglages {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.sections-reglages {
+  width: 190px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  border-right: 1px solid var(--bord);
+}
+.section-reglages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  color: var(--gris-clair) !important;
+  cursor: pointer;
+}
+.section-reglages:hover {
+  background: var(--survol);
+}
+.section-reglages.choisie {
+  background: var(--actif);
+  color: var(--vif) !important;
+}
+.page-reglages {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px 0;
+  overflow: hidden;
+}
+.titre-page {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vif);
+}
+.contenu-reglages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 16px;
+}
+.contenu-reglages.raccourcis {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.deux-themes {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.bloc-themes {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.titre-reglage {
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+.grille-themes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+}
+.choix-theme {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.choix-theme:hover {
+  background: var(--survol);
+}
+.choix-theme.choisi {
+  background: var(--actif);
+  box-shadow: inset 0 0 0 1px var(--clavier);
+}
+.texte-theme {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.nom-theme {
+  font-size: 12px;
+  color: var(--texte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.choix-theme.choisi .nom-theme {
+  color: var(--vif);
+}
+.pastilles {
+  display: flex;
+  gap: 3px;
+  min-height: 10px;
+}
+.pastille-theme {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--texte) 18%, transparent);
+}
+.ligne-reglage {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bord);
+}
+.textes-reglage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nom-reglage {
+  color: var(--vif);
+}
+.aide-reglage {
+  font-size: 12px;
+  color: var(--gris);
+}
+.liste-reglage,
+.champ-reglage,
+.couleur-reglage,
+.bouton-reglage {
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 8px 0 10px;
+  border-radius: 6px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  color: var(--texte) !important;
+  outline: none;
+}
+.liste-reglage {
+  width: 170px;
+}
+.liste-reglage.etroite {
+  width: 64px;
+}
+.champ-reglage {
+  width: 240px;
+}
+.champ-reglage:focus,
+.liste-reglage:focus {
+  border-color: var(--clavier);
+}
+.bouton-reglage {
+  cursor: pointer;
+}
+.bouton-reglage:hover {
+  background: var(--survol);
+}
+.couleur-reglage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 6px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+}
+.couleur-reglage input {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+.couleur-reglage input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.couleur-reglage input::-webkit-color-swatch {
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--texte) 20%, transparent);
+}
+.bascule {
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+  padding: 2px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--actif);
+  cursor: pointer;
+}
+.bascule.active {
+  background: var(--vert);
+}
+.curseur-bascule {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--vif);
+  transition: transform 0.12s;
+}
+.bascule.active .curseur-bascule {
+  transform: translateX(14px);
+  background: var(--fond);
+}
+.bloc-apercu {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.apercu-code {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--bord);
+  font-size: 12px;
+  line-height: 19px;
+  white-space: pre;
+  overflow: hidden;
+  user-select: text;
+}
+.apercu-code > span {
+  display: block;
+}
+.apercu-code br {
+  display: none;
+}
+.filtre-raccourcis {
+  height: 32px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  color: var(--gris);
+}
+.filtre-raccourcis:focus-within {
+  border-color: var(--clavier);
+}
+.filtre-raccourcis input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  color: var(--texte) !important;
+}
+.filtre-raccourcis input::placeholder {
+  color: var(--gris);
+}
+.tete-raccourcis,
+.ligne-raccourci {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+.tete-raccourcis {
+  height: 32px;
+  flex-shrink: 0;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+.tete-raccourcis .commande,
+.ligne-raccourci .commande {
+  flex: 1;
+  min-width: 0;
+}
+.tete-raccourcis .raccourci {
+  width: 380px;
+}
+.table-raccourcis {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.ligne-raccourci {
+  height: 38px;
+  border-top: 1px solid color-mix(in srgb, var(--bord) 70%, var(--fond));
+}
+.ligne-raccourci .commande {
+  color: var(--texte);
+}
+.ligne-raccourci.en-attente {
+  border-radius: 6px;
+  border-top-color: transparent;
+  background: var(--actif);
+}
+.ligne-raccourci.en-attente .commande {
+  color: var(--vif);
+}
+.ligne-raccourci .raccourci {
+  width: 300px;
+  height: 26px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ligne-raccourci .raccourci:hover {
+  border-color: var(--bord);
+}
+.ligne-raccourci .raccourci.attente {
+  background: var(--panneau);
+  border-color: var(--clavier);
+  font-size: 12px;
+}
+.raccourci .invite {
+  color: var(--jaune);
+}
+.raccourci .espace {
+  flex: 1;
+}
+.raccourci .avant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.55;
+}
+.raccourci .mot-avant {
+  color: var(--gris);
+}
+.raccourci .conflit {
+  color: var(--rouge);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.raccourci .aucun {
+  color: var(--gris);
+  font-size: 12px;
+}
+.touches {
+  display: flex;
+  gap: 3px;
+}
+.touches kbd,
+.aide-raccourcis kbd {
+  min-width: 14px;
+  height: 20px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--texte);
+}
+.aide-raccourcis kbd {
+  display: inline-grid;
+  height: auto;
+  padding: 1px 5px;
+  background: none;
+  font-size: 11px;
+}
+.retablir {
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  border: 0;
+  background: none;
+  color: var(--gris-clair) !important;
+  font-size: 12px !important;
+  cursor: pointer;
+}
+.retablir:disabled {
+  visibility: hidden;
+}
+.retablir:hover {
+  color: var(--texte) !important;
+}
+.aide-raccourcis {
+  flex-shrink: 0;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--gris);
+}
+.pied-reglages {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  border-top: 1px solid var(--bord);
+  font-size: 12px;
+  color: var(--gris);
+}
+.lien-reglages {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--clavier) !important;
+  cursor: pointer;
+}
+.lien-reglages:hover {
+  color: var(--vert) !important;
 }

@@ -1,5 +1,16 @@
 import { expect, test } from 'vitest'
-import { actionDe, type Touche } from '../src/shared/raccourcis'
+import {
+  actionDe,
+  COMMANDES,
+  conflitDe,
+  libelleTouches,
+  tableRaccourcis,
+  touchesDe,
+  touchesEffectives,
+  TOUCHES_REFUSEES,
+  refusTouches,
+  type Touche
+} from '../src/shared/raccourcis'
 
 const t = (code: string, mods: Partial<Touche> = {}, key = ''): Touche => ({
   key,
@@ -102,10 +113,13 @@ test("⌘T, ⌘W et ⌘3 passent aussi depuis l'éditeur", () => {
   expect(actionDe(t('KeyW', cmd), 'editeur')).toEqual({ type: 'onglet.fermer' })
   expect(actionDe(t('Digit3', cmd), 'editeur')).toEqual({ type: 'onglet.n', n: 3 })
 })
-test("⌘S et ⌘F : au terminal dans un terminal, à Monaco dans l'éditeur", () => {
+test("⌘S et ⌘F : au terminal dans un terminal ; ⌘S pris à l'éditeur, ⌘F à Monaco", () => {
   expect(actionDe(t('KeyS', cmd), 'terminal')).toBeNull()
-  expect(actionDe(t('KeyS', cmd), 'editeur')).toBeNull()
+  expect(actionDe(t('KeyS', cmd), 'editeur')).toEqual({ type: 'fichier.enregistrer' })
   expect(actionDe(t('KeyS', cmd), 'autre')).toEqual({ type: 'fichier.enregistrer' })
+  expect(actionDe(t('KeyF', cmd), 'terminal')).toBeNull()
+  expect(actionDe(t('KeyF', cmd), 'editeur')).toBeNull()
+  expect(actionDe(t('KeyF', cmd), 'autre')).toEqual({ type: 'fichier.chercher' })
 })
 test('zoom', () => {
   expect(actionDe(t('Equal', cmd), 'editeur')).toEqual({ type: 'zoom', pas: 1 })
@@ -145,4 +159,94 @@ test("les touches du langage restent à Monaco dans l'éditeur", () => {
     t('KeyO', { shiftKey: true, altKey: true })
   ])
     expect(actionDe(k, 'editeur')).toBeNull()
+})
+
+test('touchesDe', () => {
+  expect(touchesDe(t('KeyD', { metaKey: true, shiftKey: true }))).toBe('cmd-shift-d')
+  expect(touchesDe(t('Tab', { ctrlKey: true }))).toBe('ctrl-tab')
+  expect(touchesDe(t('BracketRight', { metaKey: true, altKey: true }))).toBe('cmd-alt-]')
+  expect(touchesDe(t('F2', { shiftKey: true }))).toBe('shift-f2')
+  expect(touchesDe(t('KeyZ', { altKey: true }))).toBe('alt-z')
+  expect(touchesDe(t('Comma', cmd))).toBe('cmd-,')
+  expect(touchesDe(t('Digit3', { ctrlKey: true }))).toBe('ctrl-3')
+  expect(touchesDe(t('MetaLeft', cmd))).toBeNull()
+  expect(touchesDe(t('ShiftRight', { shiftKey: true }))).toBeNull()
+})
+
+test('libelleTouches', () => {
+  expect(libelleTouches('cmd-shift-d')).toBe('⇧⌘D')
+  expect(libelleTouches('ctrl-tab')).toBe('⌃Tab')
+  expect(libelleTouches('cmd-alt-left')).toBe('⌥⌘←')
+  expect(libelleTouches('cmd-,')).toBe('⌘,')
+  expect(libelleTouches('f2')).toBe('F2')
+  expect(libelleTouches('cmd-shift-enter')).toBe('⇧⌘↵')
+})
+
+test('COMMANDES : libellés de la maquette, aucun id en double', () => {
+  const libelle = (id: string): string | undefined => COMMANDES.find((c) => c.id === id)?.libelle
+  expect(libelle('onglet.nouveau')).toBe('Nouvel onglet')
+  expect(libelle('onglet.fermer')).toBe('Fermer')
+  expect(libelle('panneau.diviserDroite')).toBe('Diviser à droite')
+  expect(libelle('panneau.diviserBas')).toBe('Diviser en bas')
+  expect(libelle('fichier.rechercher')).toBe('Rechercher un fichier')
+  expect(libelle('explorateur.basculer')).toBe("Afficher l'explorateur")
+  expect(libelle('onglet.renommer')).toBe("Renommer l'onglet")
+  expect(libelle('fichier.enregistrer')).toBe('Enregistrer')
+  expect(libelle('reglages.ouvrir')).toBe('Ouvrir les réglages')
+  expect(COMMANDES.find((c) => c.id === 'reglages.ouvrir')?.touches).toEqual(['cmd-,'])
+  expect(new Set(COMMANDES.map((c) => c.id)).size).toBe(COMMANDES.length)
+  // Aucune touche d'origine en double.
+  const toutes = COMMANDES.flatMap((c) => c.touches)
+  expect(new Set(toutes).size).toBe(toutes.length)
+  expect(TOUCHES_REFUSEES).toEqual(['cmd-q', 'cmd-h', 'cmd-alt-h', 'cmd-o'])
+})
+
+test('touches personnelles', () => {
+  const perso = { 'panneau.diviserBas': ['cmd-alt-d'] }
+  expect(touchesEffectives(perso)['panneau.diviserBas']).toEqual(['cmd-alt-d'])
+  expect(touchesEffectives(perso)['panneau.diviserDroite']).toEqual(['cmd-d'])
+  const table = tableRaccourcis(perso)
+  expect(actionDe(t('KeyD', { metaKey: true, altKey: true }), 'terminal', table)).toEqual({
+    type: 'panneau.diviser',
+    sens: 'down'
+  })
+  expect(actionDe(t('KeyD', { metaKey: true, shiftKey: true }), 'terminal', table)).toBeNull()
+  // Aucune touche : la commande ne part plus.
+  expect(actionDe(t('KeyT', cmd), 'terminal', tableRaccourcis({ 'onglet.nouveau': [] }))).toBeNull()
+})
+
+test('conflits', () => {
+  expect(conflitDe({}, 'panneau.diviserBas', 'cmd-d')?.libelle).toBe('Diviser à droite')
+  expect(conflitDe({}, 'panneau.diviserBas', 'cmd-shift-d')).toBeNull()
+  expect(conflitDe({}, 'panneau.diviserBas', 'cmd-alt-d')).toBeNull()
+  // Une touche libérée par une touche personnelle n'est plus en conflit.
+  expect(
+    conflitDe({ 'panneau.diviserDroite': ['cmd-alt-d'] }, 'panneau.diviserBas', 'cmd-d')
+  ).toBeNull()
+  expect(
+    conflitDe({ 'panneau.diviserDroite': ['cmd-alt-d'] }, 'panneau.diviserBas', 'cmd-alt-d')
+      ?.libelle
+  ).toBe('Diviser à droite')
+  // Les touches fixes de Berger aussi.
+  expect(conflitDe({}, 'panneau.diviserBas', 'cmd-shift-f')?.libelle).toBe(
+    'Rechercher dans le projet'
+  )
+})
+
+test("⌘, ouvre les réglages, même dans l'éditeur", () => {
+  expect(actionDe(t('Comma', cmd), 'editeur')).toEqual({ type: 'reglages.ouvrir' })
+  expect(actionDe(t('Comma', cmd), 'terminal')).toEqual({ type: 'reglages.ouvrir' })
+})
+
+test('touches refusées pour un raccourci personnel', () => {
+  expect(refusTouches('a')).toBe('Ajoute ⌘, ⌃ ou ⌥ à la touche.')
+  expect(refusTouches('tab')).toBe('Ajoute ⌘, ⌃ ou ⌥ à la touche.')
+  expect(refusTouches('shift-a')).toBe('Ajoute ⌘, ⌃ ou ⌥ à la touche.')
+  expect(refusTouches('f5')).toBeNull()
+  expect(refusTouches('shift-f2')).toBeNull()
+  expect(refusTouches('cmd-q')).toBe('Touches réservées à macOS.')
+  for (const t of ['cmd-c', 'cmd-v', 'cmd-x', 'cmd-z', 'cmd-shift-z', 'cmd-a'])
+    expect(refusTouches(t)).toBe("Touches réservées à l'édition (copier, coller, annuler…).")
+  expect(refusTouches('cmd-alt-d')).toBeNull()
+  expect(refusTouches('ctrl-1')).toBeNull()
 })
