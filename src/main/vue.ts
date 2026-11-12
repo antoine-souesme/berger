@@ -40,7 +40,7 @@ export function suivreLaVue(
     try {
       writeFileSync(fichierVus(), JSON.stringify(vus))
     } catch (e) {
-      console.error('[berger] vus.json non enregistré :', (e as Error).message)
+      console.error('[berger] vus.json not saved:', (e as Error).message)
     }
   }
   // La fenêtre dit quels terminaux sont sous les yeux d'Antoine.
@@ -90,7 +90,7 @@ export function suivreLaVue(
       doc = r.value
       surDoc(doc)
     } catch (e) {
-      console.error('[berger] lecture de herdr-app impossible :', (e as Error).message)
+      console.error('[berger] cannot read herdr-app:', (e as Error).message)
     }
   }
 
@@ -119,7 +119,7 @@ export function suivreLaVue(
           const t = [...derniere.spaces.flatMap((s) => s.terminaux), ...derniere.autres].find(
             (v) => v.adresse === e.terminal
           )
-          console.log(`[berger] état de ${t?.libelle ?? e.terminal} : « ${t?.etat ?? ''} »`)
+          console.log(`[berger] state of ${t?.libelle ?? e.terminal}: "${t?.etat ?? ''}"`)
         }
       } else if (params?.['terminals']) {
         const instantane = params as { terminals: TerminalCore[]; seq?: number }

@@ -81,7 +81,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
   }
   const capture = async (nom: string): Promise<void> => {
     writeFileSync(`${sortie}-${nom}.png`, (await wc.capturePage()).toPNG())
-    console.log(`[berger] scénario : capture ${nom}`)
+    console.log(`[berger] scenario: capture ${nom}`)
   }
   const lent = Number(process.env['BERGER_SCENARIO_LENTEUR'] ?? 1)
   const jouer = (etapes: [number, () => void | Promise<void>][]): void => {
@@ -130,7 +130,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         agent: document.querySelector('.ligne-agent.choisi')?.dataset.cle,
         tri: document.getElementById('tri-agents')?.title
       })`)
-      console.log(`[berger] scénario : ${nom} ${JSON.stringify(r)}`)
+      console.log(`[berger] scenario: ${nom} ${JSON.stringify(r)}`)
     }
     const etapes: [string, () => void][] = [
       ['debut', () => {}],
@@ -179,7 +179,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
   if (scenario === 'explorateur') {
     const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
     if (!dossier.includes('berger-essai')) {
-      console.error('[berger] scénario explorateur refusé : le dossier doit contenir berger-essai')
+      console.error('[berger] explorateur scenario refused: the folder must contain berger-essai')
       return
     }
     const souris = pointeur(wc)
@@ -219,7 +219,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     const notes = fichiers.find((c) => c.endsWith('notes.md')) ?? fichiers[0]
     const journal = async (quoi: string): Promise<void> =>
       console.log(
-        `[berger] scénario : ${quoi} : ` +
+        `[berger] scenario: ${quoi}: ` +
           JSON.stringify(
             await wc.executeJavaScript(`({
               menu: document.querySelectorAll('.menu').length,
@@ -294,7 +294,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
     if (!space.startsWith('spbergertest')) {
       console.error(
-        '[berger] scénario ranger refusé : BERGER_SCENARIO_SPACE doit commencer par spbergertest'
+        '[berger] ranger scenario refused: BERGER_SCENARIO_SPACE must start with spbergertest'
       )
       return
     }
@@ -304,7 +304,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       [
         7000,
         async () =>
-          console.log(`[berger] scénario : rangé ${JSON.stringify(await lireSpace(space))}`)
+          console.log(`[berger] scenario: closed ${JSON.stringify(await lireSpace(space))}`)
       ]
     ])
     return
@@ -314,13 +314,13 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
     if (!space.startsWith('spbergertest')) {
       console.error(
-        '[berger] scénario cadre refusé : BERGER_SCENARIO_SPACE doit commencer par spbergertest'
+        '[berger] cadre scenario refused: BERGER_SCENARIO_SPACE must start with spbergertest'
       )
       return
     }
     const etape = (nom: string) => async (): Promise<void> => {
       await capture(nom)
-      console.log(`[berger] scénario : ${nom} ${JSON.stringify(await lireSpace(space))}`)
+      console.log(`[berger] scenario: ${nom} ${JSON.stringify(await lireSpace(space))}`)
     }
     const pas = 2500
     const glisser = (x1: number, x2: number, y: number): void => {
@@ -387,7 +387,7 @@ function pointeur(
       const r = el.getBoundingClientRect()
       return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
     })()`)
-    if (!p) return console.error(`[berger] scénario : introuvable ${selecteur} ${texte ?? ''}`)
+    if (!p) return console.error(`[berger] scenario: not found ${selecteur} ${texte ?? ''}`)
     wc.sendInputEvent({ type: 'mouseMove', x: p.x, y: p.y })
     wc.sendInputEvent({ type: 'mouseDown', x: p.x, y: p.y, button: bouton, clickCount: 1 })
     wc.sendInputEvent({ type: 'mouseUp', x: p.x, y: p.y, button: bouton, clickCount: 1 })
@@ -423,7 +423,7 @@ function jouerWorkspaces(
     const resume = e?.liste.map(
       (x) => `${x.id === e.ouvert ? '*' : ''}${x.emoji} ${x.nom} [${x.spaces.length}]`
     )
-    console.log(`[berger] scénario : ${nom} ${JSON.stringify(resume)}`)
+    console.log(`[berger] scenario: ${nom} ${JSON.stringify(resume)}`)
   }
   const etape = (nom: string) => async (): Promise<void> => {
     await capture(nom)
@@ -445,7 +445,7 @@ function jouerWorkspaces(
     texte?: string
   ): Promise<void> => {
     const p = await centre(selecteur, texte)
-    if (!p) return console.error(`[berger] scénario : introuvable ${selecteur} ${texte ?? ''}`)
+    if (!p) return console.error(`[berger] scenario: not found ${selecteur} ${texte ?? ''}`)
     wc.sendInputEvent({ type: 'mouseMove', x: p.x, y: p.y })
     wc.sendInputEvent({ type: 'mouseDown', x: p.x, y: p.y, button: bouton, clickCount: 1 })
     wc.sendInputEvent({ type: 'mouseUp', x: p.x, y: p.y, button: bouton, clickCount: 1 })
@@ -455,7 +455,7 @@ function jouerWorkspaces(
   const glisser = (sel: string, vers: string) => async (): Promise<void> => {
     const a = await centre(sel)
     const b = await centre(vers)
-    if (!a || !b) return console.error('[berger] scénario : glisser impossible')
+    if (!a || !b) return console.error('[berger] scenario: drag failed')
     const y2 = b.y - 10
     wc.sendInputEvent({ type: 'mouseDown', x: a.x, y: a.y, button: 'left', clickCount: 1 })
     for (let i = 1; i <= 8; i++)
@@ -510,7 +510,7 @@ function jouerWorkspaces(
       500,
       () => {
         cree = lire()?.liste.find((x) => x.nom === 'Essai')?.spaces ?? []
-        console.log(`[berger] scénario : space créé ${JSON.stringify(cree)}`)
+        console.log(`[berger] scenario: space created ${JSON.stringify(cree)}`)
       }
     ],
     [300, clic(bouton('Essai'))],
@@ -524,7 +524,7 @@ function jouerWorkspaces(
       async () => {
         for (const id of cree)
           console.log(
-            `[berger] scénario : space ${id} dans le document : ${JSON.stringify(await lireSpace(id))}`
+            `[berger] scenario: space ${id} in the document: ${JSON.stringify(await lireSpace(id))}`
           )
       }
     ],
@@ -549,7 +549,7 @@ function jouerFichiers(
 ): void {
   const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
   if (!dossier.includes('berger-essai')) {
-    console.error('[berger] scénario fichiers refusé : le dossier doit contenir berger-essai')
+    console.error('[berger] fichiers scenario refused: the folder must contain berger-essai')
     return
   }
   const externe = `${dossier}-externe`
@@ -574,7 +574,7 @@ function jouerFichiers(
       }
     }
     console.log(
-      `[berger] scénario : ${nom} | racine : ${liste(dossier)} | notes : ${liste(`${dossier}/notes`)}`
+      `[berger] scenario: ${nom} | root: ${liste(dossier)} | notes: ${liste(`${dossier}/notes`)}`
     )
   }
   const etape = (nom: string) => async (): Promise<void> => {
@@ -609,7 +609,7 @@ function jouerFichiers(
   const glisser = (de: string, vers: string) => async (): Promise<void> => {
     const a = await centre(ligne(de))
     const b = await centre(ligne(vers))
-    if (!a || !b) return console.error(`[berger] scénario : glisser impossible ${de} → ${vers}`)
+    if (!a || !b) return console.error(`[berger] scenario: drag failed ${de} → ${vers}`)
     const recu = new Promise<unknown>((ok) => (intercepte = ok))
     const m = (type: string, p: Point, extra = {}): Promise<unknown> =>
       dbg.sendCommand('Input.dispatchMouseEvent', {
@@ -624,7 +624,7 @@ function jouerFichiers(
       await m('mouseMoved', { x: a.x, y: a.y + ((b.y - a.y) * i) / 6 }, { buttons: 1 })
     const data = await Promise.race([recu, new Promise((ok) => setTimeout(() => ok(null), 2000))])
     intercepte = null
-    if (!data) return console.error('[berger] scénario : glisser non intercepté')
+    if (!data) return console.error('[berger] scenario: drag not intercepted')
     await deposerDonnees(data, b)
     await m('mouseReleased', b, { clickCount: 1 })
   }
@@ -638,7 +638,7 @@ function jouerFichiers(
       })
       .catch(() => {})
     const b = await centre(selecteur)
-    if (!b) return console.error(`[berger] scénario : cible introuvable ${selecteur}`)
+    if (!b) return console.error(`[berger] scenario: target not found ${selecteur}`)
     await deposerDonnees({ items: [], files: [fichier], dragOperationsMask: 1 }, b)
   }
 
@@ -717,7 +717,7 @@ function jouerFichiers(
         const fichier = Menu.getApplicationMenu()?.items.find((i) => i.label === 'Fichier')
         const ouvrir = fichier?.submenu?.items.find((i) => i.label === 'Ouvrir un fichier…')
         console.log(
-          `[berger] scénario : menu Fichier › ${ouvrir?.label} (${ouvrir?.accelerator ?? 'sans raccourci'})`
+          `[berger] scenario: File menu › ${ouvrir?.label} (${ouvrir?.accelerator ?? 'no shortcut'})`
         )
         ouvrir?.click()
       }
@@ -726,7 +726,7 @@ function jouerFichiers(
       2500,
       () =>
         execFile('screencapture', ['-x', `${sortie}-24-ouvrir-macos.png`], () =>
-          console.log('[berger] scénario : capture 24-ouvrir-macos')
+          console.log('[berger] scenario: capture 24-ouvrir-macos')
         )
     ]
   ]
@@ -746,7 +746,7 @@ async function jouerLangage(
 ): Promise<void> {
   const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
   if (!dossier.includes('berger-essai')) {
-    console.error('[berger] scénario langage refusé : le dossier doit contenir berger-essai')
+    console.error('[berger] langage scenario refused: the folder must contain berger-essai')
     return
   }
   const wc = w.webContents
@@ -763,7 +763,7 @@ async function jouerLangage(
     js(`return monaco.editor.getModelMarkers({ resource: monaco.Uri.file(${JSON.stringify(chemin)}) })
       .map((m) => (m.code ?? '') + ' ' + m.message.split('\\n')[0])`)
   const journal = (nom: string, valeur: unknown): void =>
-    console.log(`[berger] scénario : ${nom} ${JSON.stringify(valeur)}`)
+    console.log(`[berger] scenario: ${nom} ${JSON.stringify(valeur)}`)
   const ouvrir = async (chemin: string, attente = 2500): Promise<void> => {
     wc.send('berger:scenario-fichier', { chemin })
     await pause(attente)
@@ -926,7 +926,7 @@ async function jouerLangage(
     '14-sans-retour',
     await js(`return editeur.getOption(monaco.editor.EditorOption.wordWrap)`)
   )
-  console.log('[berger] scénario : fin')
+  console.log('[berger] scenario: end')
 }
 
 async function jouerReglages(
@@ -937,19 +937,19 @@ async function jouerReglages(
 ): Promise<void> {
   const donnees = app.getPath('userData')
   if (basename(donnees) !== 'Berger-dev') {
-    console.error(`[berger] scénario reglages refusé : dossier de données ${donnees}`)
+    console.error(`[berger] reglages scenario refused: data folder ${donnees}`)
     return
   }
   const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
   if (!dossier.includes('berger-essai')) {
-    console.error('[berger] scénario reglages refusé : le dossier doit contenir berger-essai')
+    console.error('[berger] reglages scenario refused: the folder must contain berger-essai')
     return
   }
   const wc = w.webContents
   const lent = Number(process.env['BERGER_SCENARIO_LENTEUR'] ?? 1)
   const pause = (ms: number): Promise<void> => new Promise((ok) => setTimeout(ok, ms * lent))
   const journal = (nom: string, valeur: unknown): void =>
-    console.log(`[berger] scénario : ${nom} ${JSON.stringify(valeur)}`)
+    console.log(`[berger] scenario: ${nom} ${JSON.stringify(valeur)}`)
   const fichier = join(donnees, 'reglages.json')
   let avant: string | null
   try {
@@ -961,7 +961,7 @@ async function jouerReglages(
   const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
   if (space && !space.startsWith('spbergertest')) {
     console.error(
-      '[berger] scénario reglages refusé : BERGER_SCENARIO_SPACE doit commencer par spbergertest'
+      '[berger] reglages scenario refused: BERGER_SCENARIO_SPACE must start with spbergertest'
     )
     return
   }
@@ -1250,13 +1250,15 @@ async function jouerReprise(
   capture: (nom: string) => Promise<void>
 ): Promise<void> {
   if (basename(app.getPath('userData')) !== 'Berger-dev') {
-    console.error('[berger] scénario reprise refusé : dossier de données autre que Berger-dev')
+    console.error('[berger] reprise scenario refused: data folder other than Berger-dev')
     return
   }
   const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
   const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
   if (!space.startsWith('spbergertest') || !dossier.includes('berger-essai')) {
-    console.error('[berger] scénario reprise refusé : space spbergertest… et dossier berger-essai…')
+    console.error(
+      '[berger] reprise scenario refused: needs space spbergertest… and folder berger-essai…'
+    )
     return
   }
   const wc = w.webContents
@@ -1278,7 +1280,7 @@ async function jouerReprise(
   if (process.env['BERGER_SCENARIO_ETAPE'] === '2') {
     await pause(1500)
     await capture('reprise-2')
-    console.log(`[berger] scénario : reprise-2 ${JSON.stringify(await etat())}`)
+    console.log(`[berger] scenario: reprise-2 ${JSON.stringify(await etat())}`)
     return
   }
   if (process.env['BERGER_SCENARIO_PLEIN'] === '1') w.setFullScreen(true)
@@ -1302,6 +1304,6 @@ async function jouerReprise(
   wc.sendInputEvent({ type: 'mouseUp', x: x + 60, y: 400, button: 'left', clickCount: 1 })
   await pause(2500)
   await capture('reprise-1')
-  console.log(`[berger] scénario : reprise-1 ${JSON.stringify(await etat())}`)
+  console.log(`[berger] scenario: reprise-1 ${JSON.stringify(await etat())}`)
   app.quit()
 }

@@ -51,7 +51,7 @@ export class Terminaux {
 
   focus(actif: boolean): void {
     if (process.env['BERGER_TRACE'])
-      console.log(`[berger] fenêtre ${actif ? 'au premier plan' : 'en arrière-plan'}`)
+      console.log(`[berger] window ${actif ? 'in foreground' : 'in background'}`)
     for (const t of this.ouverts.values()) t.focus(actif)
   }
 

@@ -23,7 +23,7 @@ export const THEMES_FOURNIS: ThemeConnu[] = NOMS.map(([id, nom]) => {
 })
 
 // Les thèmes de VS Code proposés pour l'éditeur seulement (copiés par
-// scripts/copier-grammaires.mjs dans public/vscode/themes/).
+// scripts/copy-grammars.mjs dans public/vscode/themes/).
 export const THEMES_EDITEUR_VSCODE: {
   id: 'vscode-dark-modern' | 'vscode-light-modern'
   nom: string

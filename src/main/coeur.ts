@@ -28,7 +28,7 @@ export class Coeur {
       for (const f of this.aLaConnexion) await f(this)
       this.annoncer('connecte')
     } catch (e) {
-      console.error('[berger] connexion à herdr-core impossible :', (e as Error).message)
+      console.error('[berger] cannot connect to herdr-core:', (e as Error).message)
       this.tomber()
     }
   }

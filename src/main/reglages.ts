@@ -43,7 +43,7 @@ function lireThemes(): ThemeConnu[] {
       theme = null
     }
     if (!theme) {
-      console.log(`[berger] thème illisible ignoré : ${nom}`)
+      console.log(`[berger] unreadable theme ignored: ${nom}`)
       continue
     }
     const t: ThemeConnu = { id, nom: id, theme, source: 'perso' }
@@ -101,7 +101,7 @@ export function brancherReglages(envoyer: (e: EtatReglages) => void): {
   try {
     mkdirSync(dossierThemes(), { recursive: true })
   } catch (e) {
-    console.error('[berger] dossier des thèmes non créé :', (e as Error).message)
+    console.error('[berger] themes folder not created:', (e as Error).message)
   }
   relire()
 
@@ -123,7 +123,7 @@ export function brancherReglages(envoyer: (e: EtatReglages) => void): {
     })
     watch(dossierThemes(), () => plusTard())
   } catch (e) {
-    console.error('[berger] réglages non surveillés :', (e as Error).message)
+    console.error('[berger] settings not watched:', (e as Error).message)
   }
 
   ipcMain.handle('berger:reglages', () => etatReglages())

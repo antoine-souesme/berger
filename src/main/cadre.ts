@@ -45,7 +45,7 @@ export function suivreCadre(w: BrowserWindow): { vider: () => void } {
       writeFileSync(fichier(), texte)
       dernier = texte
     } catch (e) {
-      console.error('[berger] cadre de la fenêtre non enregistré :', (e as Error).message)
+      console.error('[berger] window layout not saved:', (e as Error).message)
     }
   }
   const plusTard = (): void => {

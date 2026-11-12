@@ -30,7 +30,7 @@ function ecrireMaintenant(): void {
     writeFileSync(fichier(), JSON.stringify(enAttente, null, 2))
     dernierEcrit = JSON.stringify(enAttente)
   } catch (e) {
-    console.error('[berger] état de la fenêtre non enregistré :', (e as Error).message)
+    console.error('[berger] window state not saved:', (e as Error).message)
   }
   enAttente = null
 }

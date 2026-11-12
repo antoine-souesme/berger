@@ -55,16 +55,16 @@ export function brancherActions(
       display: affichage(),
       labels: { 'herdr.space': space, 'herdr.tab': onglet }
     })) as { address: string }
-    trace(`terminal lancé ${r.address} (${space}/${onglet})`)
+    trace(`terminal started ${r.address} (${space}/${onglet})`)
     return r.address
   }
 
   const tuer = async (adresse: string): Promise<void> => {
     try {
       await requete('terminal.kill', { terminal: adresse })
-      trace(`terminal fermé ${adresse}`)
+      trace(`terminal closed ${adresse}`)
     } catch (e) {
-      console.error(`[berger] fermeture de ${adresse} impossible :`, (e as Error).message)
+      console.error(`[berger] cannot close ${adresse}:`, (e as Error).message)
     }
   }
 
@@ -112,7 +112,7 @@ export function brancherActions(
         !crees.has(space) &&
         !space.startsWith('spbergertest')
       ) {
-        console.log(`[berger] fermeture refusée : ${space} (scénario)`)
+        console.log(`[berger] close refused: ${space} (scenario)`)
         continue
       }
       try {
@@ -120,9 +120,9 @@ export function brancherActions(
         const doc = await lireDoc()
         for (const adresse of terminauxRetires(doc, appliquer(doc, action))) await tuer(adresse)
         await ecrireDoc(requete, action)
-        trace(`space fermé ${space}`)
+        trace(`space closed ${space}`)
       } catch (e) {
-        console.error(`[berger] fermeture du space ${space} impossible :`, (e as Error).message)
+        console.error(`[berger] cannot close space ${space}:`, (e as Error).message)
       }
     }
   }
@@ -190,7 +190,7 @@ export function brancherActions(
     try {
       return await traiter(d)
     } catch (e) {
-      console.error(`[berger] ${d.type} impossible :`, (e as Error).message)
+      console.error(`[berger] ${d.type} failed:`, (e as Error).message)
       return { erreur: (e as Error).message }
     }
   })
@@ -217,7 +217,7 @@ export function brancherActions(
       defaultId: q.defaut,
       cancelId: q.annuler
     }
-    trace(`question posée : ${q.message}`)
+    trace(`question asked: ${q.message}`)
     // Scénarios (développement) : BERGER_SCENARIO_REPONSE=<n> répond le bouton n sans montrer la question.
     const reponse = process.env['BERGER_SCENARIO_REPONSE']
     if (process.env['BERGER_SCENARIO'] && reponse !== undefined) return Number(reponse)

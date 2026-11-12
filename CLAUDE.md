@@ -41,15 +41,15 @@ avec leur `README.md`).
 ## Lancer
 
 - `npm install`, puis `npm run dev` (fenêtre Berger), `npm test` (règles pures), `npm run typecheck`.
-- `npm run installer` construit `Berger.app` et l'installe dans `/Applications` (il fait quitter
-  la version installée qui tourne, la remplace et la relance) ; `npm run icone` refait l'icône à
+- `npm run install-app` construit `Berger.app` et l'installe dans `/Applications` (il fait quitter
+  la version installée qui tourne, la remplace et la relance) ; `npm run icon` refait l'icône à
   partir de `build/icone.svg` et `build/icone-petite.svg`.
 - Dossier de données : `~/Library/Application Support/Berger/` pour la version installée,
   `~/Library/Application Support/Berger-dev/` pour `npm run dev` (jamais l'un dans l'autre).
   Réglages : fenêtre des réglages (`⌘,`) ou `reglages.json` de ce dossier (que Berger écrit et
   suit à chaud) ; thèmes personnels au format de Herdr dans `themes/` ; cadre de la fenêtre dans
   `fenetre.json`.
-- Coloration de l'éditeur : `node scripts/copier-grammaires.mjs` recopie de VS Code
+- Coloration de l'éditeur : `node scripts/copy-grammars.mjs` recopie de VS Code
   (`/Applications/Visual Studio Code.app`) les grammaires, le registre des langages, le thème
   Monokai et les thèmes Dark Modern et Light Modern dans `src/renderer/public/vscode/`. Les thèmes
   fournis par Berger sont dans `src/shared/themes/`.
