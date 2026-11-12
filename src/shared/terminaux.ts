@@ -33,3 +33,10 @@ export function appliquerEvenement(table: Map<string, TerminalCore>, e: Evenemen
       if (e.data && typeof e.data === 'object') Object.assign(t, e.data)
   }
 }
+
+// Faut-il appliquer cet événement ? Non s'il est déjà couvert par le dernier
+// instantané (après `missed`, le core demande d'ignorer les seq inférieurs).
+export function evenementNeuf(dernier: number | null, seq: number | undefined): boolean {
+  if (dernier === null || seq === undefined) return true
+  return seq > dernier
+}

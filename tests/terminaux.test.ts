@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { appliquerEvenement } from '../src/shared/terminaux'
+import { appliquerEvenement, evenementNeuf } from '../src/shared/terminaux'
 import type { TerminalCore } from '../src/shared/spaces'
 
 const t = (address: string): TerminalCore => ({
@@ -52,4 +52,12 @@ test('un événement sur un terminal inconnu ne plante pas', () => {
   expect(() =>
     appliquerEvenement(table, { type: 'title', terminal: 'tx', data: { title: 'a' } })
   ).not.toThrow()
+})
+
+test('evenementNeuf ignore les événements déjà couverts par un instantané', () => {
+  expect(evenementNeuf(null, 3)).toBe(true)
+  expect(evenementNeuf(5, 6)).toBe(true)
+  expect(evenementNeuf(5, 5)).toBe(false)
+  expect(evenementNeuf(5, 2)).toBe(false)
+  expect(evenementNeuf(5, undefined)).toBe(true)
 })

@@ -41,9 +41,20 @@ export class Hc {
     processus.on('exit', () => this.terminer())
   }
 
-  static async ouvrir(): Promise<Hc> {
+  static async ouvrir(delaiHello = 5000): Promise<Hc> {
     const hc = new Hc(spawn(cheminHc(), ['connect'], { stdio: 'pipe' }))
-    hc.infos = await hc.requete('hello', { generation: 1 })
+    let minuteur: NodeJS.Timeout | undefined
+    const delai = new Promise<never>((_ok, ko) => {
+      minuteur = setTimeout(() => {
+        hc.fermer()
+        ko(new ErreurHc('herdr-core ne répond pas', 'timeout'))
+      }, delaiHello)
+    })
+    try {
+      hc.infos = await Promise.race([hc.requete<Hc['infos']>('hello', { generation: 1 }), delai])
+    } finally {
+      clearTimeout(minuteur)
+    }
     return hc
   }
 

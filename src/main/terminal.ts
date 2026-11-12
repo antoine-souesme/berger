@@ -2,6 +2,17 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
 import { cheminHc } from './hc'
 import { decodeurDeTrames, encoderTrame, taille, TYPE, u32, type Trame } from '../shared/trames'
 
+// Le message d'erreur de la réponse au hello, s'il y en a une.
+function erreurDuHello(ligne: string): string | null {
+  try {
+    const m = JSON.parse(ligne)
+    if (m.error) return m.error.message ?? m.error.data?.kind ?? 'hello refusé'
+    return null
+  } catch {
+    return 'réponse illisible au hello'
+  }
+}
+
 type Rappels = { sortie: (octets: Uint8Array) => void; fin: (raison: string) => void }
 
 // Un terminal du core ouvert dans Berger : une connexion `hc connect` tramée
@@ -31,7 +42,13 @@ export class TerminalOuvert {
         const fin = entree.indexOf(0x0a)
         if (fin < 0) return
         const reste = entree.subarray(fin + 1)
+        const reponse = entree.subarray(0, fin).toString('utf8')
         entree = null
+        const erreur = erreurDuHello(reponse)
+        if (erreur) {
+          this.terminer(erreur)
+          return
+        }
         this.envoyerRequete(1, 'terminal.attach', { terminal: adresse, cols, rows })
         morceau = reste
       }

@@ -30,7 +30,8 @@ function fermer(): void {
 
 export async function montrerFichiersDe(nouveauDossier: string): Promise<void> {
   dossier = nouveauDossier
-  fichiers = await window.berger.demander<string[]>('berger:lister', { dossier })
+  fichiers = (await window.berger.demander<{ fichiers: string[] }>('berger:lister', { dossier }))
+    .fichiers
   const champ = document.getElementById('filtre') as HTMLInputElement
   champ.value = ''
   document.getElementById('choix')!.hidden = false
