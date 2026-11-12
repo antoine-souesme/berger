@@ -221,6 +221,8 @@ test('spacesDuDoc : null tant que le document n’a pas de tableau spaces', () =
   expect(spacesDuDoc(null)).toBeNull()
   expect(spacesDuDoc({})).toBeNull()
   expect(spacesDuDoc({ spaces: 'x' })).toBeNull()
-  expect(spacesDuDoc({ spaces: [{ id: 'a' }, { name: 'sans id' }, null, { id: 3 }] })).toEqual(['a'])
+  expect(spacesDuDoc({ spaces: [{ id: 'a' }, { name: 'sans id' }, null, { id: 3 }] })).toEqual([
+    'a'
+  ])
   expect(spacesDuDoc({ spaces: [] })).toEqual([])
 })
