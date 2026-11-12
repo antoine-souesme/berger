@@ -38,6 +38,7 @@ export function choisirPlace(p: PlaceAgent): void {
 
 function cibleDe(el: Element | null): Cible {
   if (el?.closest('#editeur')) return 'editeur'
+  if (el?.closest('#arbre') && el.tagName !== 'INPUT') return 'explorateur'
   if (el?.closest('.xterm')) return 'terminal'
   return 'autre'
 }
@@ -115,6 +116,19 @@ function executer(a: ActionClavier): void {
     }
     case 'fichier.chercher':
       if (fichierAffiche()) chercher()
+      return
+    case 'explorateur.basculer':
+      // Tâche 7
+      return
+    case 'fichier.rechercher':
+      // Tâche 9
+      return
+    case 'explorateur.renommer':
+    case 'explorateur.copier':
+    case 'explorateur.coller':
+    case 'explorateur.copierChemin':
+    case 'explorateur.corbeille':
+      // Tâche 8
       return
     case 'rien':
       return

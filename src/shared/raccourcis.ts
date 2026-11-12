@@ -24,6 +24,13 @@ export type ActionClavier =
   | { type: 'zoom'; pas: 1 | -1 | 0 }
   | { type: 'fichier.enregistrer' }
   | { type: 'fichier.chercher' }
+  | { type: 'fichier.rechercher' }
+  | { type: 'explorateur.basculer' }
+  | { type: 'explorateur.renommer' }
+  | { type: 'explorateur.copier' }
+  | { type: 'explorateur.coller' }
+  | { type: 'explorateur.copierChemin' }
+  | { type: 'explorateur.corbeille' }
   | { type: 'rien' }
 
 export type Touche = {
@@ -34,7 +41,7 @@ export type Touche = {
   altKey: boolean
   shiftKey: boolean
 }
-export type Cible = 'terminal' | 'editeur' | 'autre'
+export type Cible = 'terminal' | 'editeur' | 'explorateur' | 'autre'
 
 const FLECHES: Record<string, Direction> = {
   ArrowLeft: 'left',
@@ -48,13 +55,23 @@ const chiffre = (code: string): number | null => {
   return m ? Number(m[1]) : null
 }
 
+const modificateurs = (t: Touche): string =>
+  (t.ctrlKey ? 'c' : '') + (t.altKey ? 'a' : '') + (t.shiftKey ? 's' : '') + (t.metaKey ? 'm' : '')
+
+// Les touches de l'explorateur, quand il a le clavier (comme dans VS Code).
+function toucheExplorateur(t: Touche): ActionClavier | null {
+  const mods = modificateurs(t)
+  if (mods === '' && t.code === 'F2') return { type: 'explorateur.renommer' }
+  if (mods === 'm' && t.code === 'KeyC') return { type: 'explorateur.copier' }
+  if (mods === 'm' && t.code === 'KeyV') return { type: 'explorateur.coller' }
+  if (mods === 'am' && t.code === 'KeyC') return { type: 'explorateur.copierChemin' }
+  if (mods === 'm' && t.code === 'Backspace') return { type: 'explorateur.corbeille' }
+  return null
+}
+
 // La table entière, sans tenir compte de qui a le clavier.
 function table(t: Touche): ActionClavier | null {
-  const mods =
-    (t.ctrlKey ? 'c' : '') +
-    (t.altKey ? 'a' : '') +
-    (t.shiftKey ? 's' : '') +
-    (t.metaKey ? 'm' : '')
+  const mods = modificateurs(t)
   const n = chiffre(t.code)
   switch (mods) {
     case '':
@@ -98,6 +115,7 @@ function table(t: Touche): ActionClavier | null {
         case 'KeyF':
           return { type: 'fichier.chercher' }
         case 'KeyP':
+          return { type: 'fichier.rechercher' }
         case 'Comma':
           return { type: 'rien' }
       }
@@ -114,9 +132,10 @@ function table(t: Touche): ActionClavier | null {
           return { type: 'panneau.fermer' }
         case 'Enter':
           return { type: 'panneau.agrandir' }
+        case 'KeyE':
+          return { type: 'explorateur.basculer' }
         case 'KeyP':
         case 'KeyF':
-        case 'KeyE':
           return { type: 'rien' }
       }
       return null
@@ -144,11 +163,17 @@ const PRIS_A_L_EDITEUR = new Set<ActionClavier['type']>([
   'space.nouveau',
   'agent.voisin',
   'colonne.basculer',
+  'explorateur.basculer',
+  'fichier.rechercher',
   'zoom',
   'rien'
 ])
 
 export function actionDe(touche: Touche, cible: Cible): ActionClavier | null {
+  if (cible === 'explorateur') {
+    const a = toucheExplorateur(touche)
+    if (a) return a
+  }
   const action = table(touche)
   if (!action) return null
   if (cible === 'editeur') return PRIS_A_L_EDITEUR.has(action.type) ? action : null
