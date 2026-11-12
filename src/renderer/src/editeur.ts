@@ -6,7 +6,8 @@ import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
 import CssWorker from 'monaco-editor/language/css/css.worker?worker'
 import HtmlWorker from 'monaco-editor/language/html/html.worker?worker'
 import TsWorker from 'monaco-editor/language/typescript/ts.worker?worker'
-import { langageDe } from '../../shared/fichiers'
+import { langageDe, type LangageVsCode } from '../../shared/fichiers'
+import { initColoration } from './coloration'
 import { dossierAffiche } from '../../shared/libelles'
 import { fermerFichierWs } from '../../shared/etat-fichiers'
 import { changer, changerFichiers, etat, redessiner } from './etat'
@@ -22,35 +23,13 @@ self.MonacoEnvironment = {
   }
 }
 
-// Couleurs reprises du thème `antoine-monokai` de Herdr (voir docs/COPIES.md).
-monaco.editor.defineTheme('antoine-monokai', {
-  base: 'vs-dark',
-  inherit: true,
-  rules: [
-    { token: 'comment', foreground: '75715e' },
-    { token: 'string', foreground: 'e6db74' },
-    { token: 'number', foreground: 'ae81ff' },
-    { token: 'keyword', foreground: 'f92672' },
-    { token: 'type', foreground: '66d9ef', fontStyle: 'italic' },
-    { token: 'function', foreground: 'a6e22e' },
-    { token: 'variable', foreground: 'd0d0c8' },
-    { token: 'tag', foreground: 'f92672' },
-    { token: 'attribute.name', foreground: 'a6e22e' },
-    { token: 'keyword.md', foreground: 'f92672' },
-    { token: 'strong', fontStyle: 'bold' },
-    { token: 'emphasis', fontStyle: 'italic' }
-  ],
-  colors: {
-    'editor.background': '#272822',
-    'editor.foreground': '#d0d0c8',
-    'editor.selectionBackground': '#49483e',
-    'editor.lineHighlightBackground': '#3e3d32',
-    'editorCursor.foreground': '#f8f8f0',
-    'editorWidget.background': '#1e1f1c',
-    'editorLineNumber.foreground': '#75715e',
-    'minimap.background': '#272822'
-  }
-})
+// Coloration et thème de VS Code (voir coloration.ts) : prêts avant le premier fichier.
+let langages: LangageVsCode[] | undefined
+const colorationPrete = initColoration()
+  .then((l) => {
+    langages = l
+  })
+  .catch((e) => console.error('[berger] coloration de VS Code indisponible :', e))
 
 type Ouvert = {
   modele: monaco.editor.ITextModel
@@ -126,7 +105,10 @@ function suivreModifies(chemin: string): void {
 export function initEditeur(m: string): void {
   maison = m
   editeur = monaco.editor.create(el('editeur'), {
-    theme: 'antoine-monokai',
+    theme: 'vscode-monokai',
+    'semanticHighlighting.enabled': true,
+    bracketPairColorization: { enabled: true },
+    guides: { bracketPairs: true },
     automaticLayout: true,
     fontFamily: 'Menlo, monospace',
     fontSize: 13,
@@ -157,6 +139,7 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
     const r = await window.berger.demander<{ texte?: string; erreur?: string }>('berger:lire', {
       chemin
     })
+    await colorationPrete
     if (affiche !== chemin) return true
     if (r.erreur !== undefined) {
       affiche = null
@@ -165,7 +148,7 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
     }
     o = ouverts.get(chemin)
     if (!o) {
-      const modele = monaco.editor.createModel(r.texte ?? '', langageDe(chemin))
+      const modele = monaco.editor.createModel(r.texte ?? '', langageDe(chemin, langages))
       o = {
         modele,
         texteCharge: r.texte ?? '',

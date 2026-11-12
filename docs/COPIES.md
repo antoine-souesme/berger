@@ -4,7 +4,6 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 
 | Quoi | Source | Licence |
 |---|---|---|
-| Couleurs du thème Monaco `antoine-monokai` (`src/renderer/src/editeur.ts`) | `~/.config/herdr-app/themes/antoine-monokai.json` (thème personnel d'Antoine, lui-même dérivé de Monokai) | thème personnel ; Monokai sous licence libre de son auteur |
 | Squelette du projet (configuration electron-vite, tsconfig) | modèle `vanilla-ts` de `@quick-start/create-electron` | MIT |
 | Icônes de fichiers des maquettes (`docs/maquettes/`) | Material Icon Theme, copiées depuis `~/.config/herdr-app/mods/antoine/icons/material/` | MIT |
 | Icônes d'interface des maquettes (`docs/maquettes/`) | Lucide | ISC |
@@ -23,7 +22,12 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | État des fichiers par workspace (`src/shared/etat-fichiers.ts` : onglets épinglés et ouverts, récents, dossiers ajoutés, libellés d'onglets, images) et ses tests (`tests/etat-fichiers.test.ts`) | `files.js` et `remember` de `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/files.test.mjs`, réécrits en TypeScript (onglets ouverts retenus au relancement, contrairement à `boot`) | code personnel d'Antoine |
 | Recherche de fichiers (`src/shared/recherche.ts` : score, tri, récents, emplacement, fusion des racines) et ses tests (`tests/recherche.test.ts`) | `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/quickopen.test.mjs`, réécrits en TypeScript (les lettres trouvées sont gardées) | code personnel d'Antoine |
 | Scripts du presse-papiers de macOS (`CLIP_WRITE`, `CLIP_READ` dans `src/main/fichiers.ts`) | `explorer.js` du mod `antoine`, copiés tels quels | code personnel d'Antoine |
+| Grammaires TextMate et configurations des langages (`src/renderer/public/vscode/grammaires/`, `configurations/`), registre des langages (`langages.json`, tiré des `package.json` des extensions) | extensions livrées avec VS Code 1.146.0 (`/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/`), copiées par `scripts/copier-grammaires.mjs` ; licence MIT de microsoft/vscode dans `LICENSE.txt`, grammaires d'origine tierce décrites dans `ThirdPartyNotices.txt` (copié à côté) | MIT (et licences des grammaires d'origine, voir `ThirdPartyNotices.txt`) |
+| Thème de l'éditeur (`src/renderer/public/vscode/monokai-color-theme.json`) | `extensions/theme-monokai/themes/monokai-color-theme.json` de VS Code 1.146.0, copié tel quel | MIT |
+| Résolution des couleurs sémantiques (`src/shared/theme.ts` : table de repli des jetons, `nameMatcher`, `resolveScopes`, `getTokenStyle`) | `src/vs/platform/theme/common/tokenClassificationRegistry.ts` et `src/vs/workbench/services/themes/common/colorThemeData.ts` de microsoft/vscode 1.146.0, réécrits | MIT |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
 (`@xterm/xterm`, `@xterm/addon-webgl`, MIT), Electron (MIT), Lucide (`lucide`, icônes
-d’interface, ISC).
+d’interface, ISC), vscode-textmate et vscode-oniguruma (MIT), typescript-language-server
+(Apache 2.0), yaml-language-server (MIT), vscode-jsonrpc et vscode-languageserver-protocol
+(MIT), TypeScript (Apache 2.0).

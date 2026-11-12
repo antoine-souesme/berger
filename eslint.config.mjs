@@ -14,8 +14,8 @@ export default defineConfig(
   },
   tseslint.configs.recommended,
   {
-    // Tests et faux `hc` : doublures libres, sans types de retour.
-    files: ['tests/**'],
+    // Tests, faux `hc` et scripts : doublures libres, sans types de retour.
+    files: ['tests/**', 'scripts/**'],
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off'
