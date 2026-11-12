@@ -19,9 +19,7 @@ test('onglet.nouveau ajoute un onglet sans nom à la fin du space', () => {
     root: {
       type: 'row',
       id: 'tbN',
-      children: [
-        { type: 'block', id: 'pN', content: { terminal: 't7' }, size: { weight: 1 } }
-      ]
+      children: [{ type: 'block', id: 'pN', content: { terminal: 't7' }, size: { weight: 1 } }]
     }
   })
 })

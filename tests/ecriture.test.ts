@@ -51,9 +51,9 @@ test('relit et réapplique après un conflit', async () => {
 
 test("n'écrit rien quand rien ne change", async () => {
   const { requete, appels } = fauxCore([doc])
-  expect(
-    await ecrireDoc(requete, { type: 'onglet.fermer', space: 'spZ', onglet: 'tbZ' })
-  ).toBe('inchange')
+  expect(await ecrireDoc(requete, { type: 'onglet.fermer', space: 'spZ', onglet: 'tbZ' })).toBe(
+    'inchange'
+  )
   expect(appels.some((a) => a.methode === 'doc.set')).toBe(false)
 })
 

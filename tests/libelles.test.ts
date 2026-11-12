@@ -27,9 +27,7 @@ test('claude devient Claude Code', () =>
   }))
 
 test('Claude Code dont le nom de processus est sa version', () =>
-  expect(programme({ foreground: { name: '2.1.322', argv: ['claude'] } }).nom).toBe(
-    'Claude Code'
-  ))
+  expect(programme({ foreground: { name: '2.1.322', argv: ['claude'] } }).nom).toBe('Claude Code'))
 
 test('codex devient Codex', () =>
   expect(programme({ foreground: { argv: ['/opt/bin/codex', 'x'] } })).toEqual({
@@ -44,9 +42,9 @@ test('lazygit', () =>
   }))
 
 test('zsh lancé en -l', () =>
-  expect(programme({ argv: ['/bin/zsh', '-l'], foreground: { argv: ['/bin/zsh', '-l'] } }).nom).toBe(
-    'zsh'
-  ))
+  expect(
+    programme({ argv: ['/bin/zsh', '-l'], foreground: { argv: ['/bin/zsh', '-l'] } }).nom
+  ).toBe('zsh'))
 
 test('shell de connexion « -zsh »', () =>
   expect(programme({ foreground: { argv: ['-zsh'] } })).toEqual({ nom: 'zsh', icone: 'terminal' }))
