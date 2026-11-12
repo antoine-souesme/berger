@@ -281,14 +281,6 @@ function message(texte: string, profondeur: number): HTMLElement {
   return m
 }
 
-function boutonAjouter(): HTMLElement {
-  const b = document.createElement('div')
-  b.className = 'ligne-arbre ajouter-dossier'
-  b.append(icone('folder-plus', 'currentColor', 14, 1.75), 'Ajouter un dossier')
-  b.onclick = () => void ajouterUnDossier()
-  return b
-}
-
 export async function ajouterUnDossier(): Promise<void> {
   const chemin = await window.berger.demander<string | null>('berger:choisir-dossier')
   if (chemin) changerFichiers((x, ws) => ajouterDossier(x, ws, chemin))
@@ -318,6 +310,7 @@ function dessiner(): void {
   dernierDessin = cle
   el('explorateur-vide').hidden = liste.length > 0 || !e.workspaces
   arbre().hidden = liste.length === 0
+  el('pied-explorateur').hidden = liste.length === 0
   if (!liste.length) {
     lignes = []
     arbre().replaceChildren()
@@ -354,7 +347,6 @@ function dessiner(): void {
         enfants.push(message('Dossier limité aux 2 000 premiers éléments', l.profondeur + 1))
     }
   }
-  enfants.push(boutonAjouter())
   arbre().replaceChildren(...enfants)
 }
 
@@ -364,7 +356,7 @@ export function basculerExplorateur(): void {
 
 export function initExplorateur(m: string): void {
   maison = m
-  el('ajouter-dossier').replaceChildren(icone('folder-plus', 'currentColor', 15, 1.75))
+  el('ajouter-dossier').prepend(icone('folder-plus', 'currentColor', 14, 1.75))
   el('ajouter-dossier').onclick = () => void ajouterUnDossier()
   el('tout-replier').replaceChildren(icone('chevrons-down-up', 'currentColor', 15, 1.75))
   el('tout-replier').onclick = () => changerFichiers((x, ws) => toutReplier(x, ws))
