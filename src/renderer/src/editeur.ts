@@ -70,7 +70,9 @@ export function initEditeur(): void {
 }
 
 export async function ouvrirFichier(chemin: string): Promise<void> {
-  const r = await window.berger.demander<{ texte?: string; erreur?: string }>('berger:lire', { chemin })
+  const r = await window.berger.demander<{ texte?: string; erreur?: string }>('berger:lire', {
+    chemin
+  })
   if (r.erreur !== undefined) {
     annoncer(r.erreur)
     return
@@ -88,11 +90,14 @@ export async function ouvrirFichier(chemin: string): Promise<void> {
 async function enregistrer(): Promise<void> {
   if (!cheminOuvert || !editeur) return
   const texte = editeur.getValue()
-  const r = await window.berger.demander<{ ok?: boolean; annule?: boolean; erreur?: string }>('berger:ecrire', {
-    chemin: cheminOuvert,
-    texte,
-    texteCharge
-  })
+  const r = await window.berger.demander<{ ok?: boolean; annule?: boolean; erreur?: string }>(
+    'berger:ecrire',
+    {
+      chemin: cheminOuvert,
+      texte,
+      texteCharge
+    }
+  )
   if (r.ok) {
     texteCharge = texte
     annoncer('Enregistré')

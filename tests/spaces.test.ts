@@ -51,12 +51,14 @@ test('libelleEtat traduit les états du core', () => {
 test('dossierDuSpace : foreground.cwd, puis cwd, puis folder', () => {
   const space = doc.spaces[0]
   const avec = (t: TerminalCore): Map<string, TerminalCore> => new Map([[t.address, t]])
-  expect(dossierDuSpace(space, avec(vivant('t2b', { cwd: '/b', foreground: { cwd: '/a' } })))).toBe('/a')
+  expect(dossierDuSpace(space, avec(vivant('t2b', { cwd: '/b', foreground: { cwd: '/a' } })))).toBe(
+    '/a'
+  )
   expect(dossierDuSpace(space, avec(vivant('t2b', { cwd: '/b' })))).toBe('/b')
   expect(dossierDuSpace(space, new Map())).toBe('/x/oovrage')
 })
 
-test("un space sans nom prend le nom du dossier où est son premier terminal maintenant", () => {
+test('un space sans nom prend le nom du dossier où est son premier terminal maintenant', () => {
   const vue = construireVue(doc, [vivant('t2b', { cwd: '/x/claude-plugin' })])
   expect(vue.spaces[0].nom).toBe('claude-plugin')
 })

@@ -4,6 +4,7 @@ import { writeFileSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { Coeur, type EtatConnexion } from './coeur'
+import { envoyerA } from './envoi'
 import { suivreLaVue } from './vue'
 import { TerminalOuvert } from './terminal'
 import { brancherFichiers } from './fichiers'
@@ -16,7 +17,9 @@ let etatConnexion: EtatConnexion = 'deconnecte'
 function createWindow(): void {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 1400, title: 'Berger', backgroundColor: '#1e1f1c',
+    width: 1400,
+    title: 'Berger',
+    backgroundColor: '#1e1f1c',
     height: 900,
     show: false,
     autoHideMenuBar: true,
@@ -28,6 +31,9 @@ function createWindow(): void {
   })
 
   fenetre = mainWindow
+  mainWindow.on('closed', () => {
+    if (fenetre === mainWindow) fenetre = null
+  })
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
@@ -37,11 +43,14 @@ function createWindow(): void {
   const capture = process.env['BERGER_CAPTURE']
   if (capture) {
     mainWindow.webContents.on('did-finish-load', () => {
-      setTimeout(async () => {
-        const image = await mainWindow.webContents.capturePage()
-        writeFileSync(capture, image.toPNG())
-        console.log(`[berger] capture enregistrée : ${capture}`)
-      }, Number(process.env['BERGER_CAPTURE_DELAI'] ?? 4000))
+      setTimeout(
+        async () => {
+          const image = await mainWindow.webContents.capturePage()
+          writeFileSync(capture, image.toPNG())
+          console.log(`[berger] capture enregistrée : ${capture}`)
+        },
+        Number(process.env['BERGER_CAPTURE_DELAI'] ?? 4000)
+      )
     })
   }
 
@@ -73,13 +82,12 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
-
   coeur.surEtat((etat) => {
     console.log(`[berger] herdr-core : ${etat}`)
     etatConnexion = etat
-    fenetre?.webContents.send('berger:connexion', { etat })
+    envoyerA(fenetre, 'berger:connexion', { etat })
   })
-  const vueActuelle = suivreLaVue(coeur, (vue) => fenetre?.webContents.send('berger:vue', vue))
+  const vueActuelle = suivreLaVue(coeur, (vue) => envoyerA(fenetre, 'berger:vue', vue))
   // La fenêtre demande l'état courant au chargement (elle a pu rater les envois).
   ipcMain.handle('berger:etat', () => ({ connexion: etatConnexion, vue: vueActuelle() }))
   void coeur.demarrer()
@@ -90,9 +98,9 @@ app.whenReady().then(() => {
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows }) => {
     ouvert?.detacher()
     const celuiCi: TerminalOuvert = new TerminalOuvert(adresse, cols, rows, {
-      sortie: (octets) => fenetre?.webContents.send('berger:sortie', octets),
+      sortie: (octets) => envoyerA(fenetre, 'berger:sortie', octets),
       fin: (raison) => {
-        if (ouvert === celuiCi) fenetre?.webContents.send('berger:fin-terminal', { raison })
+        if (ouvert === celuiCi) envoyerA(fenetre, 'berger:fin-terminal', { raison })
       }
     })
     ouvert = celuiCi
@@ -106,7 +114,11 @@ app.whenReady().then(() => {
       if (!adresse) return
       setTimeout(() => w.webContents.send('berger:ouvrir', { adresse }), 1500)
       const texte = process.env['BERGER_TAPER']
-      if (texte) setTimeout(() => ouvert?.ecrire(new TextEncoder().encode(texte.replace(/\\r/g, '\r'))), 3000)
+      if (texte)
+        setTimeout(
+          () => ouvert?.ecrire(new TextEncoder().encode(texte.replace(/\\r/g, '\r'))),
+          3000
+        )
     })
   })
   ipcMain.on('berger:touches', (_e, { octets }) => ouvert?.ecrire(octets))

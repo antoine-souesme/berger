@@ -6,7 +6,8 @@ import { decoupeurDeLignes } from '../shared/lignes'
 
 // Chemin de `hc` : une app lancée depuis le Finder n'a pas le PATH du shell.
 const HC_LOCAL = join(homedir(), '.local/bin/hc')
-export const CHEMIN_HC = process.env['BERGER_HC'] ?? (existsSync(HC_LOCAL) ? HC_LOCAL : 'hc')
+export const cheminHc = (): string =>
+  process.env['BERGER_HC'] ?? (existsSync(HC_LOCAL) ? HC_LOCAL : 'hc')
 
 export class ErreurHc extends Error {
   constructor(
@@ -36,11 +37,12 @@ export class Hc {
     })
     processus.stderr.on('data', (d) => console.error('[hc]', String(d).trim()))
     processus.on('error', () => this.terminer())
+    processus.stdin.on('error', () => this.terminer())
     processus.on('exit', () => this.terminer())
   }
 
   static async ouvrir(): Promise<Hc> {
-    const hc = new Hc(spawn(CHEMIN_HC, ['connect'], { stdio: 'pipe' }))
+    const hc = new Hc(spawn(cheminHc(), ['connect'], { stdio: 'pipe' }))
     hc.infos = await hc.requete('hello', { generation: 1 })
     return hc
   }
@@ -50,7 +52,9 @@ export class Hc {
     const id = this.prochainId++
     return new Promise<T>((ok, ko) => {
       this.enAttente.set(id, { ok: ok as (v: unknown) => void, ko })
-      this.processus.stdin.write(JSON.stringify({ jsonrpc: '2.0', id, method: methode, params }) + '\n')
+      this.processus.stdin.write(
+        JSON.stringify({ jsonrpc: '2.0', id, method: methode, params }) + '\n'
+      )
     })
   }
 
@@ -77,7 +81,8 @@ export class Hc {
     if (message.id != null && this.enAttente.has(message.id)) {
       const { ok, ko } = this.enAttente.get(message.id)!
       this.enAttente.delete(message.id)
-      if (message.error) ko(new ErreurHc(message.error.message, message.error.data?.kind ?? 'inconnu'))
+      if (message.error)
+        ko(new ErreurHc(message.error.message, message.error.data?.kind ?? 'inconnu'))
       else ok(message.result)
     } else if (message.method) {
       for (const f of this.auxNotifications) f(message.method, message.params)

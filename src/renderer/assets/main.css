@@ -4,7 +4,10 @@ body {
   height: 100%;
   background: #1e1f1c;
   color: #e6e6e1;
-  font: 13px -apple-system, BlinkMacSystemFont, sans-serif;
+  font:
+    13px -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
 }
 body {
   display: grid;

@@ -32,11 +32,13 @@ export function jouerScenario(w: BrowserWindow): void {
     [
       7000,
       () => {
-        if (scenario === 'conflit') appendFileSync(`${dossier}/essai.md`, '\nModifié par un agent\n')
+        if (scenario === 'conflit')
+          appendFileSync(`${dossier}/essai.md`, '\nModifié par un agent\n')
       }
     ],
     [7300, () => touche('s', ['meta'])],
     [8300, () => capture('enregistre')]
   ]
-  for (const [delai, faire] of etapes) setTimeout(() => void faire(), delai)
+  const lent = Number(process.env['BERGER_SCENARIO_LENTEUR'] ?? 1)
+  for (const [delai, faire] of etapes) setTimeout(() => void faire(), delai * lent)
 }

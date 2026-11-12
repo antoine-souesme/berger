@@ -10,8 +10,18 @@
           "name": "",
           "root": {
             "children": [
-              { "content": { "terminal": "t2b" }, "id": "p1", "size": { "weight": 0.5 }, "type": "block" },
-              { "content": { "terminal": "t2c" }, "id": "p2", "size": { "weight": 0.5 }, "type": "block" }
+              {
+                "content": { "terminal": "t2b" },
+                "id": "p1",
+                "size": { "weight": 0.5 },
+                "type": "block"
+              },
+              {
+                "content": { "terminal": "t2c" },
+                "id": "p2",
+                "size": { "weight": 0.5 },
+                "type": "block"
+              }
             ],
             "id": "tb1",
             "type": "row"
@@ -21,7 +31,14 @@
           "id": "tb2",
           "name": "",
           "root": {
-            "children": [{ "content": { "terminal": "t99" }, "id": "p3", "size": { "weight": 1 }, "type": "block" }],
+            "children": [
+              {
+                "content": { "terminal": "t99" },
+                "id": "p3",
+                "size": { "weight": 1 },
+                "type": "block"
+              }
+            ],
             "id": "tb2",
             "type": "row"
           }
@@ -37,7 +54,14 @@
           "id": "tb3",
           "name": "",
           "root": {
-            "children": [{ "content": { "terminal": "t3" }, "id": "p4", "size": { "weight": 1 }, "type": "block" }],
+            "children": [
+              {
+                "content": { "terminal": "t3" },
+                "id": "p4",
+                "size": { "weight": 1 },
+                "type": "block"
+              }
+            ],
             "id": "tb3",
             "type": "row"
           }

@@ -1,5 +1,5 @@
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
-import { CHEMIN_HC } from './hc'
+import { cheminHc } from './hc'
 import { decodeurDeTrames, encoderTrame, taille, TYPE, u32, type Trame } from '../shared/trames'
 
 type Rappels = { sortie: (octets: Uint8Array) => void; fin: (raison: string) => void }
@@ -17,8 +17,9 @@ export class TerminalOuvert {
     rows: number,
     private rappels: Rappels
   ) {
-    this.processus = spawn(CHEMIN_HC, ['connect'], { stdio: 'pipe' })
+    this.processus = spawn(cheminHc(), ['connect'], { stdio: 'pipe' })
     this.processus.on('error', () => this.terminer('connexion impossible'))
+    this.processus.stdin.on('error', () => this.terminer('connexion fermée'))
     this.processus.on('exit', () => this.terminer('connexion fermée'))
     this.processus.stderr.on('data', (d) => console.error('[hc attach]', String(d).trim()))
 
@@ -37,7 +38,12 @@ export class TerminalOuvert {
       for (const trame of decode(new Uint8Array(morceau))) this.recevoir(trame)
     })
     this.processus.stdin.write(
-      JSON.stringify({ jsonrpc: '2.0', id: 0, method: 'hello', params: { generation: 1, framed: true } }) + '\n'
+      JSON.stringify({
+        jsonrpc: '2.0',
+        id: 0,
+        method: 'hello',
+        params: { generation: 1, framed: true }
+      }) + '\n'
     )
   }
 
@@ -78,7 +84,7 @@ export class TerminalOuvert {
       }
       return
     }
-    if (trame.canal !== this.canal) return
+    if (trame.canal !== this.canal || this.fini) return
     if (trame.type === TYPE.DATA) {
       this.rappels.sortie(trame.donnees)
       this.processus.stdin.write(

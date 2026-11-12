@@ -50,9 +50,13 @@ export function ouvrirTerminal(adresse: string): void {
   terminal.loadAddon(ajustement)
   terminal.open(zone())
   ajustement.fit()
-  terminal.onData((texte) => window.berger.envoyer('berger:touches', { octets: encodeur.encode(texte) }))
+  terminal.onData((texte) =>
+    window.berger.envoyer('berger:touches', { octets: encodeur.encode(texte) })
+  )
   terminal.onBinary((texte) =>
-    window.berger.envoyer('berger:touches', { octets: Uint8Array.from(texte, (c) => c.charCodeAt(0)) })
+    window.berger.envoyer('berger:touches', {
+      octets: Uint8Array.from(texte, (c) => c.charCodeAt(0))
+    })
   )
   window.berger.envoyer('berger:attacher', { adresse, cols: terminal.cols, rows: terminal.rows })
   terminal.focus()

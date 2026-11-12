@@ -74,6 +74,8 @@ export function construireVue(doc: unknown, terminaux: TerminalCore[]): Vue {
       terminaux: adresses.map((a) => vueTerminal(parAdresse.get(a)!))
     }
   })
-  const autres = terminaux.filter((t) => t.state === 'live' && !ranges.has(t.address)).map(vueTerminal)
+  const autres = terminaux
+    .filter((t) => t.state === 'live' && !ranges.has(t.address))
+    .map(vueTerminal)
   return { spaces, autres }
 }

@@ -24,7 +24,11 @@ test('created ajoute, removed retire', () => {
 test('title, foreground et finished mettent à jour le terminal', () => {
   const table = new Map([['t5', t('t5')]])
   appliquerEvenement(table, { type: 'title', terminal: 't5', data: { title: 'claude' } })
-  appliquerEvenement(table, { type: 'foreground', terminal: 't5', data: { cwd: '/y', name: 'zsh' } })
+  appliquerEvenement(table, {
+    type: 'foreground',
+    terminal: 't5',
+    data: { cwd: '/y', name: 'zsh' }
+  })
   expect(table.get('t5')!.title).toBe('claude')
   expect(table.get('t5')!.foreground?.cwd).toBe('/y')
   appliquerEvenement(table, { type: 'finished', terminal: 't5', data: { exit_code: 0 } })
@@ -33,7 +37,11 @@ test('title, foreground et finished mettent à jour le terminal', () => {
 
 test('status remplace le statut, avec ou sans enveloppe', () => {
   const table = new Map([['t5', t('t5')]])
-  appliquerEvenement(table, { type: 'status', terminal: 't5', data: { status: { state: 'working' } } })
+  appliquerEvenement(table, {
+    type: 'status',
+    terminal: 't5',
+    data: { status: { state: 'working' } }
+  })
   expect(table.get('t5')!.status?.state).toBe('working')
   appliquerEvenement(table, { type: 'status', terminal: 't5', data: { state: 'idle' } })
   expect(table.get('t5')!.status?.state).toBe('idle')
@@ -41,5 +49,7 @@ test('status remplace le statut, avec ou sans enveloppe', () => {
 
 test('un événement sur un terminal inconnu ne plante pas', () => {
   const table = new Map<string, TerminalCore>()
-  expect(() => appliquerEvenement(table, { type: 'title', terminal: 'tx', data: { title: 'a' } })).not.toThrow()
+  expect(() =>
+    appliquerEvenement(table, { type: 'title', terminal: 'tx', data: { title: 'a' } })
+  ).not.toThrow()
 })

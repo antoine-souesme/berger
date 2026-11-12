@@ -1,6 +1,15 @@
 // Règles pures du choix de fichier et de l'éditeur.
 
-export const DOSSIERS_IGNORES = ['.git', 'node_modules', 'out', 'dist', 'build', '.next', 'target', '.venv']
+export const DOSSIERS_IGNORES = [
+  '.git',
+  'node_modules',
+  'out',
+  'dist',
+  'build',
+  '.next',
+  'target',
+  '.venv'
+]
 export const LIMITE_FICHIERS = 5000
 
 function contientDansLOrdre(texte: string, requete: string): boolean {

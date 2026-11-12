@@ -19,12 +19,16 @@ test('deux trames collées et une trame coupée en deux se décodent', () => {
 })
 
 test('un CREDIT de 764 octets est encodé comme hc attach', () => {
-  const octets = encoderTrame({ canal: 1, type: TYPE.CREDIT, donnees: Uint8Array.of(0xfc, 0x02, 0, 0) })
+  const octets = encoderTrame({
+    canal: 1,
+    type: TYPE.CREDIT,
+    donnees: Uint8Array.of(0xfc, 0x02, 0, 0)
+  })
   expect([...octets]).toEqual([1, 0, 0, 0, 1, 4, 0, 0, 0, 0xfc, 0x02, 0, 0])
 })
 
 test('RESIZE 120×40 est encodé comme hc attach', () => {
-  expect([...encoderTrame({ canal: 1, type: TYPE.RESIZE, donnees: Uint8Array.of(120, 0, 40, 0) })]).toEqual([
-    1, 0, 0, 0, 3, 4, 0, 0, 0, 120, 0, 40, 0
-  ])
+  expect([
+    ...encoderTrame({ canal: 1, type: TYPE.RESIZE, donnees: Uint8Array.of(120, 0, 40, 0) })
+  ]).toEqual([1, 0, 0, 0, 3, 4, 0, 0, 0, 120, 0, 40, 0])
 })

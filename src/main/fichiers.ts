@@ -3,6 +3,7 @@ import { readdir } from 'fs/promises'
 import { join, relative } from 'path'
 import type { Coeur } from './coeur'
 import { DOSSIERS_IGNORES, LIMITE_FICHIERS } from '../shared/fichiers'
+import { lireFichier, type Lecture } from './lecture'
 
 // Liste plate des fichiers d'un dossier (Node local : le core n'a pas de
 // méthode pour lister ; machine locale seulement en phase 0).
@@ -31,18 +32,10 @@ export async function listerFichiers(dossier: string): Promise<string[]> {
   return trouves
 }
 
-type Lecture = { texte: string } | { erreur: string }
-
 export function brancherFichiers(coeur: Coeur, fenetre: () => BrowserWindow | null): void {
-  const lire = async (chemin: string): Promise<Lecture> => {
-    try {
-      const r = await coeur.requetes!.requete<{ text: string }>('file.read', { path: chemin })
-      return { texte: r.text }
-    } catch (e) {
-      const kind = (e as { kind?: string }).kind
-      if (kind === 'not_text') return { erreur: "Ce fichier n'est pas du texte." }
-      return { erreur: `Lecture impossible : ${(e as Error).message}` }
-    }
+  const lire = (chemin: string): Promise<Lecture> => {
+    if (!coeur.requetes) return Promise.resolve({ erreur: 'Déconnecté de herdr-core.' })
+    return lireFichier((m, p) => coeur.requetes!.requete(m, p), chemin)
   }
 
   ipcMain.handle('berger:lister', (_e, { dossier }) => listerFichiers(dossier))
@@ -59,11 +52,17 @@ export function brancherFichiers(coeur: Coeur, fenetre: () => BrowserWindow | nu
         defaultId: 1,
         cancelId: 1
       }
-      const { response } = w ? await dialog.showMessageBox(w, options) : await dialog.showMessageBox(options)
+      const { response } = w
+        ? await dialog.showMessageBox(w, options)
+        : await dialog.showMessageBox(options)
       if (response !== 0) return { annule: true }
     }
+    if (!coeur.requetes) return { erreur: 'Déconnecté de herdr-core.' }
     try {
-      await coeur.requetes!.requete('file.write', { path: chemin, data: Buffer.from(texte, 'utf8').toString('base64') })
+      await coeur.requetes.requete('file.write', {
+        path: chemin,
+        data: Buffer.from(texte, 'utf8').toString('base64')
+      })
       return { ok: true }
     } catch (e) {
       return { erreur: `Enregistrement impossible : ${(e as Error).message}` }
