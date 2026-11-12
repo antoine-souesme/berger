@@ -25,7 +25,7 @@ test("terminauxDeLArbre rend les deux terminaux d'un onglet coupé en deux", () 
 })
 
 test('un space sans nom prend le nom de son dossier, un space nommé garde son nom', () => {
-  const vue = construireVue(doc, [vivant('t2b'), vivant('t3')])
+  const vue = construireVue(doc, [vivant('t2b', { cwd: '/x/oovrage' }), vivant('t3')])
   expect(vue.spaces.map((s) => s.nom)).toEqual(['oovrage', 'Front'])
 })
 
