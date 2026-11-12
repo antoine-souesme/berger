@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Branche de travail : `phase5-editeur`, déjà créée depuis `develop` avec ce plan. PR vers `develop` à la fin, jamais vers `main`.
-- **Hors de cette phase (décision d'Antoine du 12 novembre 2026)** : recherche et remplacement dans le projet (`⇧⌘F`, `⇧⌘H`, panneau « Rechercher »), différences git (marge, vue côte à côte). Le bouton loupe de la barre des workspaces reste sans action. Ne rien en construire.
+- **Hors de cette phase (décision d'Antoine du 12 novembre 2026)** : recherche et remplacement dans le projet (`⇧⌘F`, `⇧⌘H`, panneau « Rechercher »), différences git (marge, vue côte à côte). Le bouton loupe de la barre des workspaces est retiré (ajout d'Antoine pendant l'exécution) : il reviendra avec la recherche. Ne rien en construire.
 - Hors périmètre de la spec : aide du langage pour d'autres langages que TypeScript, JavaScript, JSON, YAML ; aperçu Markdown ; débogueur ; extensions VS Code ; fichiers d'autres machines.
 - **Thème identique à VS Code** : les couleurs de l'éditeur sont celles de `/Applications/Visual Studio Code.app/Contents/Resources/app/extensions/theme-monokai/themes/monokai-color-theme.json` (copié tel quel, sans retouche). Le reste de la fenêtre garde ses couleurs `antoine-monokai`. Antoine n'a aucune personnalisation de couleurs dans ses réglages VS Code (vérifié : pas de `editor.tokenColorCustomizations` ni `workbench.colorCustomizations`).
 - Couleur de sélection par défaut : celle du thème, `#878b9180`. Réglable dans `~/Library/Application Support/berger/reglages.json`, clé `editeur.couleurSelection` ; fichier absent ou valeur invalide → défaut ; Berger ne crée pas ce fichier.

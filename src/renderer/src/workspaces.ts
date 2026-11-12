@@ -133,8 +133,6 @@ function dessiner(): void {
   explorateur.setAttribute('aria-pressed', String(affiche))
   explorateur.append(icone('files', 'currentColor', 18, 1.75))
   explorateur.onclick = () => basculerExplorateur()
-  const recherche = bouton('outil', 'Rechercher dans le projet')
-  recherche.append(icone('search', 'currentColor', 18, 1.75))
   const trait = document.createElement('span')
   trait.className = 'trait-workspaces'
 
@@ -170,7 +168,7 @@ function dessiner(): void {
   plus.title = 'Nouveau workspace'
   plus.append(icone('plus', 'currentColor', 18, 1.75))
   plus.onclick = () => void nouveauWorkspace()
-  nav().replaceChildren(explorateur, recherche, trait, ...boutons, espace, plus)
+  nav().replaceChildren(explorateur, trait, ...boutons, espace, plus)
 }
 
 let dernierVu: string | null = null
