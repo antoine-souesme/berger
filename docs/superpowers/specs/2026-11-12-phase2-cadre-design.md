@@ -1,6 +1,6 @@
 # Berger — phase 2, le cadre de la fenêtre
 
-Date : 2026-11-12. Contexte : `docs/VISION.md`, `docs/suivi/ROADMAP.md`,
+Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. Phase précédente : `docs/notes/bilan-phase0-poc.md`.
 
 ## Intention

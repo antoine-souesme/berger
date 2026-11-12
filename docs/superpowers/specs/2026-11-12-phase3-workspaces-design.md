@@ -1,6 +1,6 @@
 # Berger — phase 3, workspaces, spaces et agents
 
-Date : 2026-11-12. Contexte : `docs/VISION.md`, `docs/suivi/ROADMAP.md`,
+Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. Phase précédente : `2026-11-12-phase2-cadre-design.md`.
 
 ## Intention

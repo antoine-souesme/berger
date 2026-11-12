@@ -1,8 +1,12 @@
 # Berger
 
 Berger est le multiplexeur d'agents d'Antoine : une application Electron
-branchée sur herdr-core, avec l'éditeur de VS Code (Monaco). Lis d'abord
-`docs/VISION.md` : le but, ce qu'il faut reprendre, et la phase 0 en cours.
+branchée sur herdr-core, avec l'éditeur de VS Code (Monaco). Il remplace l'app
+Herdr, dont Antoine garde la façon de ranger les choses mais dont l'éditeur de
+fichiers ne lui suffit pas. Lis d'abord `docs/suivi/ROADMAP.md` (les phases et
+leur état), puis la spec de la phase sur laquelle tu travailles
+(`docs/superpowers/specs/`) et les maquettes qu'elle cite (`docs/maquettes/`,
+avec leur `README.md`).
 
 ## Où trouver quoi
 
@@ -20,8 +24,14 @@ branchée sur herdr-core, avec l'éditeur de VS Code (Monaco). Lis d'abord
 
 ## Règles
 
-- Avance phase par phase : rien de la phase suivante tant que la phase 0
-  (preuve de concept) ne marche pas.
+- Avance phase par phase, dans l'ordre de `docs/suivi/ROADMAP.md` : rien d'une
+  phase tant que la précédente ne marche pas, vue dans l'application lancée.
+  Ne construis que ce que dit la spec de la phase ; ce qu'elle met hors
+  périmètre attend sa propre phase.
+- Les maquettes font foi pour l'apparence ; la spec fait foi pour le
+  comportement. Si les deux se contredisent, demande à Antoine.
+- Pas de panneau « Outils » ni de partie Git façon lazygit : lazygit tourne
+  dans un terminal ordinaire.
 - Garde les règles dans des modules purs, testés à part de l'interface.
 - Textes de l'interface en français, avec les accents.
 - Code repris d'ailleurs (Herdr, mod `antoine`, projets libres) : note sa

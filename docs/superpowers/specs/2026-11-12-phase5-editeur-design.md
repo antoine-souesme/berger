@@ -1,6 +1,6 @@
 # Berger — phase 5, l'éditeur complet
 
-Date : 2026-11-12. Contexte : `docs/VISION.md`, `docs/suivi/ROADMAP.md`,
+Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. Phases précédentes : phases 2 à 4 dans ce dossier.
 
 ## Intention

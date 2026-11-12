@@ -1,6 +1,7 @@
 # Feuille de route de Berger
 
-Le but et le détail de chaque fonction sont dans `docs/VISION.md`. Une phase ne
+Le détail de chaque phase est dans sa spec (`docs/superpowers/specs/`), son
+apparence dans les maquettes (`docs/maquettes/`). Une phase ne
 commence que quand la précédente marche, vue dans l'application lancée.
 
 | Phase | Nom | État |
@@ -28,7 +29,7 @@ côté, et le renommage d'un space dans Herdr suivi par Berger.
 Décider à quoi ressemble Berger avant de construire la suite.
 
 - Trancher ce que Berger garde de la disposition de Herdr (blocs, panneaux) et
-  ce qu'il fait à sa façon (la question ouverte de `docs/VISION.md`).
+  ce qu'il fait à sa façon (tranché : celle de Herdr).
 - Maquettes des écrans principaux : la fenêtre entière, la barre des
   workspaces, les listes de spaces et d'agents, la barre d'onglets,
   l'explorateur, `cmd-p`. Sources d'inspiration :

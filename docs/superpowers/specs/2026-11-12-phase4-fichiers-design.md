@@ -1,6 +1,6 @@
 # Berger — phase 4, fichiers
 
-Date : 2026-11-12. Contexte : `docs/VISION.md`, `docs/suivi/ROADMAP.md`,
+Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. Phases précédentes : `2026-11-12-phase2-cadre-design.md`,
 `2026-11-12-phase3-workspaces-design.md`.
 

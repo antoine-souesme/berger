@@ -1,6 +1,6 @@
 # Berger — phase 7, l'application installée et ses réglages
 
-Date : 2026-11-12. Contexte : `docs/VISION.md`, `docs/suivi/ROADMAP.md`,
+Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. La phase 6 (autres machines) est remise à plus tard : cette
 phase ne l'attend pas.
 
