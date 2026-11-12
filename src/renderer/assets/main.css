@@ -1133,6 +1133,10 @@ body {
 }
 
 /* La croix qui ferme un panneau, à droite de son bandeau. */
+/* 20 px dans un bandeau de 28 px : 4 px au-dessus, au-dessous et à droite. */
+.bandeau:has(.fermer-panneau) {
+  padding-right: 4px;
+}
 .fermer-panneau {
   margin-left: auto;
   width: 20px;
