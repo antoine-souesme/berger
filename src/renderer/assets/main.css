@@ -244,9 +244,13 @@ body {
   margin: 6px 8px;
   background: var(--bord);
 }
+/* Même hauteur que le pied de la colonne des spaces : les deux traits s'alignent. */
 #pied-explorateur {
+  display: flex;
+  align-items: center;
   flex-shrink: 0;
-  padding: 6px 0 8px;
+  box-sizing: border-box;
+  height: 48px;
   border-top: 1px solid var(--bord);
 }
 .ajouter-dossier {
@@ -1038,6 +1042,14 @@ body {
   border-radius: 50%;
   box-shadow: 0 0 0 2px var(--fond);
 }
+.pastille-etat.anneau {
+  top: 0;
+  right: 0;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  background: var(--fond);
+}
 #workspaces .espace {
   flex: 1;
 }
@@ -1218,8 +1230,11 @@ body {
   display: flex;
   flex-direction: column;
   gap: 2px;
+  justify-content: center;
   flex-shrink: 0;
-  padding: 10px;
+  box-sizing: border-box;
+  height: 48px;
+  padding: 0 10px;
   border-top: 1px solid var(--bord);
 }
 .bouton-pied {

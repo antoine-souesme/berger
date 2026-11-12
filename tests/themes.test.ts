@@ -60,19 +60,19 @@ describe('lireTheme', () => {
 })
 
 describe('couleursFenetre', () => {
-  test('antoine-monokai : les couleurs actuelles de la fenêtre', () => {
+  test('antoine-monokai : fonds d’Atom One Dark, textes de Monokai', () => {
     expect(couleursFenetre(fourni('antoine-monokai'))).toEqual({
-      fond: '#1e1f1c',
-      panneau: '#272822',
-      bord: '#34352f',
+      fond: '#1a1d22',
+      panneau: '#21252b',
+      bord: '#32363d',
       texte: '#d0d0c8',
       vif: '#f8f8f2',
       gris: '#75715e',
       grisClair: '#a59f85',
-      actif: '#414339',
+      actif: '#373c43',
       clavier: '#66d9ef',
-      survol: '#3e3d32',
-      popover: '#1e1f1c',
+      survol: '#2f333a',
+      popover: '#1a1d22',
       vert: '#a6e22e',
       rouge: '#f92672',
       jaune: '#e6db74'

@@ -125,6 +125,8 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('fr.antoine.berger')
+  // En développement, le Dock montre l'icône de Electron : on y met celle de Berger.
+  if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(icon)
   poserMenu(() => fenetre)
   brancherReglages((e) => {
     envoyerA(fenetre, 'berger:reglages', e)

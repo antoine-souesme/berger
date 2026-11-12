@@ -134,3 +134,8 @@ export function iconeMaterial(nom: string, taille = 16): HTMLImageElement {
   img.draggable = false
   return img
 }
+
+// L'anneau qui tourne d'un agent au travail (comme Herdr), pour la liste des
+// agents et la barre des workspaces ; il tourne avec la classe `tourne`.
+export const ANNEAU_TRAVAIL =
+  '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.4" stroke-opacity="0.24"/><path d="M12 2.6a9.4 9.4 0 0 1 9.4 9.4"/></svg>'

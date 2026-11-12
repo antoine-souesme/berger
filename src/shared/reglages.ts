@@ -41,7 +41,7 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
   },
   editeur: {
     couleurSelection: null,
-    police: 'Menlo, monospace',
+    police: "'Fira Code', Menlo, monospace",
     taille: 13,
     retourLigne: false,
     minicarte: true,
