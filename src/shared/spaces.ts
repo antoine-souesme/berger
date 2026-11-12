@@ -69,7 +69,7 @@ export function construireVue(doc: unknown, terminaux: TerminalCore[]): Vue {
     const dossier = dossierDuSpace(space, parAdresse)
     return {
       id: space.id,
-      nom: space.name || dernierSegment(space.folder || dossier),
+      nom: space.name || dernierSegment(dossier),
       dossier,
       terminaux: adresses.map((a) => vueTerminal(parAdresse.get(a)!))
     }

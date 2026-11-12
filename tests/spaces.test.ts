@@ -55,3 +55,8 @@ test('dossierDuSpace : foreground.cwd, puis cwd, puis folder', () => {
   expect(dossierDuSpace(space, avec(vivant('t2b', { cwd: '/b' })))).toBe('/b')
   expect(dossierDuSpace(space, new Map())).toBe('/x/oovrage')
 })
+
+test("un space sans nom prend le nom du dossier où est son premier terminal maintenant", () => {
+  const vue = construireVue(doc, [vivant('t2b', { cwd: '/x/claude-plugin' })])
+  expect(vue.spaces[0].nom).toBe('claude-plugin')
+})
