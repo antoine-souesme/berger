@@ -62,3 +62,13 @@ export function lireEtatFenetre(brut: unknown): EtatFenetre {
     retourLigne: typeof e['retourLigne'] === 'boolean' ? e['retourLigne'] : null
   }
 }
+
+// Quand le réglage « Retour à la ligne par défaut » change (fenêtre ou fichier),
+// il reprend la main sur ⌥Z ; `avant` absent : premier réglage connu.
+export function retourLigneApresReglage(
+  etat: boolean | null,
+  avant: boolean | undefined,
+  apres: boolean
+): boolean | null {
+  return avant !== undefined && avant !== apres ? null : etat
+}

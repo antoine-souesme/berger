@@ -8,6 +8,7 @@ import {
   touchesDe,
   touchesEffectives,
   TOUCHES_REFUSEES,
+  refusTouches,
   type Touche
 } from '../src/shared/raccourcis'
 
@@ -235,4 +236,17 @@ test('conflits', () => {
 test("⌘, ouvre les réglages, même dans l'éditeur", () => {
   expect(actionDe(t('Comma', cmd), 'editeur')).toEqual({ type: 'reglages.ouvrir' })
   expect(actionDe(t('Comma', cmd), 'terminal')).toEqual({ type: 'reglages.ouvrir' })
+})
+
+test('touches refusées pour un raccourci personnel', () => {
+  expect(refusTouches('a')).toBe('Ajoute ⌘, ⌃ ou ⌥ à la touche.')
+  expect(refusTouches('tab')).toBe('Ajoute ⌘, ⌃ ou ⌥ à la touche.')
+  expect(refusTouches('shift-a')).toBe('Ajoute ⌘, ⌃ ou ⌥ à la touche.')
+  expect(refusTouches('f5')).toBeNull()
+  expect(refusTouches('shift-f2')).toBeNull()
+  expect(refusTouches('cmd-q')).toBe('Touches réservées à macOS.')
+  for (const t of ['cmd-c', 'cmd-v', 'cmd-x', 'cmd-z', 'cmd-shift-z', 'cmd-a'])
+    expect(refusTouches(t)).toBe("Touches réservées à l'édition (copier, coller, annuler…).")
+  expect(refusTouches('cmd-alt-d')).toBeNull()
+  expect(refusTouches('ctrl-1')).toBeNull()
 })

@@ -24,6 +24,7 @@ import { organiserImports, suivreModele } from './langage'
 import { dossierAffiche } from '../../shared/libelles'
 import { fermerFichierWs } from '../../shared/etat-fichiers'
 import { changer, changerFichiers, etat, redessiner, surChangement } from './etat'
+import { retourLigneApresReglage } from '../../shared/etat-fenetre'
 import { icone } from './icones'
 
 self.MonacoEnvironment = {
@@ -187,12 +188,16 @@ async function themeEditeurDe(e: EtatReglages): Promise<ThemeVsCode & { type: 'd
 // changement des réglages (le dernier demandé gagne).
 let tour = 0
 let tabulations = 2
+let reglageRetour: boolean | undefined
 async function appliquerReglages(e: EtatReglages): Promise<void> {
   const ce = ++tour
   const theme = await themeEditeurDe(e)
   await colorationPrete
   if (ce !== tour) return
   const r = e.reglages.editeur
+  const etatRetour = retourLigneApresReglage(etat().retourLigne, reglageRetour, r.retourLigne)
+  reglageRetour = r.retourLigne
+  if (etatRetour !== etat().retourLigne) changer((x) => (x.retourLigne = etatRetour))
   appliquerThemeEditeur(theme, r.couleurSelection)
   editeur?.updateOptions({
     fontFamily: r.police,

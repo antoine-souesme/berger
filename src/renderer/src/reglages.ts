@@ -10,7 +10,7 @@ import {
   libelleTouches,
   touchesDe,
   touchesEffectives,
-  TOUCHES_REFUSEES
+  refusTouches
 } from '../../shared/raccourcis'
 import { couleursFenetre, themeEditeur, type ThemeHerdr } from '../../shared/themes'
 import { THEMES_EDITEUR_VSCODE } from '../../shared/themes-fournis'
@@ -356,7 +356,8 @@ function kbds(touches: string): HTMLElement {
 
 // Pourquoi ces touches ne peuvent pas être gardées (null : elles peuvent).
 function refus(perso: Record<string, string[]>, id: string, touches: string): string | null {
-  if (TOUCHES_REFUSEES.includes(touches)) return 'Touches réservées à macOS.'
+  const raison = refusTouches(touches)
+  if (raison) return raison
   const c = conflitDe(perso, id, touches)
   return c ? `Déjà pris par « ${c.libelle} ».` : null
 }

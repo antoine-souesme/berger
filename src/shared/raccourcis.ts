@@ -165,6 +165,24 @@ const COMMANDES_FIXES: Commande[] = [
 // Les touches du menu de l'application (Quitter, Masquer, Ouvrir un fichier).
 export const TOUCHES_REFUSEES = ['cmd-q', 'cmd-h', 'cmd-alt-h', 'cmd-o']
 
+// Les touches d'édition (copier, coller…) du terminal, de l'éditeur et des champs.
+const TOUCHES_EDITION = ['cmd-c', 'cmd-v', 'cmd-x', 'cmd-z', 'cmd-shift-z', 'cmd-a']
+
+// Pourquoi ces touches ne peuvent pas devenir un raccourci (null : elles peuvent).
+// Une touche sans ⌘, ⌃ ni ⌥ (sauf F1 à F12) partirait à la place d'une lettre
+// ou de Tab dans les terminaux.
+export function refusTouches(touches: string): string | null {
+  if (TOUCHES_REFUSEES.includes(touches)) return 'Touches réservées à macOS.'
+  if (TOUCHES_EDITION.includes(touches))
+    return "Touches réservées à l'édition (copier, coller, annuler…)."
+  const mods = touches.split('-').slice(0, -1)
+  const touche = touches.endsWith('--') ? '-' : touches.split('-').pop()!
+  const fonction = /^f([1-9]|1[0-2])$/.test(touche)
+  if (!fonction && !mods.some((m) => m === 'cmd' || m === 'ctrl' || m === 'alt'))
+    return 'Ajoute ⌘, ⌃ ou ⌥ à la touche.'
+  return null
+}
+
 const NOMS_CODE: Record<string, string> = {
   Tab: 'tab',
   Enter: 'enter',
