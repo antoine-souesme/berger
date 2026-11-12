@@ -21,6 +21,7 @@ import {
 } from './barre-onglets'
 import { lignesAgents, nouveauSpace, renommerSpaceEnPlace } from './colonne'
 import { dialogueOuvert } from './dialogue'
+import { menuOuvert } from './menus'
 import { ouvrirRechercheFichiers, rechercheOuverte } from './recherche-fichiers'
 import { basculerRetourLigne, chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
@@ -160,7 +161,7 @@ export function brancherClavier(): void {
     'keydown',
     (ev) => {
       // Un dialogue ouvert garde le clavier pour lui (voir dialogue.ts).
-      if (dialogueOuvert() || rechercheOuverte()) return
+      if (dialogueOuvert() || rechercheOuverte() || menuOuvert()) return
       const action = actionDe(ev, cibleDe(document.activeElement))
       if (!action) return
       ev.preventDefault()
