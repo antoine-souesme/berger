@@ -5,7 +5,7 @@ import { Terminal, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
-import { tableActuelle } from './table-raccourcis'
+import { dispositionActuelle, tableActuelle } from './table-raccourcis'
 import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
 
@@ -202,7 +202,9 @@ export function vueTerminal(adresse: string): HTMLElement {
     })
   )
   // Les raccourcis de Berger ne partent pas au terminal.
-  xterm.attachCustomKeyEventHandler((e) => actionDe(e, 'terminal', tableActuelle()) === null)
+  xterm.attachCustomKeyEventHandler(
+    (e) => actionDe(e, 'terminal', tableActuelle(), dispositionActuelle()) === null
+  )
   new ResizeObserver(() => ajuster(adresse, o)).observe(el)
   return el
 }

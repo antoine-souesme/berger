@@ -1,8 +1,11 @@
 // Règles pures du clavier : la table des commandes de Berger avec leurs touches
 // d'origine (celles de Herdr, `~/.config/herdr-app/keys.json`), les touches
 // personnelles des réglages, et le partage des touches entre Berger, le
-// terminal et l'éditeur. Les touches sont reconnues par `code`, pour ne pas
-// dépendre de la disposition du clavier, et écrites comme `cmd-shift-d`.
+// terminal et l'éditeur. Les touches sont écrites comme `cmd-shift-d` et
+// reconnues par le caractère que la disposition du clavier donne à leur
+// position (⌘Z est ⌘Z en AZERTY comme en QWERTY, comme dans les menus de
+// macOS) ; à défaut (chiffres, ou caractère qui n'est pas un nom de touche),
+// par `code`.
 import type { Direction, Sens } from './arbre'
 
 export type ActionClavier =
@@ -46,18 +49,13 @@ export type Touche = {
 }
 export type Cible = 'terminal' | 'editeur' | 'explorateur' | 'autre'
 
-const modificateurs = (t: Touche): string =>
-  (t.ctrlKey ? 'c' : '') + (t.altKey ? 'a' : '') + (t.shiftKey ? 's' : '') + (t.metaKey ? 'm' : '')
-
 // Les touches de l'explorateur, quand il a le clavier (comme dans VS Code).
-function toucheExplorateur(t: Touche): ActionClavier | null {
-  const mods = modificateurs(t)
-  if (mods === '' && t.code === 'F2') return { type: 'explorateur.renommer' }
-  if (mods === 'm' && t.code === 'KeyC') return { type: 'explorateur.copier' }
-  if (mods === 'm' && t.code === 'KeyV') return { type: 'explorateur.coller' }
-  if (mods === 'am' && t.code === 'KeyC') return { type: 'explorateur.copierChemin' }
-  if (mods === 'm' && t.code === 'Backspace') return { type: 'explorateur.corbeille' }
-  return null
+const TOUCHES_EXPLORATEUR: Record<string, ActionClavier> = {
+  f2: { type: 'explorateur.renommer' },
+  'cmd-c': { type: 'explorateur.copier' },
+  'cmd-v': { type: 'explorateur.coller' },
+  'cmd-alt-c': { type: 'explorateur.copierChemin' },
+  'cmd-backspace': { type: 'explorateur.corbeille' }
 }
 
 export type Commande = { id: string; libelle: string; action: ActionClavier; touches: string[] }
@@ -213,12 +211,24 @@ const NOMS_CODE: Record<string, string> = {
   IntlBackslash: '<'
 }
 
+// La disposition du clavier : le caractère de chaque position (`code`), sans
+// modificateur (`navigator.keyboard.getLayoutMap()`).
+export type Disposition = ReadonlyMap<string, string>
+
+// Les caractères qui peuvent nommer une touche.
+const NOMS_CARACTERES = new Set([
+  ...'abcdefghijklmnopqrstuvwxyz',
+  ...Object.values(NOMS_CODE).filter((n) => n.length === 1)
+])
+
 // `cmd-shift-d` : les modificateurs (cmd, ctrl, alt, shift) puis la touche ;
 // null pour une touche de modification seule ou une touche inconnue.
-export function touchesDe(t: Touche): string | null {
+export function touchesDe(t: Touche, disposition?: Disposition): string | null {
   let nom: string | undefined
+  const caractere = disposition?.get(t.code)?.toLowerCase()
   const m = /^(?:Key([A-Z])|Digit([0-9])|(F[0-9]{1,2}))$/.exec(t.code)
-  if (m) nom = (m[1] ?? m[2] ?? m[3]).toLowerCase()
+  if (caractere && NOMS_CARACTERES.has(caractere)) nom = caractere
+  else if (m) nom = (m[1] ?? m[2] ?? m[3]).toLowerCase()
   else nom = NOMS_CODE[t.code]
   if (!nom) return null
   return [
@@ -323,13 +333,14 @@ const PRIS_A_L_EDITEUR = new Set<ActionClavier['type']>([
 export function actionDe(
   touche: Touche,
   cible: Cible,
-  table: TableRaccourcis = TABLE_ORIGINE
+  table: TableRaccourcis = TABLE_ORIGINE,
+  disposition?: Disposition
 ): ActionClavier | null {
+  const touches = touchesDe(touche, disposition)
   if (cible === 'explorateur') {
-    const a = toucheExplorateur(touche)
+    const a = touches ? TOUCHES_EXPLORATEUR[touches] : undefined
     if (a) return a
   }
-  const touches = touchesDe(touche)
   const action = touches ? table.get(touches) : undefined
   if (!action) return null
   if (cible === 'editeur') return PRIS_A_L_EDITEUR.has(action.type) ? action : null
