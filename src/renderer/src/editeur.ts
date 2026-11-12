@@ -303,6 +303,14 @@ const suivre = (p: string, paires: [string, string][]): string => {
 // (et leurs modifications en attente) suivent leur nouveau chemin.
 export function suivreDeplacementEditeur(paires: [string, string][]): void {
   if (!paires.length) return
+  // Un fichier remplacé (mis à la corbeille) qui était ouvert : son modèle est oublié.
+  const cles = [...ouverts.keys()]
+  const arrivees = new Set(cles.map((c) => suivre(c, paires)).filter((n, i) => n !== cles[i]))
+  for (const c of arrivees)
+    if (ouverts.has(c) && suivre(c, paires) === c) {
+      ouverts.get(c)!.modele.dispose()
+      ouverts.delete(c)
+    }
   for (const [ancien, o] of [...ouverts]) {
     const nouveau = suivre(ancien, paires)
     if (nouveau === ancien) continue

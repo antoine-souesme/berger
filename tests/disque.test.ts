@@ -169,3 +169,36 @@ test('tousLesFichiers hors git : sans node_modules ni .git', async () => {
 test('fichiersSeuls garde les fichiers ordinaires', async () => {
   expect(await fichiersSeuls([src, join(dir, 'source'), join(dir, 'absent')])).toEqual([src])
 })
+
+test('garder les deux : un nom qui ne diffère que par les majuscules n’écrase rien', async () => {
+  writeFileSync(join(cible, 'readme.md'), 'ancien')
+  const source = join(dir, 'source', 'Readme.md')
+  writeFileSync(source, 'neuf')
+  const r = await transferer({
+    sources: [source],
+    cible,
+    copier: false,
+    conflit: 'garder',
+    corbeille
+  })
+  expect(readFileSync(join(cible, 'readme.md'), 'utf8')).toBe('ancien')
+  expect(r.faits).toEqual([[source, join(cible, 'Readme copie.md')]])
+  expect(readFileSync(join(cible, 'Readme copie.md'), 'utf8')).toBe('neuf')
+})
+
+test('remplacer refuse de jeter le dossier qui contient la source', async () => {
+  const p = join(dir, 'projet')
+  mkdirSync(join(p, 'src', 'src'), { recursive: true })
+  writeFileSync(join(p, 'src', 'src', 'x.ts'), 'x')
+  const jetes: string[] = []
+  const r = await transferer({
+    sources: [join(p, 'src', 'src')],
+    cible: p,
+    copier: false,
+    conflit: 'remplacer',
+    corbeille: async (c) => void jetes.push(c)
+  })
+  expect(jetes).toEqual([])
+  expect(r.erreurs).toHaveLength(1)
+  expect(existsSync(join(p, 'src', 'src', 'x.ts'))).toBe(true)
+})

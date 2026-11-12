@@ -91,13 +91,22 @@ export function decoration(
 
 // Le nom que prend un élément collé dans un dossier qui contient déjà `pris` :
 // « a.txt », puis « a copie.txt », « a copie 2.txt »… comme le Finder.
-export function nomDeCopie(nom: string, dossier: boolean, pris: Set<string>): string {
-  if (!pris.has(nom)) return nom
+// `sansCasse` : le disque ne distingue pas les majuscules (macOS), « Readme.md »
+// est pris quand « readme.md » existe.
+export function nomDeCopie(
+  nom: string,
+  dossier: boolean,
+  pris: Set<string>,
+  sansCasse = false
+): string {
+  const bas = sansCasse ? new Set([...pris].map((n) => n.toLowerCase())) : pris
+  const prend = (n: string): boolean => bas.has(sansCasse ? n.toLowerCase() : n)
+  if (!prend(nom)) return nom
   const point = dossier ? -1 : nom.lastIndexOf('.')
   const [base, ext] = point > 0 ? [nom.slice(0, point), nom.slice(point)] : [nom, '']
   for (let n = 1; ; n++) {
     const essai = `${base} copie${n > 1 ? ` ${n}` : ''}${ext}`
-    if (!pris.has(essai)) return essai
+    if (!prend(essai)) return essai
   }
 }
 

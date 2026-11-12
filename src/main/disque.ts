@@ -204,6 +204,8 @@ const estDossier = (chemin: string): Promise<boolean> =>
   )
 
 async function deplacer(source: string, dest: string): Promise<void> {
+  // `rename` écraserait un fichier existant : jamais sans l'avoir demandé.
+  if (existsSync(dest)) throw new Error(NOM_PRIS)
   try {
     await rename(source, dest)
   } catch (e) {
@@ -239,11 +241,16 @@ export async function transferer(o: {
           erreurs.push(`« ${nom} » existe déjà dans « ${basename(o.cible)} ».`)
           continue
         }
-        if (o.conflit === 'remplacer') await o.corbeille(dest)
-        else
+        if (o.conflit === 'remplacer') {
+          if (source.startsWith(dest + '/')) {
+            erreurs.push(`Impossible de remplacer « ${nom} » : il contient ce qu'on déplace.`)
+            continue
+          }
+          await o.corbeille(dest)
+        } else
           dest = join(
             o.cible,
-            nomDeCopie(nom, await estDossier(source), new Set(await readdir(o.cible)))
+            nomDeCopie(nom, await estDossier(source), new Set(await readdir(o.cible)), true)
           )
       }
       if (o.copier) await cp(source, dest, { recursive: true, errorOnExist: true, force: false })
@@ -302,7 +309,8 @@ export async function coller(
       const nom = nomDeCopie(
         basename(source),
         await estDossier(source),
-        new Set(await readdir(cible))
+        new Set(await readdir(cible)),
+        true
       )
       const dest = join(cible, nom)
       await cp(source, dest, { recursive: true, errorOnExist: true, force: false })

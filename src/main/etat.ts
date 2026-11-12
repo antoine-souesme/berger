@@ -16,6 +16,9 @@ export function lireEtat(): EtatFenetre {
 }
 
 let enAttente: EtatFenetre | null = null
+// Le dernier état écrit : rien n'est réécrit quand rien n'a changé (sinon la
+// surveillance d'une racine qui contient ce dossier relancerait l'explorateur sans fin).
+let dernierEcrit = ''
 let minuteur: NodeJS.Timeout | null = null
 
 function ecrireMaintenant(): void {
@@ -25,6 +28,7 @@ function ecrireMaintenant(): void {
   try {
     mkdirSync(dirname(fichier()), { recursive: true })
     writeFileSync(fichier(), JSON.stringify(enAttente, null, 2))
+    dernierEcrit = JSON.stringify(enAttente)
   } catch (e) {
     console.error('[berger] état de la fenêtre non enregistré :', (e as Error).message)
   }
@@ -32,10 +36,17 @@ function ecrireMaintenant(): void {
 }
 
 export function brancherEtat(): { vider: () => void } {
+  dernierEcrit = JSON.stringify(lireEtat())
   ipcMain.handle('berger:etat-fenetre', () => lireEtat())
   // Au plus une écriture toutes les 300 ms.
   ipcMain.on('berger:retenir', (_e, etat: unknown) => {
-    enAttente = lireEtatFenetre(etat)
+    const lu = lireEtatFenetre(etat)
+    const texte = JSON.stringify(lu)
+    if (texte === dernierEcrit) {
+      enAttente = null
+      return
+    }
+    enAttente = lu
     if (!minuteur) minuteur = setTimeout(ecrireMaintenant, 300)
   })
   return { vider: ecrireMaintenant }

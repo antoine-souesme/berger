@@ -16,6 +16,7 @@ import { modifie, oublierFichier, suivreDeplacementEditeur } from './editeur'
 import {
   changer,
   changerFichiers,
+  etat,
   fichiersDuWorkspace,
   ouvrirChemins,
   spacesVisiblesUi
@@ -333,6 +334,13 @@ async function deposer(sources: string[], cible: string, copier: boolean): Promi
     })
     if (r === 2) return
     conflit = r === 0 ? 'remplacer' : 'garder'
+    // Remplacer un fichier ouvert non enregistré perdrait ses modifications : refusé.
+    const remplaces = pris.map((n) => `${cible === '/' ? '' : cible}/${n}`)
+    const enAttente = [...etat().modifies].find((c) =>
+      remplaces.some((p) => c === p || c.startsWith(p + '/'))
+    )
+    if (conflit === 'remplacer' && enAttente)
+      return annoncer(`« ${nomDe(enAttente)} » a des modifications non enregistrées.`)
   }
   const r = await window.berger.demander<{ faits: [string, string][]; erreurs: string[] }>(
     'berger:transferer',

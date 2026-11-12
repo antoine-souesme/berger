@@ -119,3 +119,8 @@ test('dossiersAPerimer : le parent affiché et le dossier lui-même, jamais .git
     dossiersAPerimer(['/p/src/a.ts', '/p/.git/index', '/p/docs'], ['/p/src', '/p', '/p/docs'])
   ).toEqual(['/p/src', '/p', '/p/docs'])
 })
+
+test('nomDeCopie sans tenir compte des majuscules (disque de macOS)', () => {
+  expect(nomDeCopie('Readme.md', false, new Set(['readme.md']), true)).toBe('Readme copie.md')
+  expect(nomDeCopie('Readme.md', false, new Set(['readme.md']))).toBe('Readme.md')
+})
