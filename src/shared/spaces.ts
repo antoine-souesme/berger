@@ -1,5 +1,15 @@
 // Règles pures : du document `herdr-app` et des terminaux du core à la vue
-// affichée dans la colonne de Berger.
+// affichée par Berger (spaces, onglets et leurs arbres, terminaux).
+import type { Noeud } from './arbre'
+import {
+  dossierAffiche,
+  etatAgent,
+  nomOnglet,
+  plusPressant,
+  programme,
+  type EtatAgent,
+  type Icone
+} from './libelles'
 
 export type TerminalCore = {
   address: string
@@ -7,16 +17,43 @@ export type TerminalCore = {
   title: string
   cwd: string
   state: string
-  status?: { state: string } | null
-  foreground?: { cwd: string } | null
+  status?: { state: string; app?: string } | null
+  foreground?: { cwd: string; name?: string; argv?: string[] } | null
   labels: Record<string, string>
+  argv?: string[]
 }
 
-export type VueTerminal = { adresse: string; libelle: string; etat: string }
-export type VueSpace = { id: string; nom: string; dossier: string; terminaux: VueTerminal[] }
-export type Vue = { spaces: VueSpace[]; autres: VueTerminal[] }
+export type VueTerminal = {
+  adresse: string
+  libelle: string
+  etat: string
+  programme: { nom: string; icone: Icone }
+  dossier: string
+  /** Chemin complet du dossier actuel (pour lancer un terminal à côté). */
+  cwd: string
+  agent: EtatAgent
+  vivant: boolean
+  clicsDroitsAuProgramme: boolean
+}
+export type VueOnglet = { id: string; nom: string; racine: Noeud; agent: EtatAgent }
+export type VueSpace = {
+  id: string
+  nom: string
+  dossier: string
+  branche?: string
+  onglets: VueOnglet[]
+  terminaux: VueTerminal[]
+}
+export type Vue = {
+  spaces: VueSpace[]
+  autres: VueTerminal[]
+  terminaux: Record<string, VueTerminal>
+}
 
-type SpaceDoc = { id: string; name?: string; folder?: string; tabs?: { root?: unknown }[] }
+export const VUE_VIDE: Vue = { spaces: [], autres: [], terminaux: {} }
+
+type OngletDoc = { id: string; name?: string; root?: unknown }
+type SpaceDoc = { id: string; name?: string; folder?: string; tabs?: OngletDoc[] }
 
 const ETATS: Record<string, string> = {
   working: 'au travail',
@@ -51,16 +88,30 @@ export function dossierDuSpace(space: SpaceDoc, terminaux: Map<string, TerminalC
   return premier?.foreground?.cwd || premier?.cwd || space.folder || ''
 }
 
-function vueTerminal(t: TerminalCore): VueTerminal {
-  return { adresse: t.address, libelle: t.name || t.title || t.address, etat: libelleEtat(t) }
+function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
+  const prog = programme(t)
+  const cwd = t.foreground?.cwd || t.cwd || ''
+  return {
+    adresse: t.address,
+    libelle: t.name || prog.nom,
+    etat: libelleEtat(t),
+    programme: prog,
+    dossier: dossierAffiche(cwd, maison),
+    cwd,
+    agent: etatAgent(t),
+    vivant: t.state === 'live',
+    clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program'
+  }
 }
 
 function dernierSegment(chemin: string): string {
   return chemin.split('/').filter(Boolean).pop() ?? chemin
 }
 
-export function construireVue(doc: unknown, terminaux: TerminalCore[]): Vue {
+export function construireVue(doc: unknown, terminaux: TerminalCore[], maison = ''): Vue {
   const parAdresse = new Map(terminaux.map((t) => [t.address, t]))
+  const vues: Record<string, VueTerminal> = {}
+  for (const t of terminaux) vues[t.address] = vueTerminal(t, maison)
   const spacesDoc = ((doc as { spaces?: SpaceDoc[] } | null)?.spaces ?? []) as SpaceDoc[]
   const ranges = new Set<string>()
   const spaces = spacesDoc.map((space) => {
@@ -71,11 +122,17 @@ export function construireVue(doc: unknown, terminaux: TerminalCore[]): Vue {
       id: space.id,
       nom: space.name || dernierSegment(dossier),
       dossier,
-      terminaux: adresses.map((a) => vueTerminal(parAdresse.get(a)!))
+      onglets: (space.tabs ?? []).map((onglet, place) => ({
+        id: onglet.id,
+        nom: nomOnglet(onglet.name, place),
+        racine: (onglet.root ?? { type: 'row', id: onglet.id, children: [] }) as Noeud,
+        agent: plusPressant(terminauxDeLArbre(onglet.root).map((a) => vues[a]?.agent ?? null))
+      })),
+      terminaux: adresses.map((a) => vues[a])
     }
   })
   const autres = terminaux
     .filter((t) => t.state === 'live' && !ranges.has(t.address))
-    .map(vueTerminal)
-  return { spaces, autres }
+    .map((t) => vues[t.address])
+  return { spaces, autres, terminaux: vues }
 }

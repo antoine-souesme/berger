@@ -8,7 +8,7 @@ commence que quand la précédente marche, vue dans l'application lancée.
 |---|---|---|
 | 0 | Preuve de concept | Faite (bilan : `docs/notes/bilan-phase0-poc.md`) |
 | 1 | Maquette et conception globale | Faite (maquettes : `docs/maquettes/`) |
-| 2 | Le cadre de la fenêtre | À faire |
+| 2 | Le cadre de la fenêtre | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase2-cadre.md`) |
 | 3 | Workspaces, spaces et agents | À faire |
 | 4 | Fichiers | À faire |
 | 5 | L'éditeur complet | À faire |

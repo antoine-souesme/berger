@@ -38,3 +38,18 @@ Le canal 0 porte le JSON-RPC (type 0, un message JSON par trame, sans fin de lig
 `hc attach` rend un CREDIT de la longueur de chaque trame DATA reçue, juste
 après l'avoir écrite. Les touches tapées partent en DATA (type 0), même quand
 `automatic_input` vaut vrai. FACTS (probablement le type 5) n'a pas été observé.
+
+## Numéro des événements (`events.subscribe`)
+
+Lu dans `hc schema` (phase 2) : la réponse à `events.subscribe` porte `seq`
+(« les événements après ce numéro suivent ») et `terminals`. Chaque
+notification `event` porte son `seq`. Un abonné qui a pris du retard reçoit
+une notification `missed` avec un instantané neuf (`seq`, `terminals`) ;
+il faut alors ignorer les événements dont le `seq` n'est pas au-dessus de
+celui de l'instantané (`evenementNeuf` dans `src/shared/terminaux.ts`).
+
+## Réponse au `hello` tramé
+
+La réponse au `hello { framed: true }` arrive en une ligne JSON simple, avant
+toute trame. Si elle contient `error`, Berger arrête là (message remonté) et
+n'envoie pas `terminal.attach`.

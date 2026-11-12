@@ -1,5 +1,6 @@
 import type { TerminalCore } from './spaces'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- `data` change de forme selon le type d'événement
 export type EvenementCore = { type: string; terminal?: string; data: any; seq?: number }
 
 // Tient à jour la table des terminaux à partir des événements de
@@ -32,4 +33,11 @@ export function appliquerEvenement(table: Map<string, TerminalCore>, e: Evenemen
     default:
       if (e.data && typeof e.data === 'object') Object.assign(t, e.data)
   }
+}
+
+// Faut-il appliquer cet événement ? Non s'il est déjà couvert par le dernier
+// instantané (après `missed`, le core demande d'ignorer les seq inférieurs).
+export function evenementNeuf(dernier: number | null, seq: number | undefined): boolean {
+  if (dernier === null || seq === undefined) return true
+  return seq > dernier
 }

@@ -2,6 +2,17 @@ import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
 import { cheminHc } from './hc'
 import { decodeurDeTrames, encoderTrame, taille, TYPE, u32, type Trame } from '../shared/trames'
 
+// Le message d'erreur de la réponse au hello, s'il y en a une.
+function erreurDuHello(ligne: string): string | null {
+  try {
+    const m = JSON.parse(ligne)
+    if (m.error) return m.error.message ?? m.error.data?.kind ?? 'hello refusé'
+    return null
+  } catch {
+    return 'réponse illisible au hello'
+  }
+}
+
 type Rappels = { sortie: (octets: Uint8Array) => void; fin: (raison: string) => void }
 
 // Un terminal du core ouvert dans Berger : une connexion `hc connect` tramée
@@ -12,10 +23,13 @@ export class TerminalOuvert {
   private fini = false
 
   constructor(
-    adresse: string,
+    private adresse: string,
     cols: number,
     rows: number,
-    private rappels: Rappels
+    private rappels: Rappels,
+    // Faux quand Berger est en arrière-plan : `resumed` demande au core de ne
+    // prendre la taille qu'une fois la fenêtre active (FOCUS).
+    actif = true
   ) {
     this.processus = spawn(cheminHc(), ['connect'], { stdio: 'pipe' })
     this.processus.on('error', () => this.terminer('connexion impossible'))
@@ -31,8 +45,19 @@ export class TerminalOuvert {
         const fin = entree.indexOf(0x0a)
         if (fin < 0) return
         const reste = entree.subarray(fin + 1)
+        const reponse = entree.subarray(0, fin).toString('utf8')
         entree = null
-        this.envoyerRequete(1, 'terminal.attach', { terminal: adresse, cols, rows })
+        const erreur = erreurDuHello(reponse)
+        if (erreur) {
+          this.terminer(erreur)
+          return
+        }
+        this.envoyerRequete(1, 'terminal.attach', {
+          terminal: this.adresse,
+          cols,
+          rows,
+          ...(actif ? {} : { resumed: true })
+        })
         morceau = reste
       }
       for (const trame of decode(new Uint8Array(morceau))) this.recevoir(trame)
@@ -52,6 +77,7 @@ export class TerminalOuvert {
   }
 
   redimensionner(cols: number, rows: number): void {
+    if (process.env['BERGER_TRACE']) console.log(`[berger] RESIZE ${this.adresse} ${cols}x${rows}`)
     this.envoyer(TYPE.RESIZE, taille(cols, rows))
   }
 

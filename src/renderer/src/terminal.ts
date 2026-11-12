@@ -1,63 +1,128 @@
+// Un xterm par terminal affiché, branché sur le processus principal. Il est
+// gardé tant que son onglet est affiché ; les autres sont détachés (jamais
+// tués) et rattachés au retour.
 import { Terminal } from '@xterm/xterm'
 import { FitAddon } from '@xterm/addon-fit'
 import '@xterm/xterm/css/xterm.css'
+import { actionDe } from '../../shared/raccourcis'
 
-// La vue du terminal ouvert : xterm.js branché sur le processus principal.
-const zone = (): HTMLElement => document.getElementById('terminal')!
-let terminal: Terminal | null = null
-let ajustement: FitAddon | null = null
-const encodeur = new TextEncoder()
-
-function annoncerTaille(): void {
-  if (!terminal || !ajustement) return
-  ajustement.fit()
-  window.berger.envoyer('berger:taille', { cols: terminal.cols, rows: terminal.rows })
+type Ouvert = {
+  el: HTMLElement
+  xterm: Terminal
+  ajustement: FitAddon
+  attache: boolean
+  cree: number
 }
 
-export function initTerminal(): void {
-  window.berger.ecouter('berger:sortie', (octets: Uint8Array) => terminal?.write(octets))
-  window.berger.ecouter('berger:fin-terminal', () => {
-    terminal?.dispose()
-    terminal = null
-    zone().replaceChildren(message('Terminal terminé'))
+const ouverts = new Map<string, Ouvert>()
+// Terminaux dont le flux s'est arrêté juste après l'ouverture : on ne les
+// rouvre pas en boucle, on montre la raison.
+const arretes = new Map<string, string>()
+const encodeur = new TextEncoder()
+let surFin: (adresse: string) => void = () => {}
+
+function envoyerTaille(adresse: string, o: Ouvert): void {
+  if (!o.attache || !document.hasFocus()) return
+  window.berger.envoyer('berger:taille', { adresse, cols: o.xterm.cols, rows: o.xterm.rows })
+}
+
+function ajuster(adresse: string, o: Ouvert): void {
+  if (!o.el.isConnected || o.el.clientWidth === 0 || o.el.clientHeight === 0) return
+  o.ajustement.fit()
+  if (!o.attache) {
+    o.attache = true
+    // En arrière-plan, l'attache n'impose pas sa taille (le focus la donnera).
+    window.berger.envoyer('berger:attacher', {
+      adresse,
+      cols: o.xterm.cols,
+      rows: o.xterm.rows,
+      actif: document.hasFocus()
+    })
+    return
+  }
+  // Un terminal n'a qu'une taille : Berger n'impose la sienne que s'il a le focus.
+  envoyerTaille(adresse, o)
+}
+
+export function initTerminaux(rappels: { fin: (adresse: string) => void }): void {
+  surFin = rappels.fin
+  window.berger.ecouter('berger:sortie', ({ adresse, octets }) =>
+    ouverts.get(adresse)?.xterm.write(octets)
+  )
+  window.berger.ecouter('berger:fin-terminal', ({ adresse, raison }) => {
+    const o = ouverts.get(adresse)
+    if (!o) return
+    if (Date.now() - o.cree < 3000) arretes.set(adresse, raison)
+    o.xterm.dispose()
+    o.el.remove()
+    ouverts.delete(adresse)
+    surFin(adresse)
   })
-  new ResizeObserver(() => annoncerTaille()).observe(zone())
+  window.berger.ecouter('berger:connexion', ({ etat }) => {
+    if (etat === 'connecte') arretes.clear()
+  })
   // Comme dans Herdr : la fenêtre où l'on travaille impose sa taille.
   window.addEventListener('focus', () => {
     window.berger.envoyer('berger:focus', { actif: true })
-    annoncerTaille()
+    for (const [adresse, o] of ouverts) envoyerTaille(adresse, o)
   })
   window.addEventListener('blur', () => window.berger.envoyer('berger:focus', { actif: false }))
 }
 
-function message(texte: string): HTMLElement {
-  const el = document.createElement('div')
-  el.className = 'message'
-  el.textContent = texte
-  return el
+export function raisonArret(adresse: string): string | undefined {
+  return arretes.get(adresse)
 }
 
-export function ouvrirTerminal(adresse: string): void {
-  terminal?.dispose()
-  zone().replaceChildren()
-  terminal = new Terminal({
+// Crée ou rend l'élément du terminal ; il s'attache dès qu'il a une taille.
+export function vueTerminal(adresse: string): HTMLElement {
+  const deja = ouverts.get(adresse)
+  if (deja) return deja.el
+  const el = document.createElement('div')
+  el.className = 'xterm-hote'
+  el.style.width = '100%'
+  el.style.height = '100%'
+  const xterm = new Terminal({
     fontFamily: 'Menlo, monospace',
-    fontSize: 13,
+    fontSize: 12,
     cursorBlink: true,
-    theme: { background: '#1e1f1c', foreground: '#e6e6e1', cursor: '#e6e6e1' }
+    allowProposedApi: true,
+    theme: { background: '#272822', foreground: '#d0d0c8', cursor: '#f8f8f0' }
   })
-  ajustement = new FitAddon()
-  terminal.loadAddon(ajustement)
-  terminal.open(zone())
-  ajustement.fit()
-  terminal.onData((texte) =>
-    window.berger.envoyer('berger:touches', { octets: encodeur.encode(texte) })
+  const ajustement = new FitAddon()
+  xterm.loadAddon(ajustement)
+  xterm.open(el)
+  const o: Ouvert = { el, xterm, ajustement, attache: false, cree: Date.now() }
+  ouverts.set(adresse, o)
+  xterm.onData((texte) =>
+    window.berger.envoyer('berger:touches', { adresse, octets: encodeur.encode(texte) })
   )
-  terminal.onBinary((texte) =>
+  xterm.onBinary((texte) =>
     window.berger.envoyer('berger:touches', {
+      adresse,
       octets: Uint8Array.from(texte, (c) => c.charCodeAt(0))
     })
   )
-  window.berger.envoyer('berger:attacher', { adresse, cols: terminal.cols, rows: terminal.rows })
-  terminal.focus()
+  // Les raccourcis de Berger ne partent pas au terminal.
+  xterm.attachCustomKeyEventHandler((e) => actionDe(e, 'terminal') === null)
+  new ResizeObserver(() => ajuster(adresse, o)).observe(el)
+  return el
+}
+
+export function oublierTerminauxSauf(adresses: Set<string>): void {
+  for (const [adresse, o] of ouverts) {
+    if (adresses.has(adresse)) continue
+    if (o.attache) window.berger.envoyer('berger:detacher', { adresse })
+    o.xterm.dispose()
+    o.el.remove()
+    ouverts.delete(adresse)
+  }
+}
+
+export function donnerClavier(adresse: string): void {
+  ouverts.get(adresse)?.xterm.focus()
+}
+
+export function aLeClavier(adresse: string): boolean {
+  const o = ouverts.get(adresse)
+  return !!o && o.el.contains(document.activeElement)
 }

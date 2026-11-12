@@ -12,6 +12,8 @@ export const DOSSIERS_IGNORES = [
 ]
 export const LIMITE_FICHIERS = 5000
 
+export type ListeFichiers = { fichiers: string[]; tronquee: boolean }
+
 function contientDansLOrdre(texte: string, requete: string): boolean {
   let i = 0
   for (const c of texte) if (c === requete[i]) i++

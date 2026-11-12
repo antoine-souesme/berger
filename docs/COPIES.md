@@ -9,7 +9,12 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | Icônes de fichiers des maquettes (`docs/maquettes/`) | Material Icon Theme, copiées depuis `~/.config/herdr-app/mods/antoine/icons/material/` | MIT |
 | Icônes d'interface des maquettes (`docs/maquettes/`) | Lucide | ISC |
 | Chevrons et icône « tout replier » des maquettes | mod `antoine` (`~/.config/herdr-app/mods/antoine/`) | code personnel d'Antoine |
+| Icônes d'interface de l'application (`src/renderer/src/icones.ts`) | paquet `lucide` (Lucide) | ISC |
+| Règles des onglets de fichiers (`src/shared/onglets.ts` : ajouter à la fin, fermer, onglet voisin) | inspirées de `files.js` du mod `antoine` (`~/.config/herdr-app/mods/antoine/`), réécrites | code personnel d'Antoine |
+| Règles de l'arbre des découpages et des commandes de structure (`src/shared/arbre.ts`, `src/shared/document.ts`) | comportement de Herdr imité d'après `~/.config/herdr-app/AGENTS.md`, aucun code repris | — |
+| Table des raccourcis (`src/shared/raccourcis.ts`) | `~/.config/herdr-app/keys.json` (raccourcis de Herdr), aucun code repris | — |
 | Format des trames de herdr-core (`src/shared/trames.ts`) | observé sur `hc` 0.1.20, aucun code repris | herdr-core : Apache 2.0 |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
-(`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT).
+(`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT), Lucide (`lucide`, icônes
+d’interface, ISC).

@@ -43,6 +43,12 @@ avec leur `README.md`).
 - `npm install`, puis `npm run dev` (fenêtre Berger), `npm test` (règles pures), `npm run typecheck`.
 - Vérifier sans cliquer (développement) : `BERGER_CAPTURE=<fichier.png>` enregistre une image de
   la fenêtre ; `BERGER_OUVRIR=<terminal>` et `BERGER_TAPER=<texte>` ouvrent un terminal et y
-  tapent ; `BERGER_SCENARIO=editeur|conflit` avec `BERGER_SCENARIO_DOSSIER` joue l'éditeur
-  (voir `src/main/scenario.ts`) ; `BERGER_TRACE=1` journalise les changements d'état.
+  tapent ; `BERGER_SCENARIO=editeur|conflit|supprime` avec `BERGER_SCENARIO_DOSSIER` joue
+  l'éditeur ; `BERGER_SCENARIO=cadre` avec `BERGER_SCENARIO_SPACE=<spbergertest…>` joue les
+  onglets et découpages dans ce space de test (`BERGER_SCENARIO_LARGEUR=<px>` tire aussi un
+  séparateur), `BERGER_SCENARIO=ranger` le ferme (`BERGER_SCENARIO_REPONSE=0` accepte la
+  question) ; voir `src/main/scenario.ts`. `BERGER_TRACE=1` journalise les changements d'état,
+  les écritures du document, les terminaux lancés et fermés, les `RESIZE` et le premier plan.
+- Space de test : `hc run --bg --keep --no-parent --label herdr.space=spbergertest<hex>
+  --label herdr.tab=tbbergertest<hex> -- zsh` (Herdr l'adopte). Jamais les spaces d'Antoine.
 - Le format des échanges avec un terminal du core : `docs/notes/trames-herdr-core.md`.

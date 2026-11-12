@@ -1,152 +1,485 @@
+/* Couleurs du thème `antoine-monokai` de Herdr (voir docs/maquettes/README.md). */
+:root {
+  --fond: #1e1f1c;
+  --panneau: #272822;
+  --bord: #34352f;
+  --texte: #d0d0c8;
+  --vif: #f2f2ea;
+  --gris: #75715e;
+  --gris-clair: #a59f85;
+  --actif: #414339;
+  --clavier: #66d9ef;
+}
+
 html,
 body {
   margin: 0;
   height: 100%;
-  background: #1e1f1c;
-  color: #e6e6e1;
+  background: var(--fond);
+  color: var(--texte);
   font:
     13px -apple-system,
     BlinkMacSystemFont,
+    'Helvetica Neue',
     sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 body {
-  display: grid;
-  grid-template-columns: 280px minmax(0, 1fr) minmax(0, 1fr);
+  display: flex;
   overflow: hidden;
-}
-#colonne {
-  border-right: 1px solid #3a3b35;
-  overflow: auto;
-}
-#terminal,
-#editeur {
-  position: relative;
-  min-width: 0;
-  min-height: 0;
-  overflow: hidden;
-}
-#terminal {
-  border-right: 1px solid #3a3b35;
-}
-
-#colonne {
-  padding: 8px 0;
   user-select: none;
 }
-.bandeau {
-  margin: 0 8px 8px;
-  padding: 6px 8px;
-  background: #5c2b2b;
-  border-radius: 4px;
+[hidden] {
+  display: none !important;
 }
-.space {
-  margin-bottom: 6px;
+.icone {
+  flex-shrink: 0;
 }
-.space .titre {
-  padding: 4px 12px;
-  font-weight: 600;
-  cursor: pointer;
+.gris {
+  color: var(--gris);
 }
-.space.choisi .titre {
-  background: #3a3b35;
-}
-.space.autres .titre {
-  color: #908f87;
-  cursor: default;
-}
-.terminal {
+
+/* Colonne de gauche */
+#gauche {
   display: flex;
-  gap: 8px;
-  padding: 2px 12px 2px 24px;
-  cursor: pointer;
+  flex-shrink: 0;
+  border-right: 1px solid var(--bord);
 }
-.terminal:hover,
-.terminal.choisi {
-  background: #2d2e29;
+#workspaces {
+  width: 76px;
+  flex-shrink: 0;
+  border-right: 1px solid var(--bord);
+  -webkit-app-region: drag;
 }
-.terminal .libelle {
-  flex: 1;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-}
-.terminal .etat {
-  color: #908f87;
-  white-space: nowrap;
-}
-.terminal .etat.travail {
-  color: #e6c86e;
-}
-.terminal .etat.attente {
-  color: #8fc66e;
-}
-
-#terminal {
-  padding: 4px;
-  box-sizing: border-box;
-}
-.message {
-  padding: 16px;
-  color: #908f87;
-}
-#terminal .xterm,
-#terminal .xterm-viewport {
-  background: #1e1f1c !important;
-}
-
-#editeur {
+.bande {
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
 }
-#editeur-barre {
-  display: flex;
-  justify-content: space-between;
-  padding: 6px 10px;
-  color: #a59f85;
-  border-bottom: 1px solid #3a3b35;
+.separateur {
+  width: 5px;
+  margin: 0 -3px 0 -2px;
+  cursor: col-resize;
+  z-index: 5;
+  position: relative;
 }
-#editeur-message {
-  color: #a6e22e;
-}
-#editeur-texte {
-  flex: 1;
-  min-height: 0;
-}
-#choix {
+.separateur::after {
+  content: '';
   position: absolute;
-  top: 34px;
-  left: 10%;
-  right: 10%;
-  z-index: 10;
-  background: #1e1f1c;
-  border: 1px solid #414339;
-  border-radius: 6px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  top: 0;
+  bottom: 0;
+  left: 2px;
+  width: 1px;
+  background: var(--bord);
 }
-#choix[hidden] {
-  display: none;
+.separateur.tire::after,
+.separateur:hover::after {
+  background: var(--gris);
+}
+#gauche .separateur:last-child::after {
+  background: transparent;
+}
+#gauche .separateur:last-child:hover::after {
+  background: var(--gris);
+}
+.entete {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 14px;
+  -webkit-app-region: drag;
+}
+.titre-bande {
+  color: var(--gris-clair);
+  font-size: 12px;
+}
+.nom-app {
+  color: var(--vif);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 #filtre {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 8px 10px;
-  background: #414339;
-  color: #f8f8f2;
-  border: 0;
+  margin: 0 10px 6px;
+  padding: 5px 8px;
+  background: var(--panneau);
+  color: var(--vif);
+  border: 1px solid var(--bord);
+  border-radius: 6px;
   outline: none;
   font: inherit;
 }
+#filtre:focus {
+  border-color: var(--clavier);
+}
+#explorateur-message {
+  margin: 0 12px 6px;
+  color: var(--gris-clair);
+  font-size: 12px;
+}
 #liste-fichiers {
-  max-height: 60vh;
+  flex: 1;
   overflow: auto;
 }
 .fichier {
-  padding: 3px 10px;
+  display: flex;
+  gap: 6px;
+  height: 22px;
+  align-items: center;
+  padding: 0 12px;
   cursor: pointer;
   white-space: nowrap;
+  overflow: hidden;
+}
+.fichier span {
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .fichier:hover {
-  background: #3e3d32;
+  background: var(--panneau);
+}
+.titre-section {
+  padding: 8px 18px 6px;
+  color: var(--gris-clair);
+  font-size: 12px;
+}
+#liste-spaces {
+  padding: 0 10px 12px;
+  border-bottom: 1px solid var(--bord);
+  margin-bottom: 4px;
+}
+#liste-agents {
+  padding: 0 10px;
+  flex: 1;
+  overflow: auto;
+}
+.ligne-space,
+.ligne-agent {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.ligne-agent {
+  gap: 6px;
+  height: 30px;
+}
+.ligne-space:hover,
+.ligne-agent:hover {
+  background: var(--panneau);
+}
+.ligne-space.choisi,
+.ligne-agent.choisi {
+  background: var(--actif);
+}
+.ligne-space .nom,
+.ligne-agent .nom {
+  color: var(--vif);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ligne-space .nom {
+  flex: 1;
+}
+.ligne-space .branche {
+  font-size: 12px;
+}
+.ligne-agent .gris {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.etat-agent {
+  font-size: 12px;
+}
+.pastille {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 600;
+}
+.renommage {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--fond);
+  color: var(--vif);
+  border: 1px solid var(--clavier);
+  border-radius: 4px;
+  font: inherit;
+  padding: 1px 4px;
+  outline: none;
+}
+
+/* Colonne de droite */
+#droite {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+#deconnecte {
+  padding: 6px 12px;
+  background: #5c2b2b;
+  color: var(--vif);
+}
+#barre-onglets {
+  height: 52px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-app-region: drag;
+}
+#barre-onglets::-webkit-scrollbar {
+  display: none;
+}
+.onglet {
+  height: 30px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 10px 0 12px;
+  border-radius: 7px;
+  color: var(--texte);
+  cursor: pointer;
+  white-space: nowrap;
+  -webkit-app-region: no-drag;
+}
+.onglet:hover {
+  background: var(--panneau);
+}
+.onglet.actif {
+  background: var(--actif);
+  color: var(--vif);
+}
+.onglet .fermer {
+  width: 16px;
+  height: 16px;
+  display: grid;
+  place-items: center;
+  border-radius: 4px;
+  color: var(--gris);
+  visibility: hidden;
+}
+.onglet.actif .fermer,
+.onglet:hover .fermer,
+.onglet .fermer.modifie {
+  visibility: visible;
+}
+.onglet .fermer:hover {
+  background: var(--bord);
+  color: var(--vif);
+}
+.onglet .renommage {
+  width: 110px;
+}
+.trait-onglets {
+  width: 1px;
+  height: 20px;
+  margin: 0 8px;
+  background: var(--bord);
+  flex-shrink: 0;
+}
+
+#contenu {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  padding: 0 6px 6px;
+}
+#zone-terminaux {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+}
+.noeud {
+  display: flex;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+.noeud.row {
+  flex-direction: row;
+}
+.noeud.column {
+  flex-direction: column;
+}
+.coupure {
+  flex: 0 0 6px;
+}
+.row > .coupure {
+  cursor: col-resize;
+}
+.column > .coupure {
+  cursor: row-resize;
+}
+.panneau {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.panneau.clavier {
+  border-color: var(--clavier);
+}
+.bandeau {
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 12px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.bandeau .programme {
+  color: var(--vif);
+  font-weight: 600;
+}
+.bandeau .gris {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.corps {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  padding: 2px 4px 4px 12px;
+}
+.corps .xterm,
+.corps .xterm-viewport {
+  background: var(--panneau) !important;
+}
+.message {
+  padding: 16px;
+  color: var(--gris);
+}
+
+/* Onglet de fichier */
+#zone-fichier {
+  flex: 1;
+}
+#fichier-bandeau .chemin-sep {
+  color: var(--gris);
+}
+#fichier-bandeau .chemin-nom {
+  color: var(--vif);
+  font-weight: 600;
+}
+#fichier-bandeau .gris {
+  overflow: visible;
+}
+#editeur {
+  flex: 1;
+  min-height: 0;
+}
+#fichier-etat {
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+#fichier-message {
+  flex: 1;
+  color: #a6e22e;
+}
+
+/* Barre d'état */
+#barre-etat {
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 16px;
+  border-top: 1px solid var(--bord);
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+#barre-etat .morceau {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+#barre-etat .droite {
+  margin-left: auto;
+}
+.point {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* Menus du clic droit */
+.menu {
+  position: fixed;
+  z-index: 100;
+  min-width: 240px;
+  padding: 5px;
+  background: var(--fond);
+  border: 1px solid var(--actif);
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.menu .entree {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 5px;
+  color: var(--texte);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.menu .entree:hover {
+  background: var(--actif);
+  color: var(--vif);
+}
+.menu .entree .libelle {
+  flex: 1;
+}
+.menu .raccourci {
+  color: var(--gris);
+  font-size: 12px;
+}
+.menu .coche {
+  color: var(--clavier);
+}
+.menu .trait {
+  height: 1px;
+  margin: 5px 8px;
+  background: var(--bord);
+}
+
+/* La minicarte ne peint que la hauteur du texte : sous elle, le fond doit
+   rester plein, sinon la fin des lignes longues se lit à travers. */
+#editeur .monaco-editor .minimap {
+  background: var(--panneau);
 }
