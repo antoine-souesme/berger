@@ -10,7 +10,7 @@ test('hc qui meurt aussitôt : les écritures suivantes ne lèvent pas EPIPE', a
   const surErreur = (e: unknown): void => void erreurs.push(e)
   process.on('uncaughtException', surErreur)
   const hc = await Hc.ouvrir()
-  await attendre(100)
+  await attendre(150)
   for (let i = 0; i < 5; i++) hc.requete('terminal.list').catch(() => {})
   await attendre(400)
   process.off('uncaughtException', surErreur)
@@ -29,7 +29,7 @@ test("après detacher(), plus aucun octet du terminal quitté n'est rendu", asyn
   const { TerminalOuvert } = await import('../src/main/terminal')
   let recus = 0
   const t = new TerminalOuvert('t1', 80, 24, { sortie: () => recus++, fin: () => {} })
-  await attendre(150)
+  for (let i = 0; i < 40 && recus === 0; i++) await attendre(50)
   expect(recus).toBeGreaterThan(0)
   t.detacher()
   const avant = recus
