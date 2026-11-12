@@ -1,0 +1,20 @@
+# Empaquetage de Berger pour ce Mac (npm run installer) : un dossier, sans
+# signature Apple ni mise à jour automatique.
+appId: fr.antoine.berger
+productName: Berger
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**
+  - package.json
+# Les serveurs de langage et tsserver sont lancés par leur chemin de fichier :
+# pas d'archive asar.
+asar: false
+npmRebuild: false
+mac:
+  target: dir
+  icon: build/icon.icns
+  identity: null
+  category: public.app-category.developer-tools
+  entitlementsInherit: build/entitlements.mac.plist
