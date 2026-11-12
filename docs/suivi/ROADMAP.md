@@ -11,9 +11,8 @@ commence que quand la précédente marche, vue dans l'application lancée.
 | 3 | Workspaces, spaces et agents | À faire |
 | 4 | Fichiers | À faire |
 | 5 | L'éditeur complet | À faire |
-| 6 | Panneau Outils et Git | À faire |
-| 7 | Les autres machines | À faire |
-| 8 | Berger au quotidien | À faire |
+| 6 | Les autres machines | À faire |
+| 7 | Berger au quotidien | À faire |
 
 ## Phase 0 : preuve de concept
 
@@ -32,7 +31,7 @@ Décider à quoi ressemble Berger avant de construire la suite.
   ce qu'il fait à sa façon (la question ouverte de `docs/VISION.md`).
 - Maquettes des écrans principaux : la fenêtre entière, la barre des
   workspaces, les listes de spaces et d'agents, la barre d'onglets,
-  l'explorateur, le panneau Outils, `cmd-p`. Sources d'inspiration :
+  l'explorateur, `cmd-p`. Sources d'inspiration :
   `docs/inspiration-ui/`.
 - Le libellé des terminaux (au lieu de `utilisateur@machine:chemin`).
 - Le découpage du code : quels modules purs, repris ou non du mod `antoine`,
@@ -85,20 +84,13 @@ La raison d'être de Berger.
 - Retour à la ligne, réglage de la couleur de sélection, coloration de tous les
   langages.
 
-## Phase 6 : panneau Outils et Git
-
-- Le panneau à droite avec sa propre largeur, un terminal par space.
-- La partie Git façon lazygit : changements, branches, graphe des commits,
-  fetch (`f`), mise à jour d'une branche sans la changer, suppression de
-  branche locale, distante ou les deux.
-
-## Phase 7 : les autres machines
+## Phase 6 : les autres machines
 
 - Se brancher sur le core d'une autre machine (ssh, VPS) et voir ses spaces,
   terminaux et agents à côté de ceux de la machine locale.
 - Ouvrir et enregistrer les fichiers de ces machines dans l'éditeur.
 
-## Phase 8 : Berger au quotidien
+## Phase 7 : Berger au quotidien
 
 Pouvoir se passer de l'app Herdr.
 
