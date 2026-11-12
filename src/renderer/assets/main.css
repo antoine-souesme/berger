@@ -396,13 +396,25 @@ body {
   color: #a6e22e;
   flex-shrink: 0;
 }
+.etat-agent {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
 .point-attente {
   width: 8px;
   height: 8px;
-  margin: 0 2.5px;
   border-radius: 50%;
   background: #f92672;
-  flex-shrink: 0;
+}
+.anneau-repos {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gris);
+  box-sizing: border-box;
 }
 /* Sous-agents : retrait de 39 px, traits de l'arbre (repris du mod antoine-agents). */
 .ligne-agent.sous-agent {
@@ -1112,7 +1124,7 @@ body {
 
 /* L'icône d'un agent au travail tourne. */
 .tourne {
-  animation: tourner 1s linear infinite;
+  animation: tourner 0.9s linear infinite;
 }
 @keyframes tourner {
   to {

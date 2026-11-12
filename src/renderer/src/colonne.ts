@@ -147,29 +147,36 @@ export function lignesAgents(): LigneAgent[] {
   return lignes
 }
 
-// L'icône d'état d'un agent (maquette) : au travail, t'attend, fini.
-function iconeEtat(agent: LigneAgent['agent']): Node | null {
+// L'icône d'état d'un agent, comme dans Herdr (mod `antoine-agents`) : au
+// travail, l'anneau qui tourne de Herdr ; t'attend, un point rose ; fini, une
+// coche verte ; au repos, un anneau gris. Toutes dans une case de 14 px, pour
+// rester alignées d'une ligne à l'autre.
+const ANNEAU =
+  '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.4" stroke-opacity="0.24"/><path d="M12 2.6a9.4 9.4 0 0 1 9.4 9.4"/></svg>'
+
+function iconeEtat(agent: LigneAgent['agent']): HTMLElement {
+  const c = document.createElement('span')
+  c.className = 'etat-agent'
   if (agent === 'travail') {
-    const i = icone('loader-circle', COULEUR_ETAT.travail, 13)
-    i.classList.add('tourne')
-    i.setAttribute('aria-label', 'au travail')
-    return i
-  }
-  if (agent === 'fini') {
-    const i = icone('check', COULEUR_ETAT.fini, 13)
-    i.setAttribute('aria-label', 'fini')
-    return i
-  }
-  if (agent === 'attente') {
+    c.innerHTML = ANNEAU
+    c.classList.add('tourne')
+    c.style.color = COULEUR_ETAT.travail
+    c.setAttribute('aria-label', 'au travail')
+  } else if (agent === 'fini') {
+    c.append(icone('check', COULEUR_ETAT.fini, 13))
+    c.setAttribute('aria-label', 'fini')
+  } else if (agent === 'attente') {
     const p = document.createElement('span')
     p.className = 'point-attente'
-    p.setAttribute('aria-label', "t'attend")
-    return p
+    c.append(p)
+    c.setAttribute('aria-label', "t'attend")
+  } else {
+    const p = document.createElement('span')
+    p.className = 'anneau-repos'
+    c.append(p)
+    c.setAttribute('aria-label', 'au repos')
   }
-  // Au repos (ou fini et déjà regardé) : un cercle vide, comme dans Herdr.
-  const i = icone('circle', 'var(--gris)', 10)
-  i.setAttribute('aria-label', 'au repos')
-  return i
+  return c
 }
 
 function iconeProgramme(l: LigneAgent): SVGElement {
@@ -214,8 +221,7 @@ function ligneAgent(l: LigneAgent, maintenant: number): HTMLElement {
     d.textContent = duree(maintenant - l.depuis)
     ligne.append(d)
   }
-  const etatIcone = iconeEtat(l.agent)
-  if (etatIcone) ligne.append(etatIcone)
+  ligne.append(iconeEtat(l.agent))
   ligne.onclick = () => {
     if (a) surAgent(a)
   }
