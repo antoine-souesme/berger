@@ -2,7 +2,17 @@
 import { icone } from './icones'
 
 export type Entree =
-  | { libelle: string; raccourci?: string; icone?: string; coche?: boolean; faire: () => void }
+  | {
+      libelle: string
+      raccourci?: string
+      icone?: string
+      coche?: boolean
+      /** En rose (action qui détruit). */
+      danger?: boolean
+      /** Grisé et sans effet. */
+      inactif?: boolean
+      faire: () => void
+    }
   | 'separateur'
 
 let ouvert: HTMLElement | null = null
@@ -16,10 +26,12 @@ export function menuOuvert(): boolean {
   return ouvert !== null
 }
 
-export function ouvrirMenu(x: number, y: number, entrees: Entree[]): void {
+export function ouvrirMenu(x: number, y: number, entrees: Entree[], nom = ''): void {
   fermerMenu()
   const menu = document.createElement('div')
   menu.className = 'menu'
+  menu.setAttribute('role', 'menu')
+  if (nom) menu.setAttribute('aria-label', nom)
   for (const entree of entrees) {
     if (entree === 'separateur') {
       const t = document.createElement('div')
@@ -28,7 +40,8 @@ export function ouvrirMenu(x: number, y: number, entrees: Entree[]): void {
       continue
     }
     const ligne = document.createElement('div')
-    ligne.className = 'entree'
+    ligne.className =
+      'entree' + (entree.danger ? ' danger' : '') + (entree.inactif ? ' inactif' : '')
     ligne.append(icone(entree.icone ?? 'square-terminal', 'currentColor', 15))
     const libelle = document.createElement('span')
     libelle.className = 'libelle'
@@ -48,6 +61,7 @@ export function ouvrirMenu(x: number, y: number, entrees: Entree[]): void {
     }
     ligne.addEventListener('mousedown', (e) => e.preventDefault())
     ligne.addEventListener('click', () => {
+      if (entree.inactif) return
       fermerMenu()
       entree.faire()
     })

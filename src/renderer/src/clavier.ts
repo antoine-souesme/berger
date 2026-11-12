@@ -4,7 +4,15 @@
 import { agentVoisin } from '../../shared/agents'
 import { ongletN, ongletVoisin, type PlaceAgent } from '../../shared/onglets'
 import { actionDe, type ActionClavier, type Cible } from '../../shared/raccourcis'
-import { afficherSpace, changer, etat, ongletAffiche, ongletsAffiches, spaceAffiche } from './etat'
+import {
+  afficherSpace,
+  changer,
+  etat,
+  ongletAffiche,
+  ongletsAffiches,
+  rendreVisible,
+  spaceAffiche
+} from './etat'
 import {
   afficherOnglet,
   fermerOngletAffiche,
@@ -12,6 +20,7 @@ import {
   renommerOngletEnPlace
 } from './barre-onglets'
 import { lignesAgents, renommerSpaceEnPlace } from './colonne'
+import { dialogueOuvert } from './dialogue'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
@@ -19,6 +28,7 @@ import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
 // Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
 export function choisirPlace(p: PlaceAgent): void {
   oublierClavier()
+  rendreVisible(p.space)
   changer((e) => {
     e.space = p.space
     e.onglet = { type: 'terminal', id: p.onglet }
@@ -113,6 +123,8 @@ export function brancherClavier(): void {
   window.addEventListener(
     'keydown',
     (ev) => {
+      // Un dialogue ouvert garde le clavier pour lui (voir dialogue.ts).
+      if (dialogueOuvert()) return
       const action = actionDe(ev, cibleDe(document.activeElement))
       if (!action) return
       ev.preventDefault()

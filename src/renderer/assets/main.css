@@ -483,3 +483,209 @@ body {
 #editeur .monaco-editor .minimap {
   background: var(--panneau);
 }
+
+/* Barre des workspaces (maquettes vue-principale.html et workspaces.html) */
+#workspaces {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 52px 0 16px;
+  box-sizing: border-box;
+}
+#workspaces button {
+  -webkit-app-region: no-drag;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+}
+#workspaces .outil {
+  display: grid;
+  place-items: center;
+  cursor: default;
+}
+#workspaces .outil.actif {
+  background: var(--actif);
+  color: var(--vif);
+}
+#workspaces .outil.nouveau {
+  background: var(--actif);
+  color: #a6e22e;
+  cursor: pointer;
+}
+.trait-workspaces {
+  width: 28px;
+  height: 1px;
+  margin: 4px 0;
+  background: var(--bord);
+  flex-shrink: 0;
+}
+#workspaces .workspace {
+  font-size: 18px;
+  line-height: 38px;
+  opacity: 0.6;
+}
+#workspaces .workspace:hover {
+  opacity: 1;
+  background: var(--panneau);
+}
+#workspaces .workspace.ouvert {
+  opacity: 1;
+  background: var(--actif);
+  box-shadow: inset 0 0 0 1.5px #a6e22e;
+}
+#workspaces .workspace.glisse {
+  z-index: 3;
+  opacity: 1;
+  background: var(--actif);
+}
+.pastille-etat {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--fond);
+}
+#workspaces .espace {
+  flex: 1;
+}
+
+/* Menus : entrée rose, entrée grisée */
+.menu .entree.danger {
+  color: #f92672;
+}
+.menu .entree.danger:hover {
+  color: #f92672;
+}
+.menu .entree.inactif {
+  opacity: 0.4;
+  cursor: default;
+}
+.menu .entree.inactif:hover {
+  background: none;
+}
+
+/* Dialogues (maquette workspaces.html) */
+.voile {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: #0e0f0dad;
+}
+.dialogue {
+  width: 420px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  box-shadow: 0 24px 60px #000000a0;
+}
+.titre-dialogue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vif);
+}
+.texte-dialogue {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--gris-clair);
+}
+.champs-dialogue {
+  display: flex;
+  gap: 12px;
+}
+.champ-dialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+.champ-dialogue.nom {
+  flex: 1;
+}
+.champ-dialogue .saisie {
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  color: var(--vif);
+  font: inherit;
+  font-size: 13px;
+  padding: 0 10px;
+  outline: none;
+  user-select: text;
+}
+.champ-dialogue.emoji .saisie {
+  width: 48px;
+  padding: 0;
+  text-align: center;
+  font-size: 18px;
+}
+.champ-dialogue .saisie:focus {
+  border-color: var(--clavier);
+}
+.pied-dialogue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.pied-dialogue .espace {
+  flex: 1;
+}
+.aide-dialogue {
+  font-size: 12px;
+  color: var(--gris);
+}
+.aide-dialogue kbd {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  padding: 1px 5px;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+}
+.bouton-dialogue {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--bord);
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+}
+.bouton-dialogue.principal {
+  border-color: transparent;
+  background: var(--actif);
+  color: #a6e22e;
+  font-weight: 600;
+}
+.bouton-dialogue.principal.danger {
+  background: #f9267224;
+  border: 1px solid #f9267266;
+  color: #f92672;
+}
+
+.menu[aria-label='Actions du workspace'] {
+  min-width: 220px;
+  width: 220px;
+  box-sizing: border-box;
+}
