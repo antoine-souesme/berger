@@ -5,6 +5,7 @@ import { Terminal, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
+import { CHEMINS_GLISSES, texteDepot } from '../../shared/depot'
 import { dispositionActuelle, tableActuelle } from './table-raccourcis'
 import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
@@ -176,6 +177,7 @@ export function vueTerminal(adresse: string): HTMLElement {
   if (deja) return deja.el
   const el = document.createElement('div')
   el.className = 'xterm-hote'
+  el.dataset['adresse'] = adresse
   el.style.width = '100%'
   el.style.height = '100%'
   const xterm = new Terminal({
@@ -205,8 +207,43 @@ export function vueTerminal(adresse: string): HTMLElement {
   xterm.attachCustomKeyEventHandler(
     (e) => actionDe(e, 'terminal', tableActuelle(), dispositionActuelle()) === null
   )
+  brancherDepot(el, xterm)
   new ResizeObserver(() => ajuster(adresse, o)).observe(el)
   return el
+}
+
+// Des fichiers déposés (du Finder ou de l'explorateur) : leurs chemins
+// s'écrivent dans le terminal, comme un collage.
+function brancherDepot(el: HTMLElement, xterm: Terminal): void {
+  const accepte = (ev: DragEvent): boolean => {
+    const types = ev.dataTransfer?.types ?? []
+    return types.includes('Files') || types.includes(CHEMINS_GLISSES)
+  }
+  el.addEventListener('dragover', (ev) => {
+    if (!accepte(ev)) return
+    ev.preventDefault()
+    ev.stopPropagation()
+    ev.dataTransfer!.dropEffect = 'copy'
+    el.classList.add('depot')
+  })
+  el.addEventListener('dragleave', (ev) => {
+    if (!el.contains(ev.relatedTarget as Node | null)) el.classList.remove('depot')
+  })
+  el.addEventListener('drop', (ev) => {
+    el.classList.remove('depot')
+    if (!accepte(ev)) return
+    ev.preventDefault()
+    ev.stopPropagation()
+    const dt = ev.dataTransfer!
+    const interne = dt.getData(CHEMINS_GLISSES)
+    const chemins = interne
+      ? (JSON.parse(interne) as string[])
+      : [...dt.files].map((f) => window.berger.cheminDe(f))
+    const texte = texteDepot(chemins)
+    if (!texte) return
+    xterm.paste(texte)
+    xterm.focus()
+  })
 }
 
 export function oublierTerminauxSauf(adresses: Set<string>): void {

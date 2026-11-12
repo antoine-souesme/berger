@@ -1,7 +1,7 @@
 import { appendFileSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { basename, join } from 'path'
 import { app, Menu, type BrowserWindow } from 'electron'
-import { execFile } from 'child_process'
+import { execFile, spawnSync } from 'child_process'
 
 // Vérification sans clic (développement seulement), avec des captures.
 //
@@ -306,6 +306,50 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         async () =>
           console.log(`[berger] scenario: closed ${JSON.stringify(await lireSpace(space))}`)
       ]
+    ])
+    return
+  }
+
+  if (scenario === 'depot') {
+    // Dépose deux chemins (dont un avec une espace) sur un terminal de test
+    // (BERGER_SCENARIO_TERMINAL, étiqueté herdr.space=spbergertest…), comme
+    // depuis l'explorateur : ils s'écrivent dans sa ligne de commande.
+    const terminal = process.env['BERGER_SCENARIO_TERMINAL'] ?? ''
+    const fiche = terminal ? spawnSync('hc', ['get', terminal], { encoding: 'utf8' }).stdout : ''
+    let space: string
+    try {
+      space =
+        (JSON.parse(fiche) as { labels?: Record<string, string> }).labels?.['herdr.space'] ?? ''
+    } catch {
+      space = ''
+    }
+    if (!space.startsWith('spbergertest')) {
+      console.error(
+        '[berger] depot scenario refused: BERGER_SCENARIO_TERMINAL must be labelled herdr.space=spbergertest…'
+      )
+      return
+    }
+    const chemins = JSON.stringify(['/tmp/un dossier/a.ts', '/tmp/b.md'])
+    jouer([
+      [1500, () => wc.send('berger:ouvrir', { adresse: terminal })],
+      [
+        4000,
+        async () => {
+          const r = await wc.executeJavaScript(`(() => {
+            const hote = document.querySelector('.xterm-hote[data-adresse=${JSON.stringify(terminal)}]')
+            if (!hote) return 'terminal de test non affiché, rien déposé'
+            const dt = new DataTransfer()
+            dt.setData('application/x-berger-chemins', ${JSON.stringify(chemins)})
+            const ev = (type) => new DragEvent(type, { dataTransfer: dt, bubbles: true, cancelable: true })
+            hote.dispatchEvent(ev('dragover'))
+            const surligne = hote.classList.contains('depot')
+            hote.dispatchEvent(ev('drop'))
+            return 'surligné : ' + surligne
+          })()`)
+          console.log(`[berger] scenario: depot ${r}`)
+        }
+      ],
+      [5500, () => capture('depot')]
     ])
     return
   }

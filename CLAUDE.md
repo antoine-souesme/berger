@@ -59,7 +59,9 @@ avec leur `README.md`).
   séparateur), `BERGER_SCENARIO=ranger` le ferme (`BERGER_SCENARIO_REPONSE=0` accepte la
   question) ; `BERGER_SCENARIO=workspaces` crée, renomme, déplace puis supprime un workspace de
   test (et le space qu'il y crée), `BERGER_SCENARIO=raccourcis` journalise ⌃1, ⌥⌘], ⌘] et le tri
-  des agents ; `BERGER_SCENARIO=fichiers` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
+  des agents ; `BERGER_SCENARIO=depot` avec `BERGER_SCENARIO_TERMINAL=<terminal>` (étiqueté
+  `spbergertest…`, affiché) y dépose deux chemins ; `BERGER_SCENARIO=fichiers` avec
+  `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
   joue l'explorateur, ⌘P, les onglets de fichiers et la visionneuse (`explorateur` et `onglets` en
   plus court) ; `BERGER_SCENARIO=langage` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
   joue l'aide du langage (F12, erreurs, survol, complétion, schémas JSON et YAML, fichier
