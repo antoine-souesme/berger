@@ -102,44 +102,134 @@ body {
   align-items: center;
   gap: 8px;
 }
-#filtre {
-  margin: 0 10px 6px;
-  padding: 5px 8px;
-  background: var(--panneau);
-  color: var(--vif);
-  border: 1px solid var(--bord);
-  border-radius: 6px;
-  outline: none;
-  font: inherit;
+#explorateur {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
 }
-#filtre:focus {
-  border-color: var(--clavier);
+.entete-explorateur {
+  gap: 2px;
+  padding: 0 8px 0 14px;
+}
+.entete-explorateur .titre-bande {
+  flex: 1;
+}
+.entete-explorateur button {
+  -webkit-app-region: no-drag;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--gris-clair);
+  cursor: pointer;
+  padding: 0;
+}
+.entete-explorateur button:hover {
+  background: var(--actif);
+  color: var(--vif);
 }
 #explorateur-message {
   margin: 0 12px 6px;
   color: var(--gris-clair);
   font-size: 12px;
 }
-#liste-fichiers {
+#arbre {
   flex: 1;
+  min-height: 0;
   overflow: auto;
+  padding-bottom: 12px;
+  outline: none;
+  font-size: 13px;
 }
-.fichier {
+.ligne-arbre {
   display: flex;
-  gap: 6px;
-  height: 22px;
   align-items: center;
-  padding: 0 12px;
-  cursor: pointer;
+  height: 22px;
+  padding: 0 8px 0 4px;
   white-space: nowrap;
-  overflow: hidden;
+  cursor: pointer;
+  font-weight: 500;
+  color: #cccccc;
 }
-.fichier span {
+.ligne-arbre:hover {
+  background: #2a2b26;
+}
+.ligne-arbre.choisie {
+  background: var(--actif);
+}
+#arbre:focus .ligne-arbre.choisie {
+  box-shadow: inset 0 0 0 1px var(--clavier);
+}
+.ligne-arbre .icone-fichier {
+  margin-left: 0;
+}
+.racine-arbre {
+  gap: 6px;
+  font-weight: 400;
+}
+.nom-racine {
+  flex-shrink: 0;
+}
+.chemin-racine {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--gris);
+}
+.nom-arbre {
+  flex: 1;
+  min-width: 0;
+  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.fichier:hover {
-  background: var(--panneau);
+.sans-chevron {
+  width: 16px;
+  flex-shrink: 0;
+}
+.deco {
+  width: 14px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.deco.marge {
+  margin-left: 4px;
+}
+.message-arbre {
+  color: var(--gris);
+  font-size: 12px;
+  cursor: default;
+}
+.trait-arbre-racines {
+  height: 1px;
+  margin: 6px 8px;
+  background: var(--bord);
+}
+.ajouter-dossier {
+  gap: 6px;
+  margin-top: 4px;
+  padding-left: 8px;
+  color: var(--gris);
+  font-weight: 400;
+}
+.ajouter-dossier:hover {
+  color: var(--vif);
+}
+.bouton-vide {
+  margin-top: 4px;
+  padding: 5px 12px;
+  border: 1px solid var(--bord);
+  border-radius: 7px;
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+}
+.bouton-vide:hover {
+  background: var(--actif);
+  color: var(--vif);
 }
 .section-spaces,
 .section-agents {

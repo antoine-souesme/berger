@@ -22,6 +22,9 @@ import { app, type BrowserWindow } from 'electron'
 // BERGER_SCENARIO=onglets BERGER_SCENARIO_FICHIERS=<chemin>:<chemin>:… BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ouvre ces fichiers (chemins contenant `berger-essai`), épingle celui qui finit par
 //   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture.
+// BERGER_SCENARIO=explorateur BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
+//   Ajoute ce dossier comme racine, déplie `node_modules`, crée `nouveau.txt` (il doit
+//   apparaître seul), ⇧⌘E deux fois, retire la racine. Une capture par étape.
 // BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
 //   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
@@ -114,6 +117,36 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         }
       ])
     )
+    return
+  }
+
+  if (scenario === 'explorateur') {
+    const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+    if (!dossier.includes('berger-essai')) {
+      console.error('[berger] scénario explorateur refusé : le dossier doit contenir berger-essai')
+      return
+    }
+    const souris = pointeur(wc)
+    const ligne = (chemin: string): string => `#arbre .ligne-arbre[data-chemin="${chemin}"]`
+    jouer([
+      [2500, () => wc.send('berger:scenario-dossier', { chemin: dossier })],
+      [
+        3500,
+        () =>
+          void wc.executeJavaScript(
+            `document.querySelector(${JSON.stringify(ligne(dossier))})?.scrollIntoView()`
+          )
+      ],
+      [4000, () => souris('left', ligne(`${dossier}/node_modules`))],
+      [5500, () => capture('01-racine')],
+      [6000, () => writeFileSync(`${dossier}/nouveau.txt`, 'neuf\n')],
+      [7500, () => capture('02-nouveau')],
+      [8000, () => touche('e', ['meta', 'shift'])],
+      [9000, () => capture('03-masque')],
+      [9500, () => touche('e', ['meta', 'shift'])],
+      [10500, () => capture('04-affiche')],
+      [11000, () => wc.send('berger:scenario-retirer-dossier', { chemin: dossier })]
+    ])
     return
   }
 

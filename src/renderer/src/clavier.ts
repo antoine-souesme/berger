@@ -23,6 +23,7 @@ import { lignesAgents, nouveauSpace, renommerSpaceEnPlace } from './colonne'
 import { dialogueOuvert } from './dialogue'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
+import { basculerExplorateur } from './explorateur'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
 
 // Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
@@ -118,7 +119,7 @@ function executer(a: ActionClavier): void {
       if (fichierAffiche()) chercher()
       return
     case 'explorateur.basculer':
-      // Tâche 7
+      basculerExplorateur()
       return
     case 'fichier.rechercher':
       // Tâche 9

@@ -15,6 +15,7 @@ import {
   surChangement
 } from './etat'
 import { glisseEnCours, rendreGlissable } from './glisser'
+import { basculerExplorateur } from './explorateur'
 import { icone } from './icones'
 import { ouvrirMenu } from './menus'
 
@@ -126,9 +127,12 @@ function dessiner(): void {
   if (glisseEnCours()) return
   const e = etat()
   const ws = e.workspaces
-  const explorateur = bouton('outil actif', 'Explorateur')
-  explorateur.setAttribute('aria-pressed', 'true')
+  const affiche = !e.explorateurMasque
+  const explorateur = bouton('outil' + (affiche ? ' actif' : ''), 'Explorateur')
+  explorateur.title = 'Explorateur (⇧⌘E)'
+  explorateur.setAttribute('aria-pressed', String(affiche))
   explorateur.append(icone('files', 'currentColor', 18, 1.75))
+  explorateur.onclick = () => basculerExplorateur()
   const recherche = bouton('outil', 'Rechercher dans le projet')
   recherche.append(icone('search', 'currentColor', 18, 1.75))
   const trait = document.createElement('span')

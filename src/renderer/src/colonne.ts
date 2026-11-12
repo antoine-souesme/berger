@@ -286,13 +286,3 @@ async function supprimerSpace(space: VueSpace): Promise<void> {
   if (!r) return
   await window.berger.demander('berger:structure', { type: 'space.fermer', space: space.id })
 }
-
-// Un message passager en tête de l'explorateur (fichier impossible à ouvrir…).
-export function annoncerColonne(texte: string): void {
-  const m = el('explorateur-message')
-  m.textContent = texte
-  m.hidden = false
-  setTimeout(() => {
-    if (m.textContent === texte) m.hidden = true
-  }, 4000)
-}

@@ -6,6 +6,7 @@ import {
   appliquerEtatRetenu,
   appliquerFichiersRetenus,
   changer,
+  changerFichiers,
   etat,
   ongletAffiche,
   ouvrirChemins,
@@ -14,11 +15,12 @@ import {
   surChangement
 } from './etat'
 import { initFenetre } from './fenetre'
-import { annoncerColonne, initColonne } from './colonne'
+import { initColonne } from './colonne'
+import { annoncer, initExplorateur } from './explorateur'
 import { initBarreEtat } from './barre-etat'
 import { brancherFichiers, dessinerBarre } from './barre-onglets'
 import type { PlaceAgent } from '../../shared/onglets'
-import type { EtatFichiers } from '../../shared/etat-fichiers'
+import { ajouterDossier, retirerDossier, type EtatFichiers } from '../../shared/etat-fichiers'
 import { feuilles } from '../../shared/arbre'
 import {
   afficherFichier,
@@ -75,7 +77,7 @@ surChangement((e) => {
       const chemin = a.chemin
       void afficherFichier(chemin).then((ok) => {
         if (ok) return
-        annoncerColonne(`${chemin.slice(chemin.lastIndexOf('/') + 1)} : ${raisonEchec()}`)
+        annoncer(`${chemin.slice(chemin.lastIndexOf('/') + 1)} : ${raisonEchec()}`)
         retirerOnglet(chemin)
       })
     }
@@ -102,6 +104,7 @@ void (async () => {
     workspaces: EtatWorkspaces | null
   }>('berger:etat')
   initEditeur(maison)
+  initExplorateur(maison)
   appliquerFichiersRetenus(await window.berger.demander<EtatFichiers>('berger:etat-fichiers'))
   appliquerEtatRetenu(await window.berger.demander<EtatFenetre>('berger:etat-fenetre'))
   changer((e) => {
@@ -123,3 +126,9 @@ window.berger.ecouter('berger:ouvrir', ({ adresse }) => {
 window.berger.ecouter('berger:scenario-space', ({ space }) => afficherSpace(space))
 window.berger.ecouter('berger:scenario-fichier', ({ chemin }) => ouvrirChemins([chemin]))
 window.berger.ecouter('berger:ouvrir-fichiers', ({ chemins }) => ouvrirChemins(chemins))
+window.berger.ecouter('berger:scenario-dossier', ({ chemin }) =>
+  changerFichiers((x, ws) => ajouterDossier(x, ws, chemin))
+)
+window.berger.ecouter('berger:scenario-retirer-dossier', ({ chemin }) =>
+  changerFichiers((x, ws) => retirerDossier(x, ws, chemin))
+)
