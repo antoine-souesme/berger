@@ -86,12 +86,13 @@ Spec : `docs/superpowers/specs/2026-11-12-phase5-editeur-design.md`.
 
 La raison d'être de Berger.
 
-- Recherche et remplacement dans tout le projet.
 - Les serveurs de langage : complétion, aller à la définition, erreurs
   soulignées.
-- Les différences git dans la marge et la vue côte à côte.
 - Retour à la ligne, réglage de la couleur de sélection, coloration de tous les
-  langages.
+  langages, thème Monokai identique à celui de VS Code.
+- Remis à plus tard (décision d'Antoine du 12 novembre 2026) : la recherche et
+  le remplacement dans tout le projet, les différences git dans la marge et la
+  vue côte à côte.
 
 ## Phase 6 : les autres machines
 
