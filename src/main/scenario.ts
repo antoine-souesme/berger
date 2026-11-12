@@ -22,7 +22,10 @@ import { execFile } from 'child_process'
 //   et journal de workspaces.json à chaque étape. Ne ferme que le space créé.
 // BERGER_SCENARIO=onglets BERGER_SCENARIO_FICHIERS=<chemin>:<chemin>:… BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ouvre ces fichiers (chemins contenant `berger-essai`), épingle celui qui finit par
-//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture.
+//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture. Vérifie aussi
+//   que le menu de l'onglet se ferme au clic dans l'éditeur, se pilote au clavier et rend le
+//   clavier à l'éditeur (journal), que la molette fait défiler les onglets de fichiers seuls,
+//   puis replie tout le premier fichier (un Markdown : repli par titres).
 // BERGER_SCENARIO=explorateur BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ajoute ce dossier comme racine, déplie `node_modules`, crée `nouveau.txt` (il doit
 //   apparaître seul), ⇧⌘E deux fois, retire la racine. Une capture par étape.
@@ -191,10 +194,48 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       () => wc.send('berger:scenario-fichier', { chemin })
     ])
     const t = 2500 + fichiers.length * 800 + 1000
-    const notes = fichiers.find((c) => c.endsWith('notes.md'))
+    const notes = fichiers.find((c) => c.endsWith('notes.md')) ?? fichiers[0]
+    const journal = async (quoi: string): Promise<void> =>
+      console.log(
+        `[berger] scénario : ${quoi} : ` +
+          JSON.stringify(
+            await wc.executeJavaScript(`({
+              menu: document.querySelectorAll('.menu').length,
+              designee: document.querySelector('.menu .designee')?.textContent ?? null,
+              clavier: document.activeElement?.className ?? null,
+              fichiers: document.querySelector('.onglets-fichiers')?.scrollLeft ?? null,
+              page: [document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop,
+                document.getElementById('droite').scrollLeft]
+            })`)
+          )
+      )
+    const molette = async (): Promise<void> => {
+      const p = await wc.executeJavaScript(`(() => {
+        const r = document.querySelector('.onglets-fichiers').getBoundingClientRect()
+        return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
+      })()`)
+      wc.sendInputEvent({
+        type: 'mouseWheel',
+        x: p.x,
+        y: p.y,
+        deltaX: 0,
+        deltaY: 300,
+        hasPreciseScrollingDeltas: true,
+        canScroll: true
+      })
+    }
     etapes.push(
       [t, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
       [t + 800, () => capture('01-menu-onglet')],
+      // Un clic dans l'éditeur ferme le menu ; la molette fait défiler les fichiers seuls.
+      [t + 900, () => souris('left', '#editeur .view-lines')],
+      [t + 1000, () => journal("menu après clic dans l'éditeur")],
+      [t + 1050, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
+      [t + 1100, () => touche('Down')],
+      [t + 1150, () => journal('menu après ↓')],
+      [t + 1180, () => touche('Escape')],
+      [t + 1190, () => journal('menu après Échap')],
+      [t + 1195, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
       [t + 1200, () => souris('left', '.menu .entree', 'Épingler')],
       [
         t + 2000,
@@ -202,7 +243,19 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       ],
       [t + 2600, () => souris('left', '#editeur .view-lines')],
       [t + 3000, () => wc.insertText('// modifié par Berger\n')],
-      [t + 4000, () => capture('02-onglets')]
+      [t + 4000, () => capture('02-onglets')],
+      [t + 4100, () => journal('avant la molette')],
+      [t + 4200, () => molette()],
+      [t + 4700, () => journal('après la molette')],
+      [t + 4800, () => capture('03-molette')],
+      // Un fichier Markdown ouvert en premier : ses titres se replient.
+      [t + 4900, () => souris('left', `.onglet-fichier[data-chemin="${fichiers[0]}"]`)],
+      [
+        t + 5600,
+        () =>
+          void wc.executeJavaScript("window.bergerEssai?.editeur.getAction('editor.foldAll').run()")
+      ],
+      [t + 6200, () => capture('04-replis')]
     )
     jouer(etapes)
     return

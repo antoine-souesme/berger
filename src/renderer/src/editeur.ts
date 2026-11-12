@@ -9,6 +9,7 @@ import { serveurDe } from '../../shared/langage'
 import { definirTheme, initColoration, langageDuFichier } from './coloration'
 import type { Reglages } from '../../shared/reglages'
 import { quoiFaire } from '../../shared/fichiers'
+import { replisMarkdown } from '../../shared/replis-markdown'
 import { initJson, suivreJson } from './json'
 import { organiserImports, suivreModele } from './langage'
 import { dossierAffiche } from '../../shared/libelles'
@@ -169,6 +170,12 @@ async function apresDisque(chemins: string[]): Promise<void> {
     suivreModifies(chemin)
   }
 }
+
+// Markdown : repli par titres, comme VS Code (Monaco ne replie que selon le retrait).
+monaco.languages.registerFoldingRangeProvider('markdown', {
+  provideFoldingRanges: (modele) =>
+    replisMarkdown(modele.getLinesContent()).map((r) => ({ start: r.debut, end: r.fin }))
+})
 
 export function initEditeur(m: string): void {
   maison = m
