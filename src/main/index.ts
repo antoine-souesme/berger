@@ -5,6 +5,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { Coeur, type EtatConnexion } from './coeur'
 import { suivreLaVue } from './vue'
+import { TerminalOuvert } from './terminal'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -80,6 +81,37 @@ app.whenReady().then(() => {
   // La fenêtre demande l'état courant au chargement (elle a pu rater les envois).
   ipcMain.handle('berger:etat', () => ({ connexion: etatConnexion, vue: vueActuelle() }))
   void coeur.demarrer()
+
+  // Un seul terminal ouvert à la fois ; en ouvrir un autre détache le précédent.
+  let ouvert: TerminalOuvert | null = null
+  ipcMain.on('berger:attacher', (_e, { adresse, cols, rows }) => {
+    ouvert?.detacher()
+    const celuiCi: TerminalOuvert = new TerminalOuvert(adresse, cols, rows, {
+      sortie: (octets) => fenetre?.webContents.send('berger:sortie', octets),
+      fin: (raison) => {
+        if (ouvert === celuiCi) fenetre?.webContents.send('berger:fin-terminal', { raison })
+      }
+    })
+    ouvert = celuiCi
+  })
+  // Vérification sans clic (développement) : BERGER_OUVRIR=<adresse> ouvre ce
+  // terminal au chargement, BERGER_TAPER=<texte> y tape ce texte ensuite.
+  app.on('browser-window-created', (_e, w) => {
+    w.webContents.on('did-finish-load', () => {
+      const adresse = process.env['BERGER_OUVRIR']
+      if (!adresse) return
+      setTimeout(() => w.webContents.send('berger:ouvrir', { adresse }), 1500)
+      const texte = process.env['BERGER_TAPER']
+      if (texte) setTimeout(() => ouvert?.ecrire(new TextEncoder().encode(texte.replace(/\\r/g, '\r'))), 3000)
+    })
+  })
+  ipcMain.on('berger:touches', (_e, { octets }) => ouvert?.ecrire(octets))
+  ipcMain.on('berger:taille', (_e, { cols, rows }) => ouvert?.redimensionner(cols, rows))
+  ipcMain.on('berger:focus', (_e, { actif }) => ouvert?.focus(actif))
+  ipcMain.on('berger:detacher', () => {
+    ouvert?.detacher()
+    ouvert = null
+  })
 
   createWindow()
 

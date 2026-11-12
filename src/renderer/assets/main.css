@@ -77,3 +77,16 @@ body {
 .terminal .etat.attente {
   color: #8fc66e;
 }
+
+#terminal {
+  padding: 4px;
+  box-sizing: border-box;
+}
+.message {
+  padding: 16px;
+  color: #908f87;
+}
+#terminal .xterm,
+#terminal .xterm-viewport {
+  background: #1e1f1c !important;
+}

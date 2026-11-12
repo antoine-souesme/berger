@@ -1,9 +1,12 @@
 // Point d'entrée de la fenêtre Berger.
 import type { Vue } from '../../shared/spaces'
 import { afficherColonne, afficherConnexion, initColonne } from './colonne'
+import { initTerminal, ouvrirTerminal } from './terminal'
+
+initTerminal()
 
 initColonne({
-  surClicTerminal: (adresse) => console.log('terminal choisi', adresse),
+  surClicTerminal: (adresse) => ouvrirTerminal(adresse),
   surClicSpace: (space) => console.log('space choisi', space.nom, space.dossier)
 })
 
@@ -16,3 +19,5 @@ void window.berger
     afficherConnexion(connexion)
     afficherColonne(vue)
   })
+
+window.berger.ecouter('berger:ouvrir', ({ adresse }) => ouvrirTerminal(adresse))
