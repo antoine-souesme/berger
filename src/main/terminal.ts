@@ -1,3 +1,4 @@
+import { AFFICHAGE } from '../shared/terminaux'
 import { spawn, type ChildProcessWithoutNullStreams } from 'child_process'
 import { cheminHc } from './hc'
 import { decodeurDeTrames, encoderTrame, taille, TYPE, u32, type Trame } from '../shared/trames'
@@ -56,6 +57,7 @@ export class TerminalOuvert {
           terminal: this.adresse,
           cols,
           rows,
+          display: AFFICHAGE,
           ...(actif ? {} : { resumed: true })
         })
         morceau = reste

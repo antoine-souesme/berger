@@ -1,3 +1,4 @@
+import { AFFICHAGE } from '../shared/terminaux'
 import { dialog, ipcMain, type BrowserWindow } from 'electron'
 import { homedir } from 'os'
 import type { Coeur } from './coeur'
@@ -51,6 +52,7 @@ export function brancherActions(
       keep: true,
       no_parent: true,
       die_with_parent: false,
+      display: AFFICHAGE,
       labels: { 'herdr.space': space, 'herdr.tab': onglet }
     })) as { address: string }
     trace(`terminal lancé ${r.address} (${space}/${onglet})`)

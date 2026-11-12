@@ -6,6 +6,7 @@ import { FitAddon } from '@xterm/addon-fit'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
+import { AFFICHAGE } from '../../shared/terminaux'
 
 type Ouvert = {
   el: HTMLElement
@@ -19,9 +20,9 @@ type Ouvert = {
 // Police et couleurs du terminal de Herdr (`~/.config/herdr-app/settings.json`,
 // thème `antoine-monokai`).
 const THEME = {
-  background: '#272822',
-  foreground: '#d0d0c8',
-  cursor: '#f8f8f0',
+  background: AFFICHAGE.bg,
+  foreground: AFFICHAGE.fg,
+  cursor: AFFICHAGE.cursor,
   selectionBackground: '#49483e',
   black: '#333333',
   red: '#c4265e',
