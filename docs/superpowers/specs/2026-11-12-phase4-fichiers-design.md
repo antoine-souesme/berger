@@ -147,6 +147,12 @@ les règles d'affichage de `explorer.js` (fichiers masqués, couleurs git,
 tri), `icons.js` + `material.js` + `icons/material/` (Material Icon Theme,
 licence MIT). Les noter dans `docs/COPIES.md`.
 
+## Laissé par la phase 2
+
+La zone de l'explorateur contient provisoirement la liste de fichiers de la
+phase 0, et les onglets de fichiers portent l'icône `file` de Lucide ; la
+phase 4 les remplace par l'explorateur et les icônes Material.
+
 ## Laissé au développeur
 
 Comment lister et surveiller les fichiers (par herdr-core, déjà utilisé en

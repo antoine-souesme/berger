@@ -27,13 +27,9 @@ import {
   raisonEchec,
   retirerOnglet
 } from './editeur'
-import {
-  adressesDeLOngletAffiche,
-  dessinerOnglet,
-  oublierClavier,
-  viderZoneTerminaux
-} from './panneaux'
+import { adressesDeLOngletAffiche, dessinerOnglet, viderZoneTerminaux } from './panneaux'
 import { initTerminaux, oublierTerminauxSauf } from './terminal'
+import { brancherClavier, choisirPlace } from './clavier'
 
 initFenetre()
 initBarreEtat()
@@ -41,16 +37,6 @@ initTerminaux({ fin: () => redessiner() })
 function ouvrirUnFichier(chemin: string): void {
   changer((e) => (e.fichiers = ouvrirFichier(e.fichiers, chemin)))
   afficherOnglet({ type: 'fichier', chemin })
-}
-
-// Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
-function choisirPlace(p: PlaceAgent): void {
-  oublierClavier()
-  changer((e) => {
-    e.space = p.space
-    e.onglet = { type: 'terminal', id: p.onglet }
-    e.focus[p.onglet] = p.panneau
-  })
 }
 
 // Tous les terminaux rangés, à leur place (pour BERGER_OUVRIR).
@@ -66,6 +52,7 @@ function agentsEtTerminaux(): PlaceAgent[] {
   )
 }
 
+brancherClavier()
 brancherFichiers(fermerFichierAvecQuestion)
 initColonne({ ouvrirFichier: ouvrirUnFichier, choisirAgent: choisirPlace })
 

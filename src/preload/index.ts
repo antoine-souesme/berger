@@ -6,6 +6,7 @@ const verifier = (canal: string): void => {
 }
 
 const berger = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- les données IPC sont typées par celui qui écoute
   ecouter(canal: string, f: (donnees: any) => void): void {
     verifier(canal)
     ipcRenderer.on(canal, (_e, donnees) => f(donnees))

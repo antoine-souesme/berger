@@ -1,5 +1,6 @@
 import type { TerminalCore } from './spaces'
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- `data` change de forme selon le type d'événement
 export type EvenementCore = { type: string; terminal?: string; data: any; seq?: number }
 
 // Tient à jour la table des terminaux à partir des événements de

@@ -18,13 +18,22 @@ export class ErreurHc extends Error {
   }
 }
 
+export type ParamsNotification = { [cle: string]: unknown } | undefined
+type Message = {
+  id?: number
+  method?: string
+  params?: ParamsNotification
+  result?: unknown
+  error?: { message: string; data?: { kind?: string } }
+}
+
 type EnAttente = { ok: (v: unknown) => void; ko: (e: Error) => void }
 
 // Une connexion `hc connect` en mode simple : JSON-RPC, un message par ligne.
 export class Hc {
   private prochainId = 1
   private enAttente = new Map<number, EnAttente>()
-  private auxNotifications: ((methode: string, params: any) => void)[] = []
+  private auxNotifications: ((methode: string, params: ParamsNotification) => void)[] = []
   private aLaFin: (() => void)[] = []
   private fini = false
   infos: { core: { name: string } } | null = null
@@ -69,7 +78,7 @@ export class Hc {
     })
   }
 
-  surNotification(f: (methode: string, params: any) => void): void {
+  surNotification(f: (methode: string, params: ParamsNotification) => void): void {
     this.auxNotifications.push(f)
   }
 
@@ -82,7 +91,7 @@ export class Hc {
   }
 
   private recevoir(ligne: string): void {
-    let message: any
+    let message: Message
     try {
       message = JSON.parse(ligne)
     } catch {

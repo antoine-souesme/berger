@@ -59,7 +59,7 @@ export function suivreLaVue(coeur: Coeur, envoyer: (vue: Vue) => void): () => Vu
     dernierSeq = null
     c.evenements!.surNotification((methode, params) => {
       if (methode === 'event') {
-        const e = params as EvenementCore
+        const e = params as unknown as EvenementCore
         if (!evenementNeuf(dernierSeq, e.seq)) return
         if (typeof e.seq === 'number') dernierSeq = e.seq
         if (e.type === 'doc') {
@@ -74,11 +74,12 @@ export function suivreLaVue(coeur: Coeur, envoyer: (vue: Vue) => void): () => Vu
           )
           console.log(`[berger] état de ${t?.libelle ?? e.terminal} : « ${t?.etat ?? ''} »`)
         }
-      } else if (params?.terminals) {
+      } else if (params?.['terminals']) {
+        const instantane = params as { terminals: TerminalCore[]; seq?: number }
         // `missed` : on a pris du retard, le core renvoie un instantané complet ;
         // les événements dont le seq n'est pas au-dessus du sien sont à ignorer.
-        remplacer(params.terminals)
-        if (typeof params.seq === 'number') dernierSeq = params.seq
+        remplacer(instantane.terminals)
+        if (typeof instantane.seq === 'number') dernierSeq = instantane.seq
         void relireDoc().then(publier)
       }
     })

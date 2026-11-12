@@ -1,15 +1,18 @@
-import { appendFileSync, writeFileSync } from 'fs'
+import { appendFileSync, unlinkSync, writeFileSync } from 'fs'
 import type { BrowserWindow } from 'electron'
 
 // Vérification sans clic (développement seulement), avec des captures.
 //
 // BERGER_SCENARIO=editeur BERGER_SCENARIO_DOSSIER=<dossier> BERGER_SCENARIO_SORTIE=<préfixe>
 //   Le dossier doit contenir `essai.md` et `long.txt` (lignes de 400 caractères). BERGER_SCENARIO=conflit modifie le
-//   fichier sur le disque avant l'enregistrement.
+//   fichier sur le disque avant l'enregistrement, BERGER_SCENARIO=supprime le
+//   supprime (la question « n'a pas pu être relu » doit venir). À la fin, une
+//   modification de `long.txt` puis ⌘W (la question d'enregistrement doit venir).
 // BERGER_SCENARIO=cadre BERGER_SCENARIO_SPACE=<id d'un space de test> BERGER_SCENARIO_SORTIE=<préfixe>
 //   Joue les actions de structure (⌘T, ⌘D, ⇧⌘D, ⌥⌘←, ⌥⇧⌘→, F2, ⇧⌘↵, menus,
 //   ⇧⌘W, ⌘W) dans ce space seulement ; refuse tout space dont l'id ne
-//   commence pas par `spbergertest`.
+//   commence pas par `spbergertest`. BERGER_SCENARIO=ranger ferme ce space
+//   (⌘W sur son onglet ; avec BERGER_SCENARIO_REPONSE=0, la question est acceptée).
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
 type LireSpace = (id: string) => Promise<unknown>
 
@@ -35,7 +38,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     for (const [delai, faire] of etapes) setTimeout(() => void faire(), delai * lent)
   }
 
-  if (scenario === 'editeur' || scenario === 'conflit') {
+  if (scenario === 'editeur' || scenario === 'conflit' || scenario === 'supprime') {
     const dossier = process.env['BERGER_SCENARIO_DOSSIER']
     if (!dossier) return
     jouer([
@@ -52,6 +55,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         () => {
           if (scenario === 'conflit')
             appendFileSync(`${dossier}/essai.md`, '\nModifié par un agent\n')
+          if (scenario === 'supprime') unlinkSync(`${dossier}/essai.md`)
         }
       ],
       [6500, () => touche('s', ['meta'])],
@@ -59,7 +63,32 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       // Lignes longues : la fin d'une ligne défilée reste lisible à gauche de la minicarte.
       [8000, () => wc.send('berger:scenario-fichier', { chemin: `${dossier}/long.txt` })],
       [9800, () => touche('End')],
-      [10800, () => capture('minicarte')]
+      [10800, () => capture('minicarte')],
+      [11000, () => wc.insertText('x')],
+      [11500, () => touche('w', ['meta'])],
+      [12500, () => capture('question-fermeture')]
+    ])
+    return
+  }
+
+  if (scenario === 'ranger') {
+    // Ferme le dernier onglet affiché du space de test (et donc le space) ;
+    // avec BERGER_SCENARIO_REPONSE=0 la question est acceptée.
+    const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
+    if (!space.startsWith('spbergertest')) {
+      console.error(
+        '[berger] scénario ranger refusé : BERGER_SCENARIO_SPACE doit commencer par spbergertest'
+      )
+      return
+    }
+    jouer([
+      [2000, () => wc.send('berger:scenario-space', { space })],
+      [4000, () => touche('w', ['meta'])],
+      [
+        7000,
+        async () =>
+          console.log(`[berger] scénario : rangé ${JSON.stringify(await lireSpace(space))}`)
+      ]
     ])
     return
   }
@@ -77,8 +106,19 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       console.log(`[berger] scénario : ${nom} ${JSON.stringify(await lireSpace(space))}`)
     }
     const pas = 2500
+    const glisser = (x1: number, x2: number, y: number): void => {
+      wc.sendInputEvent({ type: 'mouseDown', x: x1, y, button: 'left', clickCount: 1 })
+      for (let i = 1; i <= 5; i++)
+        wc.sendInputEvent({ type: 'mouseMove', x: x1 + ((x2 - x1) * i) / 5, y, button: 'left' })
+      wc.sendInputEvent({ type: 'mouseUp', x: x2, y, button: 'left', clickCount: 1 })
+    }
+    const largeur = Number(process.env['BERGER_SCENARIO_LARGEUR'] ?? 0)
     const liste: (() => void | Promise<void>)[] = [
       () => wc.send('berger:scenario-space', { space }),
+      // BERGER_SCENARIO_LARGEUR=<px> : tire le séparateur de l'explorateur de ce nombre de pixels.
+      () => {
+        if (largeur) glisser(351, 351 + largeur, 450)
+      },
       etape('01-debut'),
       () => touche('t', ['meta']),
       etape('02-nouvel-onglet'),

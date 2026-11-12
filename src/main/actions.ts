@@ -151,6 +151,9 @@ export function brancherActions(coeur: Coeur, fenetre: () => BrowserWindow | nul
       cancelId: q.annuler
     }
     trace(`question posée : ${q.message}`)
+    // Scénarios (développement) : BERGER_SCENARIO_REPONSE=<n> répond le bouton n sans montrer la question.
+    const reponse = process.env['BERGER_SCENARIO_REPONSE']
+    if (process.env['BERGER_SCENARIO'] && reponse !== undefined) return Number(reponse)
     const w = fenetre()
     const { response } = w
       ? await dialog.showMessageBox(w, options)

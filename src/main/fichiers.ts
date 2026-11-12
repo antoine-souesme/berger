@@ -70,7 +70,7 @@ export function brancherFichiers(coeur: Coeur, fenetre: () => BrowserWindow | nu
     const actuel = await lire(chemin)
     if ('erreur' in actuel) {
       const ok = await confirmer(
-        `Le fichier n'a pas pu être relu (${actuel.erreur}). Enregistrer quand même ?`
+        `Le fichier n'a pas pu être relu (${actuel.erreur.replace(/\.$/, '')}). Enregistrer quand même ?`
       )
       if (!ok) return { annule: true }
     } else if (actuel.texte !== texteCharge) {

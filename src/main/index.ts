@@ -53,6 +53,8 @@ function createWindow(): void {
     mainWindow.show()
   })
   // Avant de fermer : la fenêtre demande quoi faire des fichiers non enregistrés.
+  // Une fenêtre dont la page a planté ne répondra pas : on la laisse fermer.
+  mainWindow.webContents.on('render-process-gone', () => (fermetureAccordee = true))
   mainWindow.on('close', (e) => {
     if (fermetureAccordee) return
     e.preventDefault()
