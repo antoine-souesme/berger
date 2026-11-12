@@ -4,6 +4,21 @@ Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. La phase 6 (autres machines) est remise à plus tard : cette
 phase ne l'attend pas.
 
+## Décisions d'Antoine (12 novembre 2026, à la rédaction du plan)
+
+- Le bouton « Réglages » en bas de la colonne des spaces (maquette) est
+  construit ; « Ajouter une machine » attend la phase 6.
+- L'aperçu de code de la section « Apparence » (maquette) est construit : il
+  montre le thème de l'éditeur choisi.
+- La couleur de sélection réglée ne change que l'éditeur ; les terminaux
+  gardent la sélection du thème de l'application (la maquette disait « et les
+  terminaux »).
+- Le thème de l'éditeur « antoine-monokai » garde la coloration actuelle, le
+  Monokai de VS Code (phase 5), et non l'ancienne liste simplifiée de la
+  phase 0 : son champ `editeur` renvoie au thème Monokai de VS Code copié dans
+  Berger, avec le texte ordinaire en `#d0d0c8`. « Monokai » est ce même thème
+  de VS Code tel quel (texte `#f8f8f2`).
+
 ## Intention
 
 Antoine veut pouvoir se passer de l'app Herdr. Il faut pour ça que Berger soit
