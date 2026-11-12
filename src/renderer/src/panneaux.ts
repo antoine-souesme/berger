@@ -316,6 +316,16 @@ export async function actionPanneau(
         (['left', 'up', 'right', 'down'] as const)
           .map((d) => voisin(onglet.racine, bloc.id, d))
           .find((x) => x !== null) ?? null
+      // Le seul panneau du seul onglet : le fermer ferme le space, on demande.
+      if (!suivant && space.onglets.length === 1) {
+        const r = await window.berger.demander<number>('berger:question', {
+          message: `Fermer le dernier panneau ferme aussi le space « ${space.nom} ». Continuer ?`,
+          boutons: ['Fermer', 'Annuler'],
+          defaut: 1,
+          annuler: 1
+        })
+        if (r !== 0) return
+      }
       if (suivant) changer((e) => (e.focus[onglet.id] = suivant))
       await window.berger.demander('berger:structure', {
         type: 'panneau.fermer',
