@@ -100,7 +100,7 @@ function ouvrir(adresse: string, o: Ouvert): void {
 // Autant de colonnes et de lignes que la place en tient. La barre de défilement
 // de xterm passe par-dessus le texte : on ne lui réserve pas de place (le module
 // « fit » en réservait 14 px, d'où une marge droite plus grande que la gauche).
-// La marge gauche reste de 12 px ; à droite, 12 px plus le reste (moins d'une case).
+// Le reste (moins d'une case) est partagé entre la gauche et la droite (CSS).
 function ajusterTaille(o: Ouvert): void {
   const cellule = (
     o.xterm as unknown as {
