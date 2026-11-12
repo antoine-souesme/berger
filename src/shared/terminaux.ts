@@ -27,6 +27,11 @@ export function appliquerEvenement(table: Map<string, TerminalCore>, e: Evenemen
     case 'finished':
       Object.assign(t, e.data, { state: 'finished', status: null })
       break
+    case 'turn':
+      // `data.state` est l'état du statut qui vient de quitter `working`, pas
+      // celui du terminal : le recopier rendait le terminal « mort ».
+      if (typeof e.data?.turn === 'number') t.turn = e.data.turn
+      break
     case 'labels':
       t.labels = { ...t.labels, ...e.data.labels }
       break

@@ -22,6 +22,8 @@ export type TerminalCore = {
   status?: { state: string; app?: string; title?: string } | null
   /** Quand le mot d'état a changé pour la dernière fois (ms). */
   status_ms?: number | null
+  /** Monte chaque fois que le statut quitte `working`. */
+  turn?: number
   /** Le terminal qui l'a lancé (`hc run`). */
   parent?: string | null
   foreground?: { cwd: string; name?: string; argv?: string[] } | null

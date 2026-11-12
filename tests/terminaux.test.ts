@@ -61,3 +61,18 @@ test('evenementNeuf ignore les événements déjà couverts par un instantané',
   expect(evenementNeuf(5, 2)).toBe(false)
   expect(evenementNeuf(5, undefined)).toBe(true)
 })
+
+// Trame réelle du core (hc events) : `turn` porte l'état du statut qu'on vient
+// de quitter, pas l'état du terminal.
+test('turn ne change que le tour, le terminal reste vivant', () => {
+  const table = new Map([['t5', { ...t('t5'), status: { state: 'working' } }]])
+  appliquerEvenement(table, {
+    type: 'turn',
+    terminal: 't5',
+    data: { state: 'idle', turn: 1 },
+    seq: 8958
+  })
+  expect(table.get('t5')!.state).toBe('live')
+  expect(table.get('t5')!.status?.state).toBe('working')
+  expect(table.get('t5')!.turn).toBe(1)
+})
