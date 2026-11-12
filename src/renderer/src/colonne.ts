@@ -179,3 +179,11 @@ export function renommerSpaceEnPlace(): void {
   spaceEnRenommage = s.id
   changer(() => {})
 }
+
+// Un message passager sous le filtre (fichier impossible à ouvrir…).
+export function annoncerColonne(texte: string): void {
+  const m = el('explorateur-message')
+  m.textContent = texte
+  m.hidden = false
+  setTimeout(dessinerFichiers, 4000)
+}

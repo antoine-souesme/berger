@@ -475,3 +475,9 @@ body {
   margin: 5px 8px;
   background: var(--bord);
 }
+
+/* La minicarte ne peint que la hauteur du texte : sous elle, le fond doit
+   rester plein, sinon la fin des lignes longues se lit à travers. */
+#editeur .monaco-editor .minimap {
+  background: var(--panneau);
+}

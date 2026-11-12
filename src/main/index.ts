@@ -1,5 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
+import { homedir } from 'os'
 import { writeFileSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
@@ -101,7 +102,11 @@ app.whenReady().then(() => {
   })
   const vueActuelle = suivreLaVue(coeur, (vue) => envoyerA(fenetre, 'berger:vue', vue))
   // La fenêtre demande l'état courant au chargement (elle a pu rater les envois).
-  ipcMain.handle('berger:etat', () => ({ connexion: etatConnexion, vue: vueActuelle() }))
+  ipcMain.handle('berger:etat', () => ({
+    connexion: etatConnexion,
+    vue: vueActuelle(),
+    maison: homedir()
+  }))
   void coeur.demarrer()
   brancherFichiers(coeur, () => fenetre)
   brancherActions(coeur, () => fenetre)
@@ -140,8 +145,17 @@ app.whenReady().then(() => {
   // Vérification sans clic (développement) : BERGER_OUVRIR=<adresse> ouvre ce
   // terminal au chargement, BERGER_TAPER=<texte> y tape ce texte ensuite.
   app.on('browser-window-created', (_e, w) => {
+    let joue = false
     w.webContents.on('did-finish-load', () => {
-      jouerScenario(w)
+      if (joue) return
+      joue = true
+      jouerScenario(w, async (id) => {
+        const r = await coeur.requetes?.requete<{ value: { spaces?: { id: string }[] } }>(
+          'doc.get',
+          { name: 'herdr-app' }
+        )
+        return r?.value.spaces?.find((s) => s.id === id) ?? null
+      })
       const adresse = process.env['BERGER_OUVRIR']
       if (!adresse) return
       setTimeout(() => w.webContents.send('berger:ouvrir', { adresse }), 1500)

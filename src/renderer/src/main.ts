@@ -2,6 +2,7 @@
 import type { EtatFenetre } from '../../shared/etat-fenetre'
 import type { Vue } from '../../shared/spaces'
 import {
+  afficherSpace,
   appliquerEtatRetenu,
   changer,
   etat,
@@ -11,9 +12,21 @@ import {
   surChangement
 } from './etat'
 import { initFenetre } from './fenetre'
-import { initColonne } from './colonne'
+import { annoncerColonne, initColonne } from './colonne'
 import { initBarreEtat } from './barre-etat'
-import { dessinerBarre } from './barre-onglets'
+import { afficherOnglet, brancherFichiers, dessinerBarre } from './barre-onglets'
+import { ouvrirFichier, type PlaceAgent } from '../../shared/onglets'
+import { feuilles } from '../../shared/arbre'
+import {
+  afficherFichier,
+  cacherEditeur,
+  fermerFichierAvecQuestion,
+  fichierAffiche,
+  initEditeur,
+  quitterAvecQuestion,
+  raisonEchec,
+  retirerOnglet
+} from './editeur'
 import {
   adressesDeLOngletAffiche,
   dessinerOnglet,
@@ -25,17 +38,36 @@ import { initTerminaux, oublierTerminauxSauf } from './terminal'
 initFenetre()
 initBarreEtat()
 initTerminaux({ fin: () => redessiner() })
-initColonne({
-  ouvrirFichier: () => {},
-  choisirAgent: (a) => {
-    oublierClavier()
-    changer((e) => {
-      e.space = a.space
-      e.onglet = { type: 'terminal', id: a.onglet }
-      e.focus[a.onglet] = a.panneau
-    })
-  }
-})
+function ouvrirUnFichier(chemin: string): void {
+  changer((e) => (e.fichiers = ouvrirFichier(e.fichiers, chemin)))
+  afficherOnglet({ type: 'fichier', chemin })
+}
+
+// Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
+function choisirPlace(p: PlaceAgent): void {
+  oublierClavier()
+  changer((e) => {
+    e.space = p.space
+    e.onglet = { type: 'terminal', id: p.onglet }
+    e.focus[p.onglet] = p.panneau
+  })
+}
+
+// Tous les terminaux rangés, à leur place (pour BERGER_OUVRIR).
+function agentsEtTerminaux(): PlaceAgent[] {
+  return etat().vue.spaces.flatMap((s) =>
+    s.onglets.flatMap((o) =>
+      feuilles(o.racine).flatMap((b) =>
+        b.content?.terminal
+          ? [{ space: s.id, onglet: o.id, panneau: b.id, adresse: b.content.terminal }]
+          : []
+      )
+    )
+  )
+}
+
+brancherFichiers(fermerFichierAvecQuestion)
+initColonne({ ouvrirFichier: ouvrirUnFichier, choisirAgent: choisirPlace })
 
 // Le contenu de la colonne de droite : l'onglet de terminal ou le fichier.
 surChangement((e) => {
@@ -49,6 +81,16 @@ surChangement((e) => {
   oublierTerminauxSauf(adressesDeLOngletAffiche())
   if (space && onglet) dessinerOnglet(space, onglet)
   else viderZoneTerminaux()
+  if (a?.type === 'fichier') {
+    if (fichierAffiche() !== a.chemin) {
+      const chemin = a.chemin
+      void afficherFichier(chemin).then((ok) => {
+        if (ok) return
+        annoncerColonne(`${chemin.slice(chemin.lastIndexOf('/') + 1)} : ${raisonEchec()}`)
+        retirerOnglet(chemin)
+      })
+    }
+  } else if (fichierAffiche()) cacherEditeur()
 })
 
 window.berger.ecouter('berger:connexion', ({ etat: c }) =>
@@ -60,18 +102,27 @@ window.berger.ecouter('berger:vue', (vue: Vue) => {
 })
 
 void (async () => {
-  const retenu = await window.berger.demander<EtatFenetre>('berger:etat-fenetre')
-  appliquerEtatRetenu(retenu)
-  const { connexion, vue } = await window.berger.demander<{
+  const { connexion, vue, maison } = await window.berger.demander<{
     connexion: 'connecte' | 'deconnecte'
     vue: Vue
+    maison: string
   }>('berger:etat')
+  initEditeur(maison)
+  appliquerEtatRetenu(await window.berger.demander<EtatFenetre>('berger:etat-fenetre'))
   changer((e) => {
     e.connecte = connexion === 'connecte'
     e.vue = vue
   })
 })()
 
-window.berger.ecouter('berger:non-enregistres', () =>
-  window.berger.envoyer('berger:reponse-quitter', { quitter: true })
+window.berger.ecouter('berger:non-enregistres', async () =>
+  window.berger.envoyer('berger:reponse-quitter', { quitter: await quitterAvecQuestion() })
 )
+
+// Développement : ouvertures demandées par BERGER_OUVRIR et BERGER_SCENARIO.
+window.berger.ecouter('berger:ouvrir', ({ adresse }) => {
+  const place = agentsEtTerminaux().find((p) => p.adresse === adresse)
+  if (place) choisirPlace(place)
+})
+window.berger.ecouter('berger:scenario-space', ({ space }) => afficherSpace(space))
+window.berger.ecouter('berger:scenario-fichier', ({ chemin }) => ouvrirUnFichier(chemin))
