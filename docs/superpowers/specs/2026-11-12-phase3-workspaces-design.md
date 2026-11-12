@@ -82,7 +82,11 @@ git du dépôt du space : la branche, ou « ↑n » quand des commits restent à
 pousser (en vert). Le space affiché est mis en avant. « + » en tête de liste
 crée un space dans le workspace ouvert (un terminal shell dans le dossier
 personnel, comme Herdr). Workspace vide : un bouton « Nouveau space ».
-Glisser une ligne la déplace dans l'ordre du workspace.
+Glisser une ligne la déplace dans l'ordre du workspace. Clic droit sur une
+ligne (ajouté le 12 novembre 2026 à la demande d'Antoine) : « Renommer »
+(`⇧F2`, renommage sur place), séparateur, « Supprimer », qui demande
+« Supprimer « Nom » ? » / « Ses terminaux et leurs agents seront fermés. »
+puis ferme réellement le space (ses terminaux).
 
 **Liste des agents.** Les agents des spaces du workspace ouvert. Chaque ligne :
 icône du programme, nom du space, titre de l'agent en gris, depuis combien de

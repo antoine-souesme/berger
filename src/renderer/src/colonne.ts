@@ -18,6 +18,8 @@ import {
 } from './etat'
 import { glisseEnCours, rendreGlissable } from './glisser'
 import { icone } from './icones'
+import { ouvrirDialogue } from './dialogue'
+import { ouvrirMenu } from './menus'
 
 const AFFICHES = 200
 const PASTILLES = ['#5d9e5d', '#2f9a9a', '#c47a3a', '#8a6fc4', '#c45b8a', '#4f86c6']
@@ -175,6 +177,29 @@ function ligneSpace(space: VueSpace, affiche: boolean): HTMLElement {
   }
   ligne.append(pastille(space.nom), nom, git)
   ligne.onclick = () => afficherSpace(space.id)
+  ligne.oncontextmenu = (e) => {
+    e.preventDefault()
+    ouvrirMenu(
+      e.clientX,
+      e.clientY,
+      [
+        {
+          libelle: 'Renommer',
+          icone: 'pencil',
+          raccourci: '⇧F2',
+          faire: () => renommerSpace(space.id)
+        },
+        'separateur',
+        {
+          libelle: 'Supprimer',
+          icone: 'trash-2',
+          danger: true,
+          faire: () => void supprimerSpace(space)
+        }
+      ],
+      'Actions du space'
+    )
+  }
   ligne.dataset['space'] = space.id
   rendreGlissable(ligne, {
     axe: 'y',
@@ -318,12 +343,26 @@ function dessiner(): void {
     el('workspace-vide-texte').textContent = `${w.nom} est vide. Crée un space pour commencer.`
 }
 
+function renommerSpace(id: string): void {
+  if (etat().colonneMasquee) changer((e) => (e.colonneMasquee = false))
+  spaceEnRenommage = id
+  changer(() => {})
+}
+
 export function renommerSpaceEnPlace(): void {
   const s = spaceAffiche()
-  if (!s) return
-  if (etat().colonneMasquee) changer((e) => (e.colonneMasquee = false))
-  spaceEnRenommage = s.id
-  changer(() => {})
+  if (s) renommerSpace(s.id)
+}
+
+// Supprimer un space ferme réellement ses terminaux : seulement après la question.
+async function supprimerSpace(space: VueSpace): Promise<void> {
+  const r = await ouvrirDialogue({
+    titre: `Supprimer « ${space.nom} » ?`,
+    texte: 'Ses terminaux et leurs agents seront fermés.',
+    bouton: { libelle: 'Supprimer', danger: true }
+  })
+  if (!r) return
+  await window.berger.demander('berger:structure', { type: 'space.fermer', space: space.id })
 }
 
 // Un message passager sous le filtre (fichier impossible à ouvrir…).

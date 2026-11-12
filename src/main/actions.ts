@@ -7,6 +7,7 @@ import type { Sens } from '../shared/arbre'
 
 export type DemandeStructure =
   | { type: 'space.nouveau' }
+  | { type: 'space.fermer'; space: string }
   | { type: 'onglet.nouveau'; space: string; dossier: string }
   | {
       type: 'panneau.diviser'
@@ -139,6 +140,9 @@ export function brancherActions(
         crees.add(place.space)
         return { ok: true, ...place }
       }
+      case 'space.fermer':
+        await fermerSpaces([d.space])
+        return { ok: true }
       case 'onglet.nouveau': {
         const onglet = idHerdr('tb')
         const adresse = await lancer(d.space, onglet, d.dossier)
