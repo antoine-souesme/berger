@@ -4,7 +4,7 @@
   --panneau: #272822;
   --bord: #34352f;
   --texte: #d0d0c8;
-  --vif: #f2f2ea;
+  --vif: #f8f8f2; /* solid_foreground du thème : le blanc des noms dans Herdr */
   --gris: #75715e;
   --gris-clair: #a59f85;
   --actif: #414339;
@@ -150,7 +150,7 @@ body {
   white-space: nowrap;
   cursor: pointer;
   font-weight: 500;
-  color: #cccccc;
+  color: var(--vif);
 }
 .ligne-arbre:hover {
   background: #2a2b26;
@@ -170,6 +170,7 @@ body {
 }
 .nom-racine {
   flex-shrink: 0;
+  font-weight: 600;
 }
 .chemin-racine {
   flex: 1;
@@ -352,7 +353,8 @@ body {
   background: var(--actif);
 }
 .ligne-space .nom {
-  color: var(--texte);
+  color: var(--vif);
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -361,6 +363,7 @@ body {
   color: var(--vif);
 }
 .ligne-agent .nom {
+  font-weight: 600;
   flex-shrink: 0;
   max-width: 50%;
   overflow: hidden;
