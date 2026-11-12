@@ -9,6 +9,7 @@ export type EtatFenetre = {
   onglet: RefOnglet | null
   explorateurMasque: boolean
   triAgents: TriAgents
+  retourLigne: boolean
 }
 
 export const LARGEUR_MIN = 160
@@ -20,7 +21,8 @@ export const ETAT_PAR_DEFAUT: EtatFenetre = {
   space: null,
   onglet: null,
   explorateurMasque: false,
-  triAgents: 'spaces'
+  triAgents: 'spaces',
+  retourLigne: false
 }
 
 export const bornerLargeur = (n: number): number =>
@@ -55,6 +57,7 @@ export function lireEtatFenetre(brut: unknown): EtatFenetre {
     space: typeof e['space'] === 'string' ? e['space'] : null,
     onglet: onglet(e['onglet']),
     explorateurMasque: e['explorateurMasque'] === true,
-    triAgents: e['triAgents'] === 'urgence' ? 'urgence' : 'spaces'
+    triAgents: e['triAgents'] === 'urgence' ? 'urgence' : 'spaces',
+    retourLigne: e['retourLigne'] === true
   }
 }

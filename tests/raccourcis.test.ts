@@ -125,3 +125,24 @@ test('⌘N crée un space, même depuis l’éditeur', () => {
   expect(actionDe(t('KeyN', cmd), 'terminal')).toEqual({ type: 'space.nouveau' })
   expect(actionDe(t('KeyN', cmd), 'editeur')).toEqual({ type: 'space.nouveau' })
 })
+
+test("⌥Z bascule le retour à la ligne dans l'éditeur et l'explorateur seulement", () => {
+  const z = t('KeyZ', { altKey: true })
+  expect(actionDe(z, 'editeur')).toEqual({ type: 'editeur.retourLigne' })
+  expect(actionDe(z, 'explorateur')).toEqual({ type: 'editeur.retourLigne' })
+  expect(actionDe(z, 'terminal')).toBeNull()
+  expect(actionDe(z, 'autre')).toBeNull()
+})
+
+test("les touches du langage restent à Monaco dans l'éditeur", () => {
+  for (const k of [
+    t('F12'),
+    t('F12', { shiftKey: true }),
+    t('F2'),
+    t('KeyD', cmd),
+    t('ArrowUp', { altKey: true, metaKey: true }),
+    t('ArrowDown', { altKey: true, metaKey: true }),
+    t('KeyO', { shiftKey: true, altKey: true })
+  ])
+    expect(actionDe(k, 'editeur')).toBeNull()
+})

@@ -68,7 +68,8 @@ function retenir(): void {
     space: spaceAffiche()?.id ?? e.space,
     onglet: a ?? e.onglet,
     explorateurMasque: e.explorateurMasque,
-    triAgents: e.triAgents
+    triAgents: e.triAgents,
+    retourLigne: e.retourLigne
   } satisfies EtatFenetre)
 }
 
