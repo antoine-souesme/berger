@@ -49,7 +49,10 @@ avec leur `README.md`).
   séparateur), `BERGER_SCENARIO=ranger` le ferme (`BERGER_SCENARIO_REPONSE=0` accepte la
   question) ; `BERGER_SCENARIO=workspaces` crée, renomme, déplace puis supprime un workspace de
   test (et le space qu'il y crée), `BERGER_SCENARIO=raccourcis` journalise ⌃1, ⌥⌘], ⌘] et le tri
-  des agents ; voir `src/main/scenario.ts`. Les workspaces de Berger sont dans
+  des agents ; `BERGER_SCENARIO=fichiers` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
+  joue l'explorateur, ⌘P, les onglets de fichiers et la visionneuse (`explorateur` et `onglets` en
+  plus court) ; voir `src/main/scenario.ts`. L'état des fichiers par workspace est dans
+  `fichiers.json`, à côté de `workspaces.json`. Les workspaces de Berger sont dans
   `~/Library/Application Support/berger/workspaces.json` : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état,
   les écritures du document, les terminaux lancés et fermés, les `RESIZE` et le premier plan.
 - Space de test : `hc run --bg --keep --no-parent --label herdr.space=spbergertest<hex>
