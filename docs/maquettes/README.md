@@ -11,6 +11,17 @@ un navigateur (fenêtre de 1440 × 900).
 - `recherche-fichiers.html` : la recherche de fichiers (`cmd-p`).
 - `logos.html` : les variantes du logo ; la variante C est retenue
   (`docs/logo-berger.svg`), en petit sans pattes et laine pleine.
+- `workspaces.html` : menu du clic droit sur un workspace, dialogues « Nouveau
+  workspace » et de suppression, workspace vide sélectionné (phase 3).
+- `explorateur.html` : menu du clic droit sur un fichier, glisser-déposer,
+  mise à la corbeille, onglets de fichiers (épinglé, même nom, non enregistré),
+  visionneuse d'images (phase 4).
+- `recherche-projet.html` : la recherche dans le projet (`shift-cmd-f`) à la
+  place de l'explorateur, résultats groupés par fichier (phase 5).
+- `differences.html` : les différences git dans la marge de l'éditeur et la
+  vue côte à côte (phase 5).
+- `reglages.html` : la fenêtre des réglages (`cmd-,`), sections Apparence et
+  Raccourcis (phase 7).
 
 Ce qu'il faut garder en tête en codant :
 

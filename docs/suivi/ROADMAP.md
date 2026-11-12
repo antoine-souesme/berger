@@ -6,13 +6,13 @@ commence que quand la précédente marche, vue dans l'application lancée.
 | Phase | Nom | État |
 |---|---|---|
 | 0 | Preuve de concept | Faite (bilan : `docs/notes/bilan-phase0-poc.md`) |
-| 1 | Maquette et conception globale | À faire |
+| 1 | Maquette et conception globale | Faite (maquettes : `docs/maquettes/`) |
 | 2 | Le cadre de la fenêtre | À faire |
 | 3 | Workspaces, spaces et agents | À faire |
 | 4 | Fichiers | À faire |
 | 5 | L'éditeur complet | À faire |
-| 6 | Les autres machines | À faire |
-| 7 | Berger au quotidien | À faire |
+| 6 | Les autres machines | Remise à plus tard |
+| 7 | L'application installée et ses réglages | À faire |
 
 ## Phase 0 : preuve de concept
 
@@ -43,6 +43,8 @@ Antoine.
 
 ## Phase 2 : le cadre de la fenêtre
 
+Spec : `docs/superpowers/specs/2026-11-12-phase2-cadre-design.md`.
+
 Monter la disposition décidée en phase 1, sans encore toutes les fonctions.
 
 - Les colonnes et panneaux, leurs largeurs gardées d'une session à l'autre.
@@ -53,6 +55,8 @@ Monter la disposition décidée en phase 1, sans encore toutes les fonctions.
 - Les petits défauts laissés par la phase 0 (voir le bilan).
 
 ## Phase 3 : workspaces, spaces et agents
+
+Spec : `docs/superpowers/specs/2026-11-12-phase3-workspaces-design.md`.
 
 Reprendre l'organisation du mod `antoine`.
 
@@ -65,6 +69,8 @@ Reprendre l'organisation du mod `antoine`.
 
 ## Phase 4 : fichiers
 
+Spec : `docs/superpowers/specs/2026-11-12-phase4-fichiers-design.md`.
+
 - L'explorateur : fichiers masqués comme VS Code, ignorés par git en grisé,
   couleurs git, corbeille avec confirmation, icônes Material Icon.
 - `cmd-p` : recherche rapide et fichiers récents.
@@ -74,6 +80,8 @@ Reprendre l'organisation du mod `antoine`.
   ont le même nom, la visionneuse d'images.
 
 ## Phase 5 : l'éditeur complet
+
+Spec : `docs/superpowers/specs/2026-11-12-phase5-editeur-design.md`.
 
 La raison d'être de Berger.
 
@@ -90,11 +98,14 @@ La raison d'être de Berger.
   terminaux et agents à côté de ceux de la machine locale.
 - Ouvrir et enregistrer les fichiers de ces machines dans l'éditeur.
 
-## Phase 7 : Berger au quotidien
+## Phase 7 : l'application installée et ses réglages
+
+Spec : `docs/superpowers/specs/2026-11-12-phase7-application-design.md`.
 
 Pouvoir se passer de l'app Herdr.
 
 - Une application installée (empaquetée, avec son icône), lancée sans
   `npm run dev`.
-- Les réglages (thème, police, raccourcis).
-- Une semaine d'usage réel, et la liste de ce qui manque encore.
+- Les réglages : thème de l'application et thème de l'éditeur séparés, polices,
+  raccourcis.
+- Ce qui manque à l'usage, Antoine le corrige au fil de l'eau, hors phase.
