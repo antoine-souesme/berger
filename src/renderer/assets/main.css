@@ -665,7 +665,10 @@ body {
   flex: 1;
   min-height: 0;
   position: relative;
-  padding: 2px 4px 4px 12px;
+  padding: 2px 12px 4px;
+}
+.corps .xterm-screen {
+  margin: 0 auto;
 }
 .corps .xterm,
 .corps .xterm-viewport {
