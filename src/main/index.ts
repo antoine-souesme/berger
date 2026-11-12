@@ -14,6 +14,7 @@ import { brancherEtat } from './etat'
 import { poserMenu } from './menu'
 import { jouerScenario } from './scenario'
 import { brancherWorkspaces } from './workspaces'
+import { brancherEtatFichiers } from './etat-fichiers'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -97,7 +98,7 @@ function createWindow(): void {
 
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('fr.antoine.berger')
-  poserMenu()
+  poserMenu(() => fenetre)
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -128,6 +129,7 @@ app.whenReady().then(() => {
   }))
   void coeur.demarrer()
   const etat = brancherEtat()
+  const etatFichiers = brancherEtatFichiers()
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
     terminaux.attacher(adresse, cols, rows, actif !== false)
@@ -151,6 +153,7 @@ app.whenReady().then(() => {
     terminaux.detacherTout()
     etat.vider()
     workspaces.vider()
+    etatFichiers.vider()
     fermetureAccordee = true
     fenetre?.close()
     if (quitter) app.quit()
@@ -159,6 +162,7 @@ app.whenReady().then(() => {
     quitter = true
     etat.vider()
     workspaces.vider()
+    etatFichiers.vider()
   })
 
   // Vérification sans clic (développement) : BERGER_OUVRIR=<adresse> ouvre ce

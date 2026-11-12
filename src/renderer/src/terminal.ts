@@ -2,19 +2,70 @@
 // gardé tant que son onglet est affiché ; les autres sont détachés (jamais
 // tués) et rattachés au retour.
 import { Terminal } from '@xterm/xterm'
-import { FitAddon } from '@xterm/addon-fit'
+import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
+import { AFFICHAGE } from '../../shared/terminaux'
 
 type Ouvert = {
   el: HTMLElement
   xterm: Terminal
-  ajustement: FitAddon
   attache: boolean
   cree: number
+  ouvert: boolean
 }
 
+// Police et couleurs du terminal de Herdr (`~/.config/herdr-app/settings.json`,
+// thème `antoine-monokai`).
+const THEME = {
+  background: AFFICHAGE.bg,
+  foreground: AFFICHAGE.fg,
+  cursor: AFFICHAGE.cursor,
+  selectionBackground: '#49483e',
+  black: '#333333',
+  red: '#c4265e',
+  green: '#86b42b',
+  yellow: '#b3b42b',
+  blue: '#6a7ec8',
+  magenta: '#8c6bc8',
+  cyan: '#56adbc',
+  white: '#c4c4be',
+  brightBlack: '#666666',
+  brightRed: '#f92672',
+  brightGreen: '#a6e22e',
+  brightYellow: '#e2e22e',
+  brightBlue: '#819aff',
+  brightMagenta: '#ae81ff',
+  brightCyan: '#66d9ef',
+  brightWhite: '#d8d8d2'
+}
+
+// Le rendu graphique de xterm donne au canevas une police qui commence par une
+// espace quand le texte n'est pas en italique (« ␣normal 12px … ») ; le Chromium
+// d'Electron 44 la refuse et dessine en « 10px sans-serif », d'où des lettres
+// minuscules et espacées. On retire l'espace avant de la donner au canevas.
+for (const proto of [
+  CanvasRenderingContext2D.prototype,
+  OffscreenCanvasRenderingContext2D.prototype
+]) {
+  const police = Object.getOwnPropertyDescriptor(proto, 'font')
+  if (!police?.set) continue
+  Object.defineProperty(proto, 'font', {
+    ...police,
+    set(this: CanvasRenderingContext2D, valeur: string) {
+      police.set!.call(this, typeof valeur === 'string' ? valeur.trim() : valeur)
+    }
+  })
+}
+
+const POLICE = "'IBM Plex Mono', Menlo, monospace"
+
 const ouverts = new Map<string, Ouvert>()
+
+// La police doit être chargée avant le rendu par la carte graphique : sinon il
+// dessine ses lettres avec une autre police que celle qui a mesuré les cases.
+const policePrete = document.fonts.load("12px 'IBM Plex Mono'").catch(() => [])
+
 // Terminaux dont le flux s'est arrêté juste après l'ouverture : on ne les
 // rouvre pas en boucle, on montre la raison.
 const arretes = new Map<string, string>()
@@ -26,9 +77,48 @@ function envoyerTaille(adresse: string, o: Ouvert): void {
   window.berger.envoyer('berger:taille', { adresse, cols: o.xterm.cols, rows: o.xterm.rows })
 }
 
+// Rendu par la carte graphique, comme Herdr : les caractères de bloc (logo de
+// Claude Code) sont dessinés pleins, sans jour entre les lignes. Le terminal
+// n'est ouvert qu'une fois son élément dans la page (sinon les cases sont mal
+// mesurées et les lettres s'écartent), et la carte graphique n'est branchée
+// qu'une fois la police chargée. Contexte graphique perdu : rendu ordinaire.
+function ouvrir(adresse: string, o: Ouvert): void {
+  o.ouvert = true
+  o.xterm.open(o.el)
+  void policePrete.then(() => {
+    if (ouverts.get(adresse) !== o) return
+    try {
+      const webgl = new WebglAddon()
+      webgl.onContextLoss(() => webgl.dispose())
+      o.xterm.loadAddon(webgl)
+    } catch {
+      // Pas de WebGL : rendu ordinaire.
+    }
+  })
+}
+
+// Autant de colonnes et de lignes que la place en tient. La barre de défilement
+// de xterm passe par-dessus le texte : on ne lui réserve pas de place (le module
+// « fit » en réservait 14 px, d'où une marge droite plus grande que la gauche).
+// Le reste (moins d'une case) est partagé entre la gauche et la droite (CSS).
+function ajusterTaille(o: Ouvert): void {
+  const cellule = (
+    o.xterm as unknown as {
+      _core: {
+        _renderService: { dimensions: { css: { cell: { width: number; height: number } } } }
+      }
+    }
+  )._core._renderService.dimensions.css.cell
+  if (!cellule.width || !cellule.height) return
+  const cols = Math.max(2, Math.floor(o.el.clientWidth / cellule.width))
+  const rows = Math.max(1, Math.floor(o.el.clientHeight / cellule.height))
+  if (cols !== o.xterm.cols || rows !== o.xterm.rows) o.xterm.resize(cols, rows)
+}
+
 function ajuster(adresse: string, o: Ouvert): void {
   if (!o.el.isConnected || o.el.clientWidth === 0 || o.el.clientHeight === 0) return
-  o.ajustement.fit()
+  if (!o.ouvert) ouvrir(adresse, o)
+  ajusterTaille(o)
   if (!o.attache) {
     o.attache = true
     // En arrière-plan, l'attache n'impose pas sa taille (le focus la donnera).
@@ -82,16 +172,18 @@ export function vueTerminal(adresse: string): HTMLElement {
   el.style.width = '100%'
   el.style.height = '100%'
   const xterm = new Terminal({
-    fontFamily: 'Menlo, monospace',
+    fontFamily: POLICE,
     fontSize: 12,
+    // Le rendu natif de Herdr (Ghostty) est plus épais et ses lignes plus hautes :
+    // graisse « SemiBold » et lignes de 16 px s'en approchent.
+    fontWeight: '600',
+    fontWeightBold: '700',
+    lineHeight: 1.1,
     cursorBlink: true,
     allowProposedApi: true,
-    theme: { background: '#272822', foreground: '#d0d0c8', cursor: '#f8f8f0' }
+    theme: THEME
   })
-  const ajustement = new FitAddon()
-  xterm.loadAddon(ajustement)
-  xterm.open(el)
-  const o: Ouvert = { el, xterm, ajustement, attache: false, cree: Date.now() }
+  const o: Ouvert = { el, xterm, attache: false, cree: Date.now(), ouvert: false }
   ouverts.set(adresse, o)
   xterm.onData((texte) =>
     window.berger.envoyer('berger:touches', { adresse, octets: encodeur.encode(texte) })

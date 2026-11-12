@@ -10,7 +10,7 @@ commence que quand la précédente marche, vue dans l'application lancée.
 | 1 | Maquette et conception globale | Faite (maquettes : `docs/maquettes/`) |
 | 2 | Le cadre de la fenêtre | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase2-cadre.md`) |
 | 3 | Workspaces, spaces et agents | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase3-workspaces.md`) |
-| 4 | Fichiers | À faire |
+| 4 | Fichiers | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase4-fichiers.md`) |
 | 5 | L'éditeur complet | À faire |
 | 6 | Les autres machines | Remise à plus tard |
 | 7 | L'application installée et ses réglages | À faire |

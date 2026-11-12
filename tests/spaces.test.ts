@@ -72,11 +72,17 @@ test('la vue porte les onglets et leurs arbres', () => {
 test("l'onglet prend l'état de son agent le plus pressant", () => {
   const vue = construireVue(doc, [
     vivant('t2b', { status: { state: 'working' } }),
-    vivant('t2c', { status: { state: 'idle' } }),
+    vivant('t2c', { status: { state: 'blocked' } }),
     vivant('t99', { status: { state: 'done' } })
   ])
   expect(vue.spaces[0].onglets.map((o) => o.agent)).toEqual(['attente', 'fini'])
   expect(vue.spaces[1].onglets[0].agent).toBeNull()
+})
+
+test('un agent fini qu’on a regardé n’a plus de point, mais reste un agent', () => {
+  const t = vivant('t99', { status: { state: 'done' }, status_ms: 7 })
+  const vue = construireVue(doc, [t], '', new Set(['t99@7']))
+  expect(vue.terminaux['t99']).toMatchObject({ agent: null, estAgent: true })
 })
 
 test('un terminal de la vue : programme, dossier avec ~, clics droits', () => {

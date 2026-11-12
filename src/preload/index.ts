@@ -1,4 +1,4 @@
-import { contextBridge, ipcRenderer } from 'electron'
+import { contextBridge, ipcRenderer, webUtils } from 'electron'
 
 // Pont entre la fenêtre et le processus principal : seulement les canaux `berger:`.
 const verifier = (canal: string): void => {
@@ -18,6 +18,10 @@ const berger = {
   demander<T>(canal: string, donnees?: unknown): Promise<T> {
     verifier(canal)
     return ipcRenderer.invoke(canal, donnees)
+  },
+  // Le chemin d'un fichier déposé depuis le Finder.
+  cheminDe(f: File): string {
+    return webUtils.getPathForFile(f)
   }
 }
 

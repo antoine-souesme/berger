@@ -3,6 +3,12 @@
 // envoie au processus principal ce qu'il faut retenir.
 import { ETAT_PAR_DEFAUT, type EtatFenetre } from '../../shared/etat-fenetre'
 import { barre, memeOnglet, type RefOnglet } from '../../shared/onglets'
+import {
+  ongletsFichiers,
+  ouvrirFichiers,
+  type EtatFichiers,
+  type OngletFichier
+} from '../../shared/etat-fichiers'
 import { VUE_VIDE, type Vue, type VueSpace } from '../../shared/spaces'
 import {
   ouvrir,
@@ -20,6 +26,7 @@ export type EtatUi = EtatFenetre & {
   modifies: Set<string> // fichiers non enregistrés
   ongletParSpace: Record<string, RefOnglet> // dernier onglet affiché de chaque space
   workspaces: EtatWorkspaces | null // null tant que le processus principal ne les a pas lus
+  fichiersWs: EtatFichiers | null // fichiers de chaque workspace ; null tant que non lus
 }
 
 const e: EtatUi = {
@@ -30,12 +37,15 @@ const e: EtatUi = {
   agrandi: {},
   modifies: new Set(),
   ongletParSpace: {},
-  workspaces: null
+  workspaces: null,
+  fichiersWs: null
 }
 
 const ecouteurs: ((e: EtatUi) => void)[] = []
 let prevu = false
 let charge = false
+// Le dernier état des fichiers envoyé au processus principal.
+let fichiersRetenus: EtatFichiers | null = null
 
 export function etat(): EtatUi {
   return e
@@ -46,6 +56,10 @@ export function surChangement(f: (e: EtatUi) => void): void {
 }
 
 function retenir(): void {
+  if (e.fichiersWs && e.fichiersWs !== fichiersRetenus) {
+    fichiersRetenus = e.fichiersWs
+    window.berger.envoyer('berger:retenir-fichiers', e.fichiersWs)
+  }
   if (!charge) return
   const a = ongletAffiche()
   window.berger.envoyer('berger:retenir', {
@@ -53,7 +67,7 @@ function retenir(): void {
     colonneMasquee: e.colonneMasquee,
     space: spaceAffiche()?.id ?? e.space,
     onglet: a ?? e.onglet,
-    fichiers: e.fichiers,
+    explorateurMasque: e.explorateurMasque,
     triAgents: e.triAgents
   } satisfies EtatFenetre)
 }
@@ -74,6 +88,13 @@ export function changer(f: (e: EtatUi) => void): void {
   if (s && a) e.ongletParSpace[s.id] = a
   redessiner()
   retenir()
+}
+
+// L'état des fichiers relu du processus principal (rien n'est retenu avant).
+export function appliquerFichiersRetenus(f: EtatFichiers): void {
+  e.fichiersWs = f
+  fichiersRetenus = f
+  redessiner()
 }
 
 // L'état retenu est appliqué une fois relu ; avant, rien n'est retenu
@@ -125,10 +146,38 @@ export async function ouvrirWorkspace(id: string): Promise<void> {
   else changer((x) => (x.space = null))
 }
 
+// Les onglets de fichiers du workspace ouvert : épinglés, puis ouverts.
+export function fichiersDuWorkspace(): OngletFichier[] {
+  const w = workspaceOuvert()
+  return w && e.fichiersWs ? ongletsFichiers(e.fichiersWs, w.id) : []
+}
+
+// Change l'état des fichiers du workspace ouvert (rien sans workspace ouvert).
+export function changerFichiers(f: (x: EtatFichiers, ws: string) => EtatFichiers): void {
+  const w = workspaceOuvert()
+  if (!w || !e.fichiersWs) return
+  const avant = e.fichiersWs
+  const apres = f(avant, w.id)
+  if (apres !== avant) changer((x) => (x.fichiersWs = apres))
+}
+
+// Ouvre des fichiers dans le workspace ouvert et affiche le dernier.
+export function ouvrirChemins(chemins: string[]): void {
+  if (!chemins.length) return
+  changerFichiers((x, ws) => ouvrirFichiers(x, ws, chemins))
+  if (!workspaceOuvert() || !e.fichiersWs) return
+  changer((x) => (x.onglet = { type: 'fichier', chemin: chemins[chemins.length - 1] }))
+}
+
 // Workspace vide : aucun onglet (les fichiers ouverts reviennent avec un space).
 export function ongletsAffiches(): RefOnglet[] {
   const s = spaceAffiche()
-  return s ? barre(s.onglets, e.fichiers) : []
+  return s
+    ? barre(
+        s.onglets,
+        fichiersDuWorkspace().map((o) => o.chemin)
+      )
+    : []
 }
 
 export function ongletAffiche(): RefOnglet | null {

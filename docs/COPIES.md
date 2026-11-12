@@ -16,7 +16,14 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | Format des trames de herdr-core (`src/shared/trames.ts`) | observé sur `hc` 0.1.20, aucun code repris | herdr-core : Apache 2.0 |
 | Règles des workspaces (`src/shared/workspaces.ts`) et leurs tests (`tests/workspaces.test.ts`) | `~/.config/herdr-app/mods/antoine/workspaces.js` et `~/dev/playground/herdr-app-mod/tests/workspaces.test.mjs`, réécrits en TypeScript sans le suivi du space affiché par Herdr | code personnel d'Antoine |
 | Arbre et tri de la liste des agents (`src/shared/agents.ts`) | arbre, tri et durée inspirés de `~/.config/herdr-app/mods/antoine-agents/main.js` | code personnel d'Antoine |
+| Règles de l'explorateur (`src/shared/explorateur.ts` : fichiers masqués, tri, couleurs git, nom de copie, dossier de collage, dépôt possible, dossiers à relire) et leurs tests (`tests/explorateur.test.ts`) | `git.js`, `clip.js`, `staleDirs` de `files.js` et règles d'affichage de `explorer.js` du mod `antoine` (`~/.config/herdr-app/mods/antoine/`), tests de `~/dev/playground/herdr-app-mod/tests/git.test.mjs` et `clip.test.mjs`, réécrits en TypeScript | code personnel d'Antoine |
+| Choix de l'icône d'un fichier (`src/shared/icones-fichiers.ts`) | `icons.js` du mod `antoine`, réécrit en TypeScript | code personnel d'Antoine |
+| Table des icônes Material (`src/shared/material.ts`) | `material.js` du mod `antoine`, copié tel quel (généré depuis material-icon-theme 5.40.0) | MIT |
+| Icônes de fichiers de l'application (`src/renderer/public/material/`, avec son `LICENSE`) | Material Icon Theme, copiées depuis `~/.config/herdr-app/mods/antoine/icons/material/` | MIT |
+| État des fichiers par workspace (`src/shared/etat-fichiers.ts` : onglets épinglés et ouverts, récents, dossiers ajoutés, libellés d'onglets, images) et ses tests (`tests/etat-fichiers.test.ts`) | `files.js` et `remember` de `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/files.test.mjs`, réécrits en TypeScript (onglets ouverts retenus au relancement, contrairement à `boot`) | code personnel d'Antoine |
+| Recherche de fichiers (`src/shared/recherche.ts` : score, tri, récents, emplacement, fusion des racines) et ses tests (`tests/recherche.test.ts`) | `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/quickopen.test.mjs`, réécrits en TypeScript (les lettres trouvées sont gardées) | code personnel d'Antoine |
+| Scripts du presse-papiers de macOS (`CLIP_WRITE`, `CLIP_READ` dans `src/main/fichiers.ts`) | `explorer.js` du mod `antoine`, copiés tels quels | code personnel d'Antoine |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
-(`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT), Lucide (`lucide`, icônes
+(`@xterm/xterm`, `@xterm/addon-webgl`, MIT), Electron (MIT), Lucide (`lucide`, icônes
 d’interface, ISC).

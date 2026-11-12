@@ -47,16 +47,17 @@ export function nomOnglet(nom: string | undefined, place: number): string {
   return nom?.trim() ? nom : String(place + 1)
 }
 
-export function etatAgent(t: TerminalCore): EtatAgent {
+// L'état montré d'un agent, comme dans Herdr : au repos (« idle ») rien, fini
+// rien non plus une fois regardé (`vu`).
+export function etatAgent(t: TerminalCore, vu = false): EtatAgent {
   if (t.state !== 'live') return null
   switch (t.status?.state) {
     case 'working':
       return 'travail'
-    case 'idle':
     case 'blocked':
       return 'attente'
     case 'done':
-      return 'fini'
+      return vu ? null : 'fini'
     default:
       return null
   }

@@ -24,7 +24,7 @@ export function ouvrirDialogue(o: {
   titre: string
   texte?: string
   champs?: { emoji: string; nom: string; focus: 'emoji' | 'nom' }
-  bouton: { libelle: 'Valider' | 'Supprimer'; danger?: boolean }
+  bouton: { libelle: 'Valider' | 'Supprimer' | 'Mettre à la corbeille'; danger?: boolean }
 }): Promise<{ emoji: string; nom: string } | null> {
   ouvert?.annuler()
   return new Promise((rendre) => {

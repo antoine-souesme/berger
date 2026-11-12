@@ -8,7 +8,8 @@ import HtmlWorker from 'monaco-editor/language/html/html.worker?worker'
 import TsWorker from 'monaco-editor/language/typescript/ts.worker?worker'
 import { langageDe } from '../../shared/fichiers'
 import { dossierAffiche } from '../../shared/libelles'
-import { changer, etat, redessiner } from './etat'
+import { fermerFichierWs } from '../../shared/etat-fichiers'
+import { changer, changerFichiers, etat, redessiner } from './etat'
 import { icone } from './icones'
 
 self.MonacoEnvironment = {
@@ -63,6 +64,12 @@ let editeur: monaco.editor.IStandaloneCodeEditor | null = null
 let affiche: string | null = null
 let maison = ''
 let dernierEchec = ''
+// Un fichier ouvert d'un clic dans l'explorateur laisse le clavier à l'explorateur.
+let garderClavier = false
+
+export function laisserLeClavier(): void {
+  garderClavier = true
+}
 
 export function raisonEchec(): string {
   return dernierEchec
@@ -175,7 +182,8 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   dessinerPosition()
   annoncer('')
   editeur.layout()
-  editeur.focus()
+  if (garderClavier) garderClavier = false
+  else editeur.focus()
   return true
 }
 
@@ -211,7 +219,8 @@ export async function enregistrer(chemin: string): Promise<boolean> {
   return false
 }
 
-function oublier(chemin: string): void {
+// Oublie le modèle d'un fichier (sans question) : son onglet a été fermé.
+export function oublierFichier(chemin: string): void {
   const o = ouverts.get(chemin)
   if (!o) return
   if (affiche === chemin) {
@@ -244,7 +253,7 @@ export async function fermerFichierAvecQuestion(chemin: string): Promise<boolean
     if (r === 2) return false
     if (r === 0 && !(await enregistrer(chemin))) return false
   }
-  oublier(chemin)
+  oublierFichier(chemin)
   return true
 }
 
@@ -276,8 +285,48 @@ export function donnerClavierEditeur(): void {
 
 // Un fichier retenu qui ne s'ouvre plus : son onglet est retiré.
 export function retirerOnglet(chemin: string): void {
+  changerFichiers((x, ws) => fermerFichierWs(x, ws, chemin))
   changer((e) => {
-    e.fichiers = e.fichiers.filter((f) => f !== chemin)
     if (e.onglet?.type === 'fichier' && e.onglet.chemin === chemin) e.onglet = null
+  })
+}
+
+const suivre = (p: string, paires: [string, string][]): string => {
+  for (const [a, b] of paires) {
+    if (p === a) return b
+    if (p.startsWith(a + '/')) return b + p.slice(a.length)
+  }
+  return p
+}
+
+// Des fichiers ou dossiers ont été déplacés ou renommés : les modèles ouverts
+// (et leurs modifications en attente) suivent leur nouveau chemin.
+export function suivreDeplacementEditeur(paires: [string, string][]): void {
+  if (!paires.length) return
+  // Un fichier remplacé (mis à la corbeille) qui était ouvert : son modèle est oublié.
+  const cles = [...ouverts.keys()]
+  const arrivees = new Set(cles.map((c) => suivre(c, paires)).filter((n, i) => n !== cles[i]))
+  for (const c of arrivees)
+    if (ouverts.has(c) && suivre(c, paires) === c) {
+      ouverts.get(c)!.modele.dispose()
+      ouverts.delete(c)
+    }
+  for (const [ancien, o] of [...ouverts]) {
+    const nouveau = suivre(ancien, paires)
+    if (nouveau === ancien) continue
+    ouverts.delete(ancien)
+    ouverts.set(nouveau, o)
+    if (affiche === ancien) {
+      affiche = nouveau
+      dessinerBandeau(nouveau)
+    }
+  }
+  changer((e) => {
+    e.modifies = new Set([...e.modifies].map((c) => suivre(c, paires)))
+    if (e.onglet?.type === 'fichier')
+      e.onglet = { type: 'fichier', chemin: suivre(e.onglet.chemin, paires) }
+    for (const [s, o] of Object.entries(e.ongletParSpace))
+      if (o.type === 'fichier')
+        e.ongletParSpace[s] = { type: 'fichier', chemin: suivre(o.chemin, paires) }
   })
 }

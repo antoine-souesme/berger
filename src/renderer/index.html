@@ -13,8 +13,11 @@
     <aside id="gauche">
       <nav id="workspaces"></nav>
       <section id="explorateur" class="bande">
-        <header class="entete"><span class="titre-bande">Explorateur</span></header>
-        <input id="filtre" placeholder="Filtrer les fichiers…" spellcheck="false" />
+        <header class="entete entete-explorateur">
+          <span class="titre-bande">Explorateur</span>
+          <button id="tout-replier" aria-label="Tout replier" title="Tout replier"></button>
+        </header>
+        <div id="explorateur-message" hidden></div>
         <div id="explorateur-vide" hidden>
           <svg
             width="28"
@@ -32,9 +35,12 @@
             ></path>
           </svg>
           <span>Aucun space dans ce workspace</span>
+          <button id="vide-ajouter" class="bouton-vide">Ajouter un dossier</button>
         </div>
-        <div id="explorateur-message" hidden></div>
-        <div id="liste-fichiers"></div>
+        <div id="arbre" tabindex="0" hidden></div>
+        <footer id="pied-explorateur" hidden>
+          <button id="ajouter-dossier" class="ajouter-dossier">Ajouter un dossier</button>
+        </footer>
       </section>
       <div class="separateur" data-largeur="explorateur"></div>
       <section id="spaces" class="bande">
@@ -115,6 +121,14 @@
             ></path>
           </svg>
           <span id="workspace-vide-texte"></span>
+        </div>
+        <div id="zone-image" class="panneau" hidden>
+          <div class="bandeau" id="image-bandeau"></div>
+          <div id="image-fond"><img id="image" alt="" draggable="false" /></div>
+          <div id="image-etat">
+            <span id="image-dimensions"></span><span class="espace"></span
+            ><span id="image-type"></span>
+          </div>
         </div>
         <div id="zone-fichier" class="panneau" hidden>
           <div class="bandeau" id="fichier-bandeau"></div>

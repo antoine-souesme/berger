@@ -53,7 +53,7 @@ export function listeAgents(vue: Vue, visibles: string[], tri: TriAgents): Ligne
   const tous = Object.values(vue.terminaux)
 
   const premiers = [...placeDe.values()].filter(
-    (p) => rangSpace.has(p.space) && vue.terminaux[p.adresse].agent
+    (p) => rangSpace.has(p.space) && vue.terminaux[p.adresse].estAgent
   )
   const listes = new Set(premiers.map((p) => p.adresse))
 

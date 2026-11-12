@@ -1,8 +1,24 @@
+import { app, ipcMain } from 'electron'
+import { readFileSync, writeFileSync } from 'fs'
 import { homedir } from 'os'
+import { join } from 'path'
 import type { Coeur } from './coeur'
 import { etatGit } from './git'
 import { construireVue, VUE_VIDE, type TerminalCore, type Vue } from '../shared/spaces'
 import { appliquerEvenement, evenementNeuf, type EvenementCore } from '../shared/terminaux'
+import { vusAJour } from '../shared/vus'
+
+// Les agents finis déjà regardés (voir src/shared/vus.ts), gardés d'un lancement
+// à l'autre dans `vus.json` du dossier de données.
+const fichierVus = (): string => join(app.getPath('userData'), 'vus.json')
+function lireVus(): string[] {
+  try {
+    const brut = JSON.parse(readFileSync(fichierVus(), 'utf8'))
+    return Array.isArray(brut) ? brut.filter((c): c is string => typeof c === 'string') : []
+  } catch {
+    return []
+  }
+}
 
 // Suit les terminaux (événements du core) et le document `herdr-app`
 // (spaces), et rend la vue à afficher à chaque changement.
@@ -14,6 +30,25 @@ export function suivreLaVue(
   const table = new Map<string, TerminalCore>()
   let doc: unknown = null
   let derniere: Vue = VUE_VIDE
+  let vus = lireVus()
+  let lu = false // ne rien oublier avant la première liste des terminaux
+  const changerVus = (regardes: string[]): void => {
+    if (!lu) return
+    const nouveaux = vusAJour(vus, [...table.values()], regardes)
+    if (nouveaux.length === vus.length && nouveaux.every((c, i) => c === vus[i])) return
+    vus = nouveaux
+    try {
+      writeFileSync(fichierVus(), JSON.stringify(vus))
+    } catch (e) {
+      console.error('[berger] vus.json non enregistré :', (e as Error).message)
+    }
+  }
+  // La fenêtre dit quels terminaux sont sous les yeux d'Antoine.
+  ipcMain.on('berger:vu', (_e, { adresses }: { adresses: string[] }) => {
+    const avant = vus
+    changerVus(adresses)
+    if (vus !== avant) publier()
+  })
 
   // État git (branche, commits à pousser) de chaque dossier de space, relu au
   // plus toutes les 5 s.
@@ -38,7 +73,8 @@ export function suivreLaVue(
   }
 
   const publier = (): void => {
-    const vue = construireVue(doc, [...table.values()], homedir())
+    changerVus([])
+    const vue = construireVue(doc, [...table.values()], homedir(), new Set(vus))
     for (const space of vue.spaces) {
       const git = gitDuDossier(space.dossier)
       space.branche = git.branche
@@ -99,6 +135,7 @@ export function suivreLaVue(
       {}
     )
     remplacer(r.terminals)
+    lu = true
     if (typeof r.seq === 'number') dernierSeq = r.seq
     await relireDoc()
     publier()

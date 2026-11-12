@@ -21,8 +21,17 @@ import {
 } from './barre-onglets'
 import { lignesAgents, nouveauSpace, renommerSpaceEnPlace } from './colonne'
 import { dialogueOuvert } from './dialogue'
+import { ouvrirRechercheFichiers, rechercheOuverte } from './recherche-fichiers'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
+import { basculerExplorateur } from './explorateur'
+import {
+  collerIci,
+  copierCheminChoisi,
+  copierChoisis,
+  corbeilleChoisis,
+  renommerChoisi
+} from './ranger'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
 
 // Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
@@ -38,6 +47,7 @@ export function choisirPlace(p: PlaceAgent): void {
 
 function cibleDe(el: Element | null): Cible {
   if (el?.closest('#editeur')) return 'editeur'
+  if (el?.closest('#arbre') && el.tagName !== 'INPUT') return 'explorateur'
   if (el?.closest('.xterm')) return 'terminal'
   return 'autre'
 }
@@ -116,6 +126,27 @@ function executer(a: ActionClavier): void {
     case 'fichier.chercher':
       if (fichierAffiche()) chercher()
       return
+    case 'explorateur.basculer':
+      basculerExplorateur()
+      return
+    case 'fichier.rechercher':
+      ouvrirRechercheFichiers()
+      return
+    case 'explorateur.renommer':
+      renommerChoisi()
+      return
+    case 'explorateur.copier':
+      void copierChoisis()
+      return
+    case 'explorateur.coller':
+      void collerIci()
+      return
+    case 'explorateur.copierChemin':
+      copierCheminChoisi()
+      return
+    case 'explorateur.corbeille':
+      void corbeilleChoisis()
+      return
     case 'rien':
       return
   }
@@ -126,7 +157,7 @@ export function brancherClavier(): void {
     'keydown',
     (ev) => {
       // Un dialogue ouvert garde le clavier pour lui (voir dialogue.ts).
-      if (dialogueOuvert()) return
+      if (dialogueOuvert() || rechercheOuverte()) return
       const action = actionDe(ev, cibleDe(document.activeElement))
       if (!action) return
       ev.preventDefault()

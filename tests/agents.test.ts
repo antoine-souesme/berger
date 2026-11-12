@@ -55,7 +55,8 @@ test('un sous-agent hc run se range sous son parent, avec ses traits', () => {
     ['t6', ['', '└']]
   ])
   expect(l[2].place).toEqual(l[0].place)
-  expect(l[1]).toMatchObject({ agent: 'attente', space: 'sp1' })
+  // Au repos : un agent sans point, comme dans Herdr.
+  expect(l[1]).toMatchObject({ agent: null, space: 'sp1' })
 })
 
 test('un enfant avec son propre panneau garde sa place, sans ligne de premier niveau', () => {

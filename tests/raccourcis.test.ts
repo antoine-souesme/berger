@@ -59,8 +59,36 @@ test("F2 renomme l'onglet dans un terminal, pas dans l'éditeur", () => {
   expect(actionDe(t('F2'), 'editeur')).toBeNull()
   expect(actionDe(t('F2', { shiftKey: true }), 'autre')).toEqual({ type: 'space.renommer' })
 })
-test("⌘P est réservé dans l'éditeur", () =>
-  expect(actionDe(t('KeyP', cmd), 'editeur')).toEqual({ type: 'rien' }))
+test("⌘P ouvre la recherche de fichiers, même dans l'éditeur", () =>
+  expect(actionDe(t('KeyP', cmd), 'editeur')).toEqual({ type: 'fichier.rechercher' }))
+test('⇧⌘E et ⌘P partout, même dans l’éditeur et le terminal', () => {
+  for (const c of ['editeur', 'terminal', 'autre', 'explorateur'] as const) {
+    expect(actionDe(t('KeyE', { metaKey: true, shiftKey: true }), c)).toEqual({
+      type: 'explorateur.basculer'
+    })
+    expect(actionDe(t('KeyP', { metaKey: true }), c)).toEqual({ type: 'fichier.rechercher' })
+  }
+})
+test('les touches de l’explorateur seulement quand il a le clavier', () => {
+  expect(actionDe(t('F2'), 'explorateur')).toEqual({ type: 'explorateur.renommer' })
+  expect(actionDe(t('F2'), 'autre')).toEqual({ type: 'onglet.renommer' })
+  expect(actionDe(t('KeyC', { metaKey: true }), 'explorateur')).toEqual({
+    type: 'explorateur.copier'
+  })
+  expect(actionDe(t('KeyC', { metaKey: true }), 'terminal')).toBeNull()
+  expect(actionDe(t('KeyV', { metaKey: true }), 'explorateur')).toEqual({
+    type: 'explorateur.coller'
+  })
+  expect(actionDe(t('KeyC', { metaKey: true, altKey: true }), 'explorateur')).toEqual({
+    type: 'explorateur.copierChemin'
+  })
+  expect(actionDe(t('Backspace', { metaKey: true }), 'explorateur')).toEqual({
+    type: 'explorateur.corbeille'
+  })
+  expect(actionDe(t('Backspace', { metaKey: true }), 'autre')).toBeNull()
+  // Le reste de la table reste valable dans l'explorateur.
+  expect(actionDe(t('KeyT', cmd), 'explorateur')).toEqual({ type: 'onglet.nouveau' })
+})
 test('⇧⌘W ferme le panneau, ⇧⌘↵ agrandit', () => {
   expect(actionDe(t('KeyW', { metaKey: true, shiftKey: true }), 'terminal')).toEqual({
     type: 'panneau.fermer'

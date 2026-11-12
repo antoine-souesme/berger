@@ -7,6 +7,9 @@ function appliquer(): void {
   const e = etat()
   const gauche = document.getElementById('gauche')!
   gauche.hidden = e.colonneMasquee
+  document.getElementById('explorateur')!.hidden = e.explorateurMasque
+  document.querySelector<HTMLElement>('.separateur[data-largeur="explorateur"]')!.hidden =
+    e.explorateurMasque
   document.getElementById('explorateur')!.style.width = `${e.largeurs.explorateur}px`
   document.getElementById('spaces')!.style.width = `${e.largeurs.spaces}px`
 }

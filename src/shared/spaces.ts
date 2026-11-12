@@ -1,5 +1,6 @@
 // Règles pures : du document `herdr-app` et des terminaux du core à la vue
 // affichée par Berger (spaces, onglets et leurs arbres, terminaux).
+import { cleVu } from './vus'
 import type { Noeud } from './arbre'
 import {
   dossierAffiche,
@@ -37,6 +38,8 @@ export type VueTerminal = {
   /** Chemin complet du dossier actuel (pour lancer un terminal à côté). */
   cwd: string
   agent: EtatAgent
+  /** Un programme qui donne son état (agent), même au repos. */
+  estAgent: boolean
   vivant: boolean
   clicsDroitsAuProgramme: boolean
   parent: string | null
@@ -99,7 +102,7 @@ export function dossierDuSpace(space: SpaceDoc, terminaux: Map<string, TerminalC
   return premier?.foreground?.cwd || premier?.cwd || space.folder || ''
 }
 
-function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
+function vueTerminal(t: TerminalCore, maison: string, vu: boolean): VueTerminal {
   const prog = programme(t)
   const cwd = t.foreground?.cwd || t.cwd || ''
   const vivant = t.state === 'live'
@@ -110,7 +113,8 @@ function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
     programme: prog,
     dossier: dossierAffiche(cwd, maison),
     cwd,
-    agent: etatAgent(t),
+    agent: etatAgent(t, vu),
+    estAgent: vivant && !!t.status?.state,
     vivant,
     clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program',
     parent: t.parent ?? null,
@@ -123,10 +127,18 @@ function dernierSegment(chemin: string): string {
   return chemin.split('/').filter(Boolean).pop() ?? chemin
 }
 
-export function construireVue(doc: unknown, terminaux: TerminalCore[], maison = ''): Vue {
+export function construireVue(
+  doc: unknown,
+  terminaux: TerminalCore[],
+  maison = '',
+  vus: ReadonlySet<string> = new Set()
+): Vue {
   const parAdresse = new Map(terminaux.map((t) => [t.address, t]))
   const vues: Record<string, VueTerminal> = {}
-  for (const t of terminaux) vues[t.address] = vueTerminal(t, maison)
+  for (const t of terminaux) {
+    const cle = cleVu(t)
+    vues[t.address] = vueTerminal(t, maison, cle !== null && vus.has(cle))
+  }
   const spacesDoc = ((doc as { spaces?: SpaceDoc[] } | null)?.spaces ?? []) as SpaceDoc[]
   const ranges = new Set<string>()
   const spaces = spacesDoc.map((space) => {

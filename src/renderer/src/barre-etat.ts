@@ -15,7 +15,7 @@ function dessiner(): void {
   // Les agents des spaces visibles (workspace ouvert et spaces rangés nulle part).
   const vivants = spacesVisiblesUi()
     .flatMap((s) => s.terminaux)
-    .filter((t) => t.vivant && t.agent)
+    .filter((t) => t.estAgent)
   const branche = spaceAffiche()?.branche
   const etatAgents = plusPressant(vivants.map((t) => t.agent))
   const point = document.createElement('span')

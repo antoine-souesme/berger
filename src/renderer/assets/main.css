@@ -4,7 +4,7 @@
   --panneau: #272822;
   --bord: #34352f;
   --texte: #d0d0c8;
-  --vif: #f2f2ea;
+  --vif: #f8f8f2; /* solid_foreground du thème : le blanc des noms dans Herdr */
   --gris: #75715e;
   --gris-clair: #a59f85;
   --actif: #414339;
@@ -83,7 +83,7 @@ body {
   background: var(--gris);
 }
 .entete {
-  height: 52px;
+  height: 42px; /* comme la barre d'onglets */
   flex-shrink: 0;
   display: flex;
   align-items: center;
@@ -102,44 +102,178 @@ body {
   align-items: center;
   gap: 8px;
 }
-#filtre {
-  margin: 0 10px 6px;
-  padding: 5px 8px;
-  background: var(--panneau);
-  color: var(--vif);
-  border: 1px solid var(--bord);
-  border-radius: 6px;
-  outline: none;
-  font: inherit;
+#explorateur {
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
 }
-#filtre:focus {
-  border-color: var(--clavier);
+.entete-explorateur {
+  gap: 2px;
+  padding: 0 8px 0 14px;
+}
+.entete-explorateur .titre-bande {
+  flex: 1;
+}
+.entete-explorateur button {
+  -webkit-app-region: no-drag;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--gris-clair);
+  cursor: pointer;
+  padding: 0;
+}
+.entete-explorateur button:hover {
+  background: var(--actif);
+  color: var(--vif);
 }
 #explorateur-message {
   margin: 0 12px 6px;
   color: var(--gris-clair);
   font-size: 12px;
 }
-#liste-fichiers {
+#arbre {
   flex: 1;
+  min-height: 0;
   overflow: auto;
+  padding-bottom: 12px;
+  outline: none;
+  font-size: 13px;
 }
-.fichier {
+.ligne-arbre {
   display: flex;
-  gap: 6px;
-  height: 22px;
   align-items: center;
-  padding: 0 12px;
-  cursor: pointer;
+  height: 22px;
+  padding: 0 8px 0 4px;
   white-space: nowrap;
-  overflow: hidden;
+  cursor: pointer;
+  font-weight: 500;
+  color: var(--vif);
 }
-.fichier span {
+.ligne-arbre:hover {
+  background: #2a2b26;
+}
+.ligne-arbre.choisie {
+  background: var(--actif);
+}
+#arbre:focus .ligne-arbre.choisie {
+  box-shadow: inset 0 0 0 1px var(--clavier);
+}
+.ligne-arbre .icone-fichier {
+  margin-left: 0;
+}
+.racine-arbre {
+  gap: 6px;
+  font-weight: 400;
+}
+.nom-racine {
+  flex-shrink: 0;
+  font-weight: 600;
+}
+.chemin-racine {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--gris);
+}
+.nom-arbre {
+  flex: 1;
+  min-width: 0;
+  margin-left: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.fichier:hover {
-  background: var(--panneau);
+.sans-chevron {
+  width: 16px;
+  flex-shrink: 0;
+}
+.deco {
+  width: 14px;
+  flex-shrink: 0;
+  text-align: center;
+}
+.deco.marge {
+  margin-left: 4px;
+}
+.ligne-arbre.cible {
+  background: var(--actif);
+  box-shadow:
+    inset 1px 0 0 var(--clavier),
+    inset -1px 0 0 var(--clavier);
+}
+.ligne-arbre.cible.cible-haut {
+  box-shadow:
+    inset 1px 0 0 var(--clavier),
+    inset -1px 0 0 var(--clavier),
+    inset 0 1px 0 var(--clavier);
+}
+.ligne-arbre.cible.cible-bas {
+  box-shadow:
+    inset 1px 0 0 var(--clavier),
+    inset -1px 0 0 var(--clavier),
+    inset 0 -1px 0 var(--clavier);
+}
+.ligne-arbre.cible.cible-haut.cible-bas {
+  box-shadow: inset 0 0 0 1px var(--clavier);
+}
+.ligne-arbre.glissee {
+  opacity: 0.4;
+}
+.champ-arbre {
+  flex: 1;
+  min-width: 0;
+  margin-left: 6px;
+  padding: 0 4px;
+  height: 20px;
+}
+.message-arbre {
+  color: var(--gris);
+  font-size: 12px;
+  cursor: default;
+}
+.trait-arbre-racines {
+  height: 1px;
+  margin: 6px 8px;
+  background: var(--bord);
+}
+#pied-explorateur {
+  flex-shrink: 0;
+  padding: 6px 0 8px;
+  border-top: 1px solid var(--bord);
+}
+.ajouter-dossier {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+  height: 26px;
+  padding: 0 14px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13px;
+  color: var(--gris);
+  cursor: pointer;
+}
+.ajouter-dossier:hover {
+  color: var(--vif);
+}
+.bouton-vide {
+  margin-top: 4px;
+  padding: 5px 12px;
+  border: 1px solid var(--bord);
+  border-radius: 7px;
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+}
+.bouton-vide:hover {
+  background: var(--actif);
+  color: var(--vif);
 }
 .section-spaces,
 .section-agents {
@@ -219,7 +353,8 @@ body {
   background: var(--actif);
 }
 .ligne-space .nom {
-  color: var(--texte);
+  color: var(--vif);
+  font-weight: 600;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -228,6 +363,7 @@ body {
   color: var(--vif);
 }
 .ligne-agent .nom {
+  font-weight: 600;
   flex-shrink: 0;
   max-width: 50%;
   overflow: hidden;
@@ -260,13 +396,25 @@ body {
   color: #a6e22e;
   flex-shrink: 0;
 }
+.etat-agent {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+}
 .point-attente {
   width: 8px;
   height: 8px;
-  margin: 0 2.5px;
   border-radius: 50%;
   background: #f92672;
-  flex-shrink: 0;
+}
+.anneau-repos {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  border: 1.5px solid var(--gris);
+  box-sizing: border-box;
 }
 /* Sous-agents : retrait de 39 px, traits de l'arbre (repris du mod antoine-agents). */
 .ligne-agent.sous-agent {
@@ -375,12 +523,13 @@ body {
   color: var(--vif);
 }
 #barre-onglets {
-  height: 52px;
+  /* 6 px au-dessus et au-dessous des onglets, comme sur les côtés (42 px en tout). */
+  height: 30px;
   flex-shrink: 0;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 0 10px;
+  padding: 6px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-app-region: drag;
@@ -429,10 +578,21 @@ body {
 .onglet .renommage {
   width: 110px;
 }
+.icone-fichier {
+  flex-shrink: 0;
+}
+.onglet .dossier-onglet {
+  color: var(--gris);
+  font-size: 12px;
+}
+.onglet .fermer.punaise {
+  visibility: visible;
+  color: var(--gris-clair);
+}
 .trait-onglets {
   width: 1px;
   height: 20px;
-  margin: 0 8px;
+  margin: 0 3px;
   background: var(--bord);
   flex-shrink: 0;
 }
@@ -505,7 +665,11 @@ body {
   flex: 1;
   min-height: 0;
   position: relative;
-  padding: 2px 4px 4px 12px;
+  padding: 2px 12px 4px;
+}
+/* Le texte au milieu : même marge à gauche et à droite. */
+.corps .xterm-screen {
+  margin: 0 auto;
 }
 .corps .xterm,
 .corps .xterm-viewport {
@@ -517,8 +681,143 @@ body {
 }
 
 /* Onglet de fichier */
-#zone-fichier {
+#zone-fichier,
+#zone-image {
   flex: 1;
+}
+#image-bandeau .chemin-sep {
+  color: var(--gris);
+}
+#image-bandeau .chemin-nom {
+  color: var(--vif);
+  font-weight: 600;
+}
+#image-fond {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  background-color: #272822;
+  background-image:
+    linear-gradient(45deg, #2d2e28 25%, transparent 25%),
+    linear-gradient(-45deg, #2d2e28 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2d2e28 75%),
+    linear-gradient(-45deg, transparent 75%, #2d2e28 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+}
+#image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+#image-etat {
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--gris-clair);
+}
+#image-etat .espace {
+  flex: 1;
+}
+.voile-recherche {
+  place-items: start center;
+  background: #0e0f0c99;
+}
+.palette {
+  margin-top: 140px;
+  width: 600px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  box-shadow: 0 24px 60px #00000080;
+  overflow: hidden;
+}
+.palette-champ {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 56px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--bord);
+}
+.palette-champ input {
+  flex: 1;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--vif);
+  font-size: 16px;
+  font-family: inherit;
+}
+.palette-champ input::placeholder {
+  color: var(--gris);
+}
+.palette-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  overflow-y: auto;
+}
+.palette-ligne {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.palette-ligne:hover {
+  background: var(--panneau);
+}
+.palette-ligne.choisie {
+  background: var(--actif);
+}
+.palette-ligne.choisie .palette-nom {
+  color: var(--vif);
+}
+.palette-nom b {
+  color: #e6db74;
+  font-weight: 600;
+}
+.palette-ou {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--gris-clair);
+  font-size: 12px;
+}
+.palette-titre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris-clair);
+}
+.palette-vide {
+  padding: 10px 12px;
+  color: var(--gris);
 }
 #fichier-bandeau .chemin-sep {
   color: var(--gris);
@@ -629,7 +928,7 @@ body {
   flex-direction: column;
   align-items: center;
   gap: 10px;
-  padding: 52px 0 16px;
+  padding: 42px 0 16px;
   box-sizing: border-box;
 }
 #workspaces button {
@@ -649,7 +948,6 @@ body {
 #workspaces .outil {
   display: grid;
   place-items: center;
-  cursor: default;
 }
 #workspaces .outil.actif {
   background: var(--actif);
@@ -658,7 +956,6 @@ body {
 #workspaces .outil.nouveau {
   background: var(--actif);
   color: #a6e22e;
-  cursor: pointer;
 }
 .trait-workspaces {
   width: 28px;
@@ -827,4 +1124,38 @@ body {
   min-width: 220px;
   width: 220px;
   box-sizing: border-box;
+}
+
+/* L'icône d'un agent au travail tourne. */
+.tourne {
+  animation: tourner 0.9s linear infinite;
+}
+@keyframes tourner {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* La croix qui ferme un panneau, à droite de son bandeau. */
+/* 20 px dans un bandeau de 28 px : 4 px au-dessus, au-dessous et à droite. */
+.bandeau:has(.fermer-panneau) {
+  padding-right: 4px;
+}
+.fermer-panneau {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  padding: 0;
+  background: none;
+  color: var(--gris);
+  cursor: pointer;
+}
+.fermer-panneau:hover {
+  background: var(--actif);
+  color: var(--vif);
 }

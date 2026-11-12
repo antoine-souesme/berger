@@ -7,7 +7,7 @@ export type EtatFenetre = {
   colonneMasquee: boolean
   space: string | null
   onglet: RefOnglet | null
-  fichiers: string[]
+  explorateurMasque: boolean
   triAgents: TriAgents
 }
 
@@ -19,7 +19,7 @@ export const ETAT_PAR_DEFAUT: EtatFenetre = {
   colonneMasquee: false,
   space: null,
   onglet: null,
-  fichiers: [],
+  explorateurMasque: false,
   triAgents: 'spaces'
 }
 
@@ -54,9 +54,7 @@ export function lireEtatFenetre(brut: unknown): EtatFenetre {
     colonneMasquee: typeof e['colonneMasquee'] === 'boolean' ? e['colonneMasquee'] : false,
     space: typeof e['space'] === 'string' ? e['space'] : null,
     onglet: onglet(e['onglet']),
-    fichiers: Array.isArray(e['fichiers'])
-      ? e['fichiers'].filter((f): f is string => typeof f === 'string')
-      : [],
+    explorateurMasque: e['explorateurMasque'] === true,
     triAgents: e['triAgents'] === 'urgence' ? 'urgence' : 'spaces'
   }
 }
