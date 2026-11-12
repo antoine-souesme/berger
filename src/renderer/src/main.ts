@@ -17,6 +17,7 @@ import {
 import { initFenetre } from './fenetre'
 import { initColonne } from './colonne'
 import { annoncer, initExplorateur } from './explorateur'
+import { initRanger } from './ranger'
 import { initBarreEtat } from './barre-etat'
 import { brancherFichiers, dessinerBarre } from './barre-onglets'
 import type { PlaceAgent } from '../../shared/onglets'
@@ -105,6 +106,7 @@ void (async () => {
   }>('berger:etat')
   initEditeur(maison)
   initExplorateur(maison)
+  initRanger()
   appliquerFichiersRetenus(await window.berger.demander<EtatFichiers>('berger:etat-fichiers'))
   appliquerEtatRetenu(await window.berger.demander<EtatFenetre>('berger:etat-fenetre'))
   changer((e) => {

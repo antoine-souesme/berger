@@ -163,6 +163,11 @@ function entreeDe(l: Ligne): Entree | null {
   return c.entrees.find((e) => e.nom === nomDe(l.chemin)) ?? null
 }
 
+// Le dernier choisi change sans toucher à la sélection (clic droit dans la sélection).
+export function designer(l: Ligne): void {
+  choisi = l
+}
+
 export function choisir(l: Ligne, ajouter = false): void {
   if (ajouter) {
     if (selection.has(l.chemin)) selection.delete(l.chemin)

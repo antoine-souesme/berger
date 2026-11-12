@@ -24,6 +24,13 @@ import { dialogueOuvert } from './dialogue'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
 import { basculerExplorateur } from './explorateur'
+import {
+  collerIci,
+  copierCheminChoisi,
+  copierChoisis,
+  corbeilleChoisis,
+  renommerChoisi
+} from './ranger'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
 
 // Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
@@ -125,11 +132,19 @@ function executer(a: ActionClavier): void {
       // Tâche 9
       return
     case 'explorateur.renommer':
+      renommerChoisi()
+      return
     case 'explorateur.copier':
+      void copierChoisis()
+      return
     case 'explorateur.coller':
+      void collerIci()
+      return
     case 'explorateur.copierChemin':
+      copierCheminChoisi()
+      return
     case 'explorateur.corbeille':
-      // Tâche 8
+      void corbeilleChoisis()
       return
     case 'rien':
       return

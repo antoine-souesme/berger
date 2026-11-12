@@ -29,6 +29,13 @@ import {
   Terminal,
   Trash2,
   X,
+  ClipboardPaste,
+  Code,
+  Copy,
+  FilePlus,
+  FolderMinus,
+  FolderOpen,
+  Link,
   type IconNode
 } from 'lucide'
 
@@ -61,6 +68,13 @@ const ICONES: Record<string, IconNode> = {
   'square-terminal': SquareTerminal,
   terminal: Terminal,
   'trash-2': Trash2,
+  'clipboard-paste': ClipboardPaste,
+  code: Code,
+  copy: Copy,
+  'file-plus': FilePlus,
+  'folder-minus': FolderMinus,
+  'folder-open': FolderOpen,
+  link: Link,
   x: X
 }
 

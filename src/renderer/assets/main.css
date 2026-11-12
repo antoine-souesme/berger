@@ -197,6 +197,37 @@ body {
 .deco.marge {
   margin-left: 4px;
 }
+.ligne-arbre.cible {
+  background: var(--actif);
+  box-shadow:
+    inset 1px 0 0 var(--clavier),
+    inset -1px 0 0 var(--clavier);
+}
+.ligne-arbre.cible.cible-haut {
+  box-shadow:
+    inset 1px 0 0 var(--clavier),
+    inset -1px 0 0 var(--clavier),
+    inset 0 1px 0 var(--clavier);
+}
+.ligne-arbre.cible.cible-bas {
+  box-shadow:
+    inset 1px 0 0 var(--clavier),
+    inset -1px 0 0 var(--clavier),
+    inset 0 -1px 0 var(--clavier);
+}
+.ligne-arbre.cible.cible-haut.cible-bas {
+  box-shadow: inset 0 0 0 1px var(--clavier);
+}
+.ligne-arbre.glissee {
+  opacity: 0.4;
+}
+.champ-arbre {
+  flex: 1;
+  min-width: 0;
+  margin-left: 6px;
+  padding: 0 4px;
+  height: 20px;
+}
 .message-arbre {
   color: var(--gris);
   font-size: 12px;
