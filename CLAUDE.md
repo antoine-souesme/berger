@@ -2,7 +2,7 @@
 
 Berger est le multiplexeur d'agents d'Antoine : une application Electron
 branchée sur herdr-core, avec l'éditeur de VS Code (Monaco). Lis d'abord
-`VISION.md` : le but, ce qu'il faut reprendre, et la phase 0 en cours.
+`docs/VISION.md` : le but, ce qu'il faut reprendre, et la phase 0 en cours.
 
 ## Où trouver quoi
 
@@ -25,7 +25,7 @@ branchée sur herdr-core, avec l'éditeur de VS Code (Monaco). Lis d'abord
 - Garde les règles dans des modules purs, testés à part de l'interface.
 - Textes de l'interface en français, avec les accents.
 - Code repris d'ailleurs (Herdr, mod `antoine`, projets libres) : note sa
-  source et sa licence dans `COPIES.md`.
+  source et sa licence dans `docs/COPIES.md`.
 - Avant de dire qu'une chose marche, lance l'application et regarde-la.
 
 ## Lancer

@@ -16,7 +16,7 @@ self.MonacoEnvironment = {
   }
 }
 
-// Couleurs reprises du thème `antoine-monokai` de Herdr (voir COPIES.md).
+// Couleurs reprises du thème `antoine-monokai` de Herdr (voir docs/COPIES.md).
 monaco.editor.defineTheme('antoine-monokai', {
   base: 'vs-dark',
   inherit: true,
