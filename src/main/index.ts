@@ -20,6 +20,7 @@ import { brancherSchemas } from './services/schemas'
 import { brancherReglages, themeApplication } from './reglages'
 import { couleursFenetre } from '../shared/themes'
 import { completerPath } from './chemin'
+import { cadreRetenu, suivreCadre } from './cadre'
 
 // Dossier de données : `Berger` pour la version installée, `Berger-dev` pour le
 // développement (jamais l'un dans l'autre). Avant tout `getPath('userData')`.
@@ -39,10 +40,15 @@ const terminaux = new Terminaux({
   fin: (adresse, raison) => envoyerA(fenetre, 'berger:fin-terminal', { adresse, raison })
 })
 
+let cadre: { vider: () => void } | null = null
+
 function createWindow(): void {
+  const retenu = cadreRetenu()
   const mainWindow = new BrowserWindow({
-    width: 1440,
-    height: 900,
+    // Sans cadre retenu (ou hors des écrans) : taille par défaut, centrée.
+    ...(retenu
+      ? { x: retenu.x, y: retenu.y, width: retenu.largeur, height: retenu.hauteur }
+      : { width: 1440, height: 900, center: true }),
     title: 'Berger',
     backgroundColor: couleursFenetre(themeApplication().theme).fond,
     titleBarStyle: 'hiddenInset',
@@ -63,7 +69,18 @@ function createWindow(): void {
   })
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    // macOS recentre la fenêtre à sa première apparition : on la remet à sa place.
+    if (retenu)
+      mainWindow.setBounds({
+        x: retenu.x,
+        y: retenu.y,
+        width: retenu.largeur,
+        height: retenu.hauteur
+      })
+    if (retenu?.pleinEcran) mainWindow.setFullScreen(true)
+    else if (retenu?.agrandie) mainWindow.maximize()
   })
+  cadre = suivreCadre(mainWindow)
   // Avant de fermer : la fenêtre demande quoi faire des fichiers non enregistrés.
   // Une fenêtre dont la page a planté ne répondra pas : on la laisse fermer.
   mainWindow.webContents.on('render-process-gone', () => (fermetureAccordee = true))
@@ -172,12 +189,14 @@ app.whenReady().then(() => {
     etat.vider()
     workspaces.vider()
     etatFichiers.vider()
+    cadre?.vider()
     fermetureAccordee = true
     fenetre?.close()
     if (quitter) app.quit()
   })
   app.on('before-quit', () => {
     quitter = true
+    cadre?.vider()
     etat.vider()
     workspaces.vider()
     etatFichiers.vider()

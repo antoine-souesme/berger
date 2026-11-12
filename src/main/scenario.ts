@@ -56,6 +56,11 @@ import { execFile } from 'child_process'
 //   change « Diviser en bas » en ⌥⌘D (attente, conflit avec ⌘D), vérifie que ⌥⌘D divise
 //   et ce qui est écrit, « Rétablir », puis un raccourci écrit à la main. Remet le
 //   reglages.json d'avant. Une capture et une ligne de journal par étape.
+// BERGER_SCENARIO=reprise BERGER_SCENARIO_ETAPE=1|2 BERGER_SCENARIO_SPACE=<spbergertest…>
+//   BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> (contenant src/a.ts) BERGER_SCENARIO_SORTIE=<préfixe>
+//   Étape 1 : place la fenêtre (ou plein écran avec BERGER_SCENARIO_PLEIN=1), affiche le space de
+//   test, ouvre a.ts, tire le séparateur des spaces, déplie src, capture, journal, puis quitte
+//   (comme ⌘Q). Étape 2 : capture et journal de ce qui est revenu. Dossier Berger-dev seulement.
 // BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
 //   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
@@ -153,6 +158,11 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
 
   if (scenario === 'langage') {
     void jouerLangage(w, capture, touche)
+    return
+  }
+
+  if (scenario === 'reprise') {
+    void jouerReprise(w, capture)
     return
   }
 
@@ -1233,4 +1243,65 @@ async function jouerFenetreReglages(o: {
     fichier: lire()
   })
   await fermer()
+}
+
+async function jouerReprise(
+  w: BrowserWindow,
+  capture: (nom: string) => Promise<void>
+): Promise<void> {
+  if (basename(app.getPath('userData')) !== 'Berger-dev') {
+    console.error('[berger] scénario reprise refusé : dossier de données autre que Berger-dev')
+    return
+  }
+  const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
+  const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+  if (!space.startsWith('spbergertest') || !dossier.includes('berger-essai')) {
+    console.error('[berger] scénario reprise refusé : space spbergertest… et dossier berger-essai…')
+    return
+  }
+  const wc = w.webContents
+  const pause = (ms: number): Promise<void> => new Promise((ok) => setTimeout(ok, ms))
+  const etat = async (): Promise<unknown> => ({
+    cadre: w.getNormalBounds(),
+    pleinEcran: w.isFullScreen(),
+    ui: await wc.executeJavaScript(`({
+      space: document.querySelector('.ligne-space.choisi')?.dataset.id ?? document.querySelector('.ligne-space.choisi .nom')?.textContent,
+      onglets: [...document.querySelectorAll('#barre-onglets .onglet')].map((o) => o.textContent),
+      ongletChoisi: document.querySelector('#barre-onglets .onglet.actif, #barre-onglets .onglet.choisi')?.textContent,
+      largeurSpaces: document.getElementById('spaces')?.getBoundingClientRect().width,
+      largeurExplorateur: document.getElementById('explorateur')?.getBoundingClientRect().width,
+      explorateurMasque: document.getElementById('explorateur')?.hidden,
+      deplies: [...document.querySelectorAll('.ligne-arbre')].filter((l) => l.textContent.trim() === 'src').length
+    })`)
+  })
+  await pause(3500)
+  if (process.env['BERGER_SCENARIO_ETAPE'] === '2') {
+    await pause(1500)
+    await capture('reprise-2')
+    console.log(`[berger] scénario : reprise-2 ${JSON.stringify(await etat())}`)
+    return
+  }
+  if (process.env['BERGER_SCENARIO_PLEIN'] === '1') w.setFullScreen(true)
+  else w.setBounds({ x: 120, y: 80, width: 1300, height: 820 })
+  await pause(1500)
+  wc.send('berger:scenario-space', { space })
+  await pause(1000)
+  wc.send('berger:scenario-oublier', { prefixe: dossier })
+  await pause(300)
+  wc.send('berger:scenario-dossier', { chemin: dossier })
+  await pause(1200)
+  wc.send('berger:scenario-fichier', { chemin: `${dossier}/src/a.ts` })
+  await pause(1500)
+  // Le séparateur des spaces tiré de 60 px.
+  const x = await wc.executeJavaScript(
+    `Math.round(document.querySelector('.separateur[data-largeur="spaces"]').getBoundingClientRect().x + 2)`
+  )
+  wc.sendInputEvent({ type: 'mouseDown', x, y: 400, button: 'left', clickCount: 1 })
+  for (let i = 1; i <= 5; i++)
+    wc.sendInputEvent({ type: 'mouseMove', x: x + i * 12, y: 400, button: 'left' })
+  wc.sendInputEvent({ type: 'mouseUp', x: x + 60, y: 400, button: 'left', clickCount: 1 })
+  await pause(2500)
+  await capture('reprise-1')
+  console.log(`[berger] scénario : reprise-1 ${JSON.stringify(await etat())}`)
+  app.quit()
 }
