@@ -53,7 +53,8 @@ function retenir(): void {
     colonneMasquee: e.colonneMasquee,
     space: spaceAffiche()?.id ?? e.space,
     onglet: a ?? e.onglet,
-    fichiers: e.fichiers
+    fichiers: e.fichiers,
+    triAgents: e.triAgents
   } satisfies EtatFenetre)
 }
 

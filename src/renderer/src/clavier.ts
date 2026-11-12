@@ -7,11 +7,11 @@ import { actionDe, type ActionClavier, type Cible } from '../../shared/raccourci
 import {
   afficherSpace,
   changer,
-  etat,
   ongletAffiche,
   ongletsAffiches,
   rendreVisible,
-  spaceAffiche
+  spaceAffiche,
+  spacesVisiblesUi
 } from './etat'
 import {
   afficherOnglet,
@@ -19,7 +19,7 @@ import {
   nouvelOnglet,
   renommerOngletEnPlace
 } from './barre-onglets'
-import { lignesAgents, renommerSpaceEnPlace } from './colonne'
+import { lignesAgents, nouveauSpace, renommerSpaceEnPlace } from './colonne'
 import { dialogueOuvert } from './dialogue'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
@@ -52,7 +52,6 @@ function terminalActuel(): string | null {
 }
 
 function executer(a: ActionClavier): void {
-  const e = etat()
   switch (a.type) {
     case 'onglet.nouveau':
       void nouvelOnglet()
@@ -71,12 +70,15 @@ function executer(a: ActionClavier): void {
       return
     }
     case 'space.n': {
-      const s = e.vue.spaces[a.n - 1]
+      const s = spacesVisiblesUi()[a.n - 1]
       if (s) afficherSpace(s.id)
       return
     }
+    case 'space.nouveau':
+      void nouveauSpace()
+      return
     case 'space.voisin': {
-      const liste = e.vue.spaces
+      const liste = spacesVisiblesUi()
       if (!liste.length) return
       const i = liste.findIndex((s) => s.id === spaceAffiche()?.id)
       afficherSpace(liste[(i + a.pas + liste.length) % liste.length].id)

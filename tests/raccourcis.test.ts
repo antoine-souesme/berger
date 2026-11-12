@@ -92,3 +92,8 @@ test('⌃3 choisit le space 3', () =>
   expect(actionDe(t('Digit3', { ctrlKey: true }), 'terminal')).toEqual({ type: 'space.n', n: 3 }))
 test('⌃C part au terminal', () =>
   expect(actionDe(t('KeyC', { ctrlKey: true }), 'terminal')).toBeNull())
+
+test('⌘N crée un space, même depuis l’éditeur', () => {
+  expect(actionDe(t('KeyN', cmd), 'terminal')).toEqual({ type: 'space.nouveau' })
+  expect(actionDe(t('KeyN', cmd), 'editeur')).toEqual({ type: 'space.nouveau' })
+})

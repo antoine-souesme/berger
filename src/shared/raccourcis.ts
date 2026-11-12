@@ -19,6 +19,7 @@ export type ActionClavier =
   | { type: 'panneau.echanger'; direction: Direction }
   | { type: 'onglet.renommer' }
   | { type: 'space.renommer' }
+  | { type: 'space.nouveau' }
   | { type: 'colonne.basculer' }
   | { type: 'zoom'; pas: 1 | -1 | 0 }
   | { type: 'fichier.enregistrer' }
@@ -74,6 +75,8 @@ function table(t: Touche): ActionClavier | null {
       switch (t.code) {
         case 'KeyT':
           return { type: 'onglet.nouveau' }
+        case 'KeyN':
+          return { type: 'space.nouveau' }
         case 'KeyW':
           return { type: 'onglet.fermer' }
         case 'BracketRight':
@@ -138,6 +141,7 @@ const PRIS_A_L_EDITEUR = new Set<ActionClavier['type']>([
   'space.n',
   'onglet.voisin',
   'space.voisin',
+  'space.nouveau',
   'agent.voisin',
   'colonne.basculer',
   'zoom',

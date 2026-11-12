@@ -1,4 +1,5 @@
 // Règles pures de l'état que Berger retient d'une session à l'autre.
+import type { TriAgents } from './agents'
 import type { RefOnglet } from './onglets'
 
 export type EtatFenetre = {
@@ -7,6 +8,7 @@ export type EtatFenetre = {
   space: string | null
   onglet: RefOnglet | null
   fichiers: string[]
+  triAgents: TriAgents
 }
 
 export const LARGEUR_MIN = 160
@@ -17,7 +19,8 @@ export const ETAT_PAR_DEFAUT: EtatFenetre = {
   colonneMasquee: false,
   space: null,
   onglet: null,
-  fichiers: []
+  fichiers: [],
+  triAgents: 'spaces'
 }
 
 export const bornerLargeur = (n: number): number =>
@@ -53,6 +56,7 @@ export function lireEtatFenetre(brut: unknown): EtatFenetre {
     onglet: onglet(e['onglet']),
     fichiers: Array.isArray(e['fichiers'])
       ? e['fichiers'].filter((f): f is string => typeof f === 'string')
-      : []
+      : [],
+    triAgents: e['triAgents'] === 'urgence' ? 'urgence' : 'spaces'
   }
 }
