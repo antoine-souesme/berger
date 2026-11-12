@@ -108,6 +108,7 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('fr.antoine.berger')
   poserMenu(() => fenetre)
+  brancherReglages((e) => envoyerA(fenetre, 'berger:reglages', e))
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
@@ -141,7 +142,6 @@ app.whenReady().then(() => {
   const etatFichiers = brancherEtatFichiers()
   const langage = brancherLangage(() => fenetre)
   brancherSchemas()
-  brancherReglages()
   app.on('will-quit', () => langage.arreter())
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>

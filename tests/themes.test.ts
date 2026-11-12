@@ -53,8 +53,7 @@ describe('lireTheme', () => {
   })
   test('thèmes refusés', () => {
     expect(lireTheme({ ...ATOM, ansi: ATOM.ansi.slice(1) })).toBeNull()
-    const { background: _, ...sansFond } = ATOM
-    expect(lireTheme(sansFond)).toBeNull()
+    expect(lireTheme({ ...ATOM, background: undefined })).toBeNull()
     expect(lireTheme({ ...ATOM, foreground: 'rouge' })).toBeNull()
     expect(lireTheme(null)).toBeNull()
   })

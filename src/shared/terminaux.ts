@@ -41,9 +41,3 @@ export function evenementNeuf(dernier: number | null, seq: number | undefined): 
   if (dernier === null || seq === undefined) return true
   return seq > dernier
 }
-
-// Les couleurs des terminaux de Berger (thème `antoine-monokai`), données au core
-// à l'attache et au lancement : il répond avec elles quand un programme demande
-// les couleurs du terminal. Sans elles, il répond un fond noir et Claude Code
-// peint des cases en noir.
-export const AFFICHAGE = { bg: '#272822', fg: '#d0d0c8', cursor: '#f8f8f0' }

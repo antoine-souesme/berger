@@ -191,7 +191,8 @@ export function initEditeur(m: string): void {
   )
   void colorationPrete.then(async () =>
     definirTheme(
-      (await window.berger.demander<Reglages>('berger:reglages')).editeur.couleurSelection
+      (await window.berger.demander<{ reglages: Reglages }>('berger:reglages')).reglages.editeur
+        .couleurSelection ?? '#49483e'
     )
   )
   editeur = monaco.editor.create(el('editeur'), {

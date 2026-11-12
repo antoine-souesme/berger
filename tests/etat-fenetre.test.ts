@@ -38,5 +38,7 @@ test('tri des agents retenu, valeur inconnue ramenée à « spaces »', () => {
 
 test('retour à la ligne retenu', () => {
   expect(lireEtatFenetre({ retourLigne: true }).retourLigne).toBe(true)
-  expect(lireEtatFenetre({}).retourLigne).toBe(false)
+  expect(lireEtatFenetre({ retourLigne: false }).retourLigne).toBe(false)
+  // Absent : suivre le réglage « Retour à la ligne par défaut ».
+  expect(lireEtatFenetre({}).retourLigne).toBeNull()
 })
