@@ -26,7 +26,16 @@ test('lireStatutGit : non suivi, conflit, et le renommage saute l’ancien chemi
 
 test('lireStatutGit lit toutes les sortes', () => {
   const s = lireStatutGit(
-    z(' M src/a.js', '?? new.txt', 'A  b.js', ' D gone.md', 'UU both.js', 'R  to.js', 'from.js', 'MM c.js')
+    z(
+      ' M src/a.js',
+      '?? new.txt',
+      'A  b.js',
+      ' D gone.md',
+      'UU both.js',
+      'R  to.js',
+      'from.js',
+      'MM c.js'
+    )
   )
   expect(Object.fromEntries(s)).toEqual({
     'src/a.js': 'modifie',
@@ -45,7 +54,11 @@ test('decoration : lettre sur le fichier, point de la couleur la plus importante
     ['src/b.ts', 'conflit'],
     ['neuf/', 'nonSuivi']
   ]
-  expect(decoration(s, 'src/a.ts', false)).toEqual({ genre: 'modifie', lettre: 'M', couleur: '#e2c08d' })
+  expect(decoration(s, 'src/a.ts', false)).toEqual({
+    genre: 'modifie',
+    lettre: 'M',
+    couleur: '#e2c08d'
+  })
   expect(decoration(s, 'src', true)).toEqual({ genre: 'conflit', lettre: '•', couleur: '#e4676b' })
   expect(decoration(s, 'neuf/x.txt', false)?.lettre).toBe('U')
   expect(decoration(s, 'docs', true)).toBeNull()
@@ -54,7 +67,11 @@ test('decoration : lettre sur le fichier, point de la couleur la plus importante
 test('decoration : dossier voisin au nom proche, dossier non suivi entier, dépôt entier', () => {
   const s = lireStatutGit(z('?? src/new.js', ' M src/lib/a.js', '?? srcx/b.js'))
   expect(decoration(s, 'src/lib', true)?.couleur).toBe('#e2c08d')
-  expect(decoration(s, 'srcx', true)).toEqual({ genre: 'nonSuivi', lettre: '•', couleur: '#73c991' })
+  expect(decoration(s, 'srcx', true)).toEqual({
+    genre: 'nonSuivi',
+    lettre: '•',
+    couleur: '#73c991'
+  })
   const d = lireStatutGit(z('?? newdir/'))
   expect(decoration(d, 'newdir', true)?.lettre).toBe('•')
   expect(decoration(lireStatutGit(z('?? a.txt', ' M b/c.js')), '', true)?.genre).toBe('modifie')
@@ -72,7 +89,8 @@ test('trierEntrees : dossiers d’abord', () => {
 })
 
 test('MASQUES comme files.exclude de VS Code', () => {
-  for (const n of ['.git', '.svn', '.hg', 'CVS', '.DS_Store', 'Thumbs.db']) expect(MASQUES.has(n)).toBe(true)
+  for (const n of ['.git', '.svn', '.hg', 'CVS', '.DS_Store', 'Thumbs.db'])
+    expect(MASQUES.has(n)).toBe(true)
   expect(MASQUES.has('node_modules')).toBe(false)
 })
 

@@ -26,9 +26,7 @@ export function correspondance(
     if (i < 0) return null
     suite = i === a + 1 ? suite + 1 : 0
     const debutDeMot =
-      i === 0 ||
-      SEP.test(texte[i - 1]) ||
-      (texte[i] !== bas[i] && texte[i - 1] === bas[i - 1])
+      i === 0 || SEP.test(texte[i - 1]) || (texte[i] !== bas[i] && texte[i - 1] === bas[i - 1])
     score += 1 + suite * 2 + (debutDeMot ? 3 : 0)
     positions.push(i)
     a = i

@@ -72,9 +72,13 @@ test('⇧⌘E et ⌘P partout, même dans l’éditeur et le terminal', () => {
 test('les touches de l’explorateur seulement quand il a le clavier', () => {
   expect(actionDe(t('F2'), 'explorateur')).toEqual({ type: 'explorateur.renommer' })
   expect(actionDe(t('F2'), 'autre')).toEqual({ type: 'onglet.renommer' })
-  expect(actionDe(t('KeyC', { metaKey: true }), 'explorateur')).toEqual({ type: 'explorateur.copier' })
+  expect(actionDe(t('KeyC', { metaKey: true }), 'explorateur')).toEqual({
+    type: 'explorateur.copier'
+  })
   expect(actionDe(t('KeyC', { metaKey: true }), 'terminal')).toBeNull()
-  expect(actionDe(t('KeyV', { metaKey: true }), 'explorateur')).toEqual({ type: 'explorateur.coller' })
+  expect(actionDe(t('KeyV', { metaKey: true }), 'explorateur')).toEqual({
+    type: 'explorateur.coller'
+  })
   expect(actionDe(t('KeyC', { metaKey: true, altKey: true }), 'explorateur')).toEqual({
     type: 'explorateur.copierChemin'
   })

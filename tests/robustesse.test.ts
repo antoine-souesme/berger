@@ -54,18 +54,14 @@ test('erreur au hello tramé : remontée, sans terminal.attach', async () => {
   expect(raison).toBe('version refusée')
 })
 
-test('liste de fichiers plafonnée : signalée', async () => {
-  const { mkdtempSync, writeFileSync } = await import('fs')
+test('dossier plafonné à 2 000 éléments : signalé', async () => {
+  const { mkdtempSync, rmSync, writeFileSync } = await import('fs')
   const { tmpdir } = await import('os')
-  const { listerFichiers } = await import('../src/main/fichiers')
-  const dossier = mkdtempSync(join(tmpdir(), 'berger-liste-'))
-  for (let i = 0; i < 6; i++) writeFileSync(join(dossier, `f${i}.txt`), '')
-  expect(await listerFichiers(dossier, 5)).toMatchObject({ tronquee: true })
-  expect((await listerFichiers(dossier, 5)).fichiers).toHaveLength(5)
-  expect(await listerFichiers(dossier, 6)).toMatchObject({ tronquee: false })
-})
-
-test('space sans dossier : liste vide, sans parcourir', async () => {
-  const { listerFichiers } = await import('../src/main/fichiers')
-  expect(await listerFichiers('')).toEqual({ fichiers: [], tronquee: false })
+  const { listerDossier, LIMITE_DOSSIER } = await import('../src/main/disque')
+  const dossier = mkdtempSync(join(tmpdir(), 'berger-essai-liste-'))
+  for (let i = 0; i <= LIMITE_DOSSIER; i++) writeFileSync(join(dossier, `f${i}.txt`), '')
+  const r = await listerDossier(dossier)
+  expect(r).toMatchObject({ tronque: true })
+  expect('entrees' in r && r.entrees).toHaveLength(LIMITE_DOSSIER)
+  rmSync(dossier, { recursive: true, force: true })
 })

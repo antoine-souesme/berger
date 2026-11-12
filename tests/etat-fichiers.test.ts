@@ -55,7 +55,11 @@ test('ouvrir un épinglé ne le double pas', () => {
 })
 
 test('fermer retire un onglet épinglé comme un ouvert', () => {
-  const e = fermerFichierWs(epingler(ouvrirFichiers({}, ws, ['/p/a.ts']), ws, '/p/a.ts'), ws, '/p/a.ts')
+  const e = fermerFichierWs(
+    epingler(ouvrirFichiers({}, ws, ['/p/a.ts']), ws, '/p/a.ts'),
+    ws,
+    '/p/a.ts'
+  )
   expect(ongletsFichiers(e, ws)).toEqual([])
 })
 
@@ -106,7 +110,11 @@ test('racines : spaces puis dossiers ajoutés, sans doublon, dans l’ordre rete
 
 test('deplacerRacine retient l’ordre complet', () => {
   const e = deplacerRacine({}, ws, ['/a', '/b', '/c'], '/c', 0)
-  expect(racines(['/a', '/b'], { ...deWorkspace(e, ws), dossiers: ['/c'] })).toEqual(['/c', '/a', '/b'])
+  expect(racines(['/a', '/b'], { ...deWorkspace(e, ws), dossiers: ['/c'] })).toEqual([
+    '/c',
+    '/a',
+    '/b'
+  ])
 })
 
 test('libellesOnglets : le dossier seulement quand deux noms se ressemblent, assez profond pour les distinguer', () => {

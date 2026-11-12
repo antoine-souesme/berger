@@ -22,6 +22,7 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | Icônes de fichiers de l'application (`src/renderer/public/material/`, avec son `LICENSE`) | Material Icon Theme, copiées depuis `~/.config/herdr-app/mods/antoine/icons/material/` | MIT |
 | État des fichiers par workspace (`src/shared/etat-fichiers.ts` : onglets épinglés et ouverts, récents, dossiers ajoutés, libellés d'onglets, images) et ses tests (`tests/etat-fichiers.test.ts`) | `files.js` et `remember` de `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/files.test.mjs`, réécrits en TypeScript (onglets ouverts retenus au relancement, contrairement à `boot`) | code personnel d'Antoine |
 | Recherche de fichiers (`src/shared/recherche.ts` : score, tri, récents, emplacement, fusion des racines) et ses tests (`tests/recherche.test.ts`) | `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/quickopen.test.mjs`, réécrits en TypeScript (les lettres trouvées sont gardées) | code personnel d'Antoine |
+| Scripts du presse-papiers de macOS (`CLIP_WRITE`, `CLIP_READ` dans `src/main/fichiers.ts`) | `explorer.js` du mod `antoine`, copiés tels quels | code personnel d'Antoine |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
 (`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT), Lucide (`lucide`, icônes
