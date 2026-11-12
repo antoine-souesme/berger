@@ -713,7 +713,12 @@ async function jouerLangage(
 
   await ouvrir(a, 4000)
   await capture('02-a')
-  journal('02-a', await affiche())
+  journal('02-a', {
+    affiche: await affiche(),
+    selection: await js(
+      `return getComputedStyle(document.querySelector('.monaco-editor')).getPropertyValue('--vscode-editor-selectionBackground')`
+    )
+  })
 
   await curseurSur('somme', 'const café')
   await commande('editor.action.revealDefinition')
