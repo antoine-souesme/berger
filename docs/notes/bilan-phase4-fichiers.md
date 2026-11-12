@@ -7,8 +7,10 @@ Plan : `docs/superpowers/plans/2026-11-12-phase4-fichiers.md`.
 
 Les essais ont été faits dans des dossiers d'essai (`berger-essai-…`, dans un
 dossier temporaire), ajoutés comme racines puis retirés. Une copie de
-`workspaces.json` et `etat-fenetre.json` a été prise avant et remise à la fin ;
-`shared.json` de Herdr n'a jamais changé (même empreinte avant et après).
+`workspaces.json` et `etat-fenetre.json` a été prise avant et remise à la fin.
+Berger ne fait que lire `shared.json` de Herdr (aucun chemin d'écriture dans le
+code) ; son empreinte, inchangée après le premier lancement, a changé pendant
+les essais suivants parce que l'app Herdr, ouverte en même temps, l'écrit.
 L'extension Chrome n'étant pas branchée, les maquettes ont été rendues par
 Chrome sans fenêtre (`--headless --screenshot`) et comparées aux captures.
 
