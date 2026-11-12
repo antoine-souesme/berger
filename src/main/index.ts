@@ -6,6 +6,8 @@ import icon from '../../resources/icon.png?asset'
 import { Coeur, type EtatConnexion } from './coeur'
 import { suivreLaVue } from './vue'
 import { TerminalOuvert } from './terminal'
+import { brancherFichiers } from './fichiers'
+import { jouerScenario } from './scenario'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -81,6 +83,7 @@ app.whenReady().then(() => {
   // La fenêtre demande l'état courant au chargement (elle a pu rater les envois).
   ipcMain.handle('berger:etat', () => ({ connexion: etatConnexion, vue: vueActuelle() }))
   void coeur.demarrer()
+  brancherFichiers(coeur, () => fenetre)
 
   // Un seul terminal ouvert à la fois ; en ouvrir un autre détache le précédent.
   let ouvert: TerminalOuvert | null = null
@@ -98,6 +101,7 @@ app.whenReady().then(() => {
   // terminal au chargement, BERGER_TAPER=<texte> y tape ce texte ensuite.
   app.on('browser-window-created', (_e, w) => {
     w.webContents.on('did-finish-load', () => {
+      jouerScenario(w)
       const adresse = process.env['BERGER_OUVRIR']
       if (!adresse) return
       setTimeout(() => w.webContents.send('berger:ouvrir', { adresse }), 1500)

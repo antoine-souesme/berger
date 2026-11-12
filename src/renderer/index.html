@@ -12,7 +12,14 @@
   <body>
     <aside id="colonne"></aside>
     <section id="terminal"></section>
-    <section id="editeur"></section>
+    <section id="editeur">
+      <div id="editeur-barre"><span id="editeur-chemin">Choisis un space pour ouvrir un fichier</span><span id="editeur-message" hidden></span></div>
+      <div id="choix" hidden>
+        <input id="filtre" placeholder="Filtrer les fichiers…" spellcheck="false" />
+        <div id="liste-fichiers"></div>
+      </div>
+      <div id="editeur-texte"></div>
+    </section>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

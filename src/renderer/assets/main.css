@@ -8,7 +8,7 @@ body {
 }
 body {
   display: grid;
-  grid-template-columns: 280px 1fr 1fr;
+  grid-template-columns: 280px minmax(0, 1fr) minmax(0, 1fr);
   overflow: hidden;
 }
 #colonne {
@@ -89,4 +89,61 @@ body {
 #terminal .xterm,
 #terminal .xterm-viewport {
   background: #1e1f1c !important;
+}
+
+#editeur {
+  display: flex;
+  flex-direction: column;
+}
+#editeur-barre {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 10px;
+  color: #a59f85;
+  border-bottom: 1px solid #3a3b35;
+}
+#editeur-message {
+  color: #a6e22e;
+}
+#editeur-texte {
+  flex: 1;
+  min-height: 0;
+}
+#choix {
+  position: absolute;
+  top: 34px;
+  left: 10%;
+  right: 10%;
+  z-index: 10;
+  background: #1e1f1c;
+  border: 1px solid #414339;
+  border-radius: 6px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+}
+#choix[hidden] {
+  display: none;
+}
+#filtre {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  background: #414339;
+  color: #f8f8f2;
+  border: 0;
+  outline: none;
+  font: inherit;
+}
+#liste-fichiers {
+  max-height: 60vh;
+  overflow: auto;
+}
+.fichier {
+  padding: 3px 10px;
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fichier:hover {
+  background: #3e3d32;
 }
