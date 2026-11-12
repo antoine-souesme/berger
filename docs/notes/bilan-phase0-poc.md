@@ -22,6 +22,8 @@ Date : 2026-11-12. Spec : `docs/superpowers/specs/2026-11-12-phase0-poc-design.m
 
 ## À vérifier par Antoine
 
+Vérifié par Antoine le 12 novembre 2026 : les deux points ci-dessous marchent.
+
 - Ouvrir un de ses vrais terminaux dans Berger avec Herdr ouvert à côté, et taper
   dedans : je ne l'ai pas fait pour ne pas déranger ses terminaux. S'attacher
   redimensionne le terminal à la taille de Berger ; Herdr reprend la sienne quand

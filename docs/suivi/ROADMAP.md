@@ -21,8 +21,8 @@ Faite. Berger se branche sur herdr-core, montre les spaces, les terminaux et
 l'état des agents en direct, ouvre un terminal du core et un fichier dans Monaco
 (`cmd-f`, `cmd-s`).
 
-Reste à vérifier par Antoine : un vrai terminal ouvert dans Berger avec Herdr à
-côté, et le renommage d'un space dans Herdr suivi par Berger.
+Vérifié par Antoine le 12 novembre 2026 : un vrai terminal ouvert dans Berger
+avec Herdr à côté, et le renommage d'un space dans Herdr suivi par Berger.
 
 ## Phase 1 : maquette et conception globale
 
