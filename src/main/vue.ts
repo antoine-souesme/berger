@@ -1,5 +1,5 @@
 import type { Coeur } from './coeur'
-import { construireVue, type TerminalCore, type Vue } from '../shared/spaces'
+import { construireVue, VUE_VIDE, type TerminalCore, type Vue } from '../shared/spaces'
 import { appliquerEvenement, type EvenementCore } from '../shared/terminaux'
 
 // Suit les terminaux (événements du core) et le document `herdr-app`
@@ -7,7 +7,7 @@ import { appliquerEvenement, type EvenementCore } from '../shared/terminaux'
 export function suivreLaVue(coeur: Coeur, envoyer: (vue: Vue) => void): () => Vue {
   const table = new Map<string, TerminalCore>()
   let doc: unknown = null
-  let derniere: Vue = { spaces: [], autres: [] }
+  let derniere: Vue = VUE_VIDE
 
   const publier = (): void => {
     derniere = construireVue(doc, [...table.values()])

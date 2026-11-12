@@ -8,7 +8,7 @@ type Rappels = {
 const racine = (): HTMLElement => document.getElementById('colonne')!
 let spaceChoisi: string | null = null
 let terminalChoisi: string | null = null
-let derniereVue: Vue = { spaces: [], autres: [] }
+let derniereVue: Vue = { spaces: [], autres: [], terminaux: {} }
 let connecte = false
 let rappels: Rappels
 

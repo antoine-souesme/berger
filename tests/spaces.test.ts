@@ -62,3 +62,44 @@ test('un space sans nom prend le nom du dossier où est son premier terminal mai
   const vue = construireVue(doc, [vivant('t2b', { cwd: '/x/claude-plugin' })])
   expect(vue.spaces[0].nom).toBe('claude-plugin')
 })
+
+test('la vue porte les onglets et leurs arbres', () => {
+  const vue = construireVue(doc, [vivant('t2b'), vivant('t2c')], '/x')
+  expect(vue.spaces[0].onglets.map((o) => o.nom)).toEqual(['1', '2'])
+  expect(vue.spaces[0].onglets[0].racine).toBe(doc.spaces[0].tabs[0].root)
+})
+
+test("l'onglet prend l'état de son agent le plus pressant", () => {
+  const vue = construireVue(doc, [
+    vivant('t2b', { status: { state: 'working' } }),
+    vivant('t2c', { status: { state: 'idle' } }),
+    vivant('t99', { status: { state: 'done' } })
+  ])
+  expect(vue.spaces[0].onglets.map((o) => o.agent)).toEqual(['attente', 'fini'])
+  expect(vue.spaces[1].onglets[0].agent).toBeNull()
+})
+
+test('un terminal de la vue : programme, dossier avec ~, clics droits', () => {
+  const vue = construireVue(
+    doc,
+    [
+      vivant('t2b', {
+        cwd: '/Users/a/dev',
+        foreground: { cwd: '/Users/a/dev/berger', name: 'zsh', argv: ['/bin/zsh'] },
+        labels: { 'herdr.right-click': 'program' }
+      })
+    ],
+    '/Users/a'
+  )
+  const t = vue.terminaux['t2b']
+  expect(t.programme).toEqual({ nom: 'zsh', icone: 'terminal' })
+  expect(t.dossier).toBe('~/dev/berger')
+  expect(t.clicsDroitsAuProgramme).toBe(true)
+  expect(t.vivant).toBe(true)
+  expect(t.agent).toBeNull()
+})
+
+test('un space sans dossier garde un dossier vide', () => {
+  const sansDossier = { spaces: [{ id: 'sp9', name: 'x', tabs: [] }] }
+  expect(construireVue(sansDossier, []).spaces[0].dossier).toBe('')
+})
