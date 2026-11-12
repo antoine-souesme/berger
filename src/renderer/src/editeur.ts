@@ -6,12 +6,14 @@ import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
 import CssWorker from 'monaco-editor/language/css/css.worker?worker'
 import HtmlWorker from 'monaco-editor/language/html/html.worker?worker'
 import { serveurDe } from '../../shared/langage'
-import { initColoration, langageDuFichier } from './coloration'
+import { definirTheme, initColoration, langageDuFichier } from './coloration'
+import type { Reglages } from '../../shared/reglages'
+import { quoiFaire } from '../../shared/fichiers'
 import { initJson, suivreJson } from './json'
 import { organiserImports, suivreModele } from './langage'
 import { dossierAffiche } from '../../shared/libelles'
 import { fermerFichierWs } from '../../shared/etat-fichiers'
-import { changer, changerFichiers, etat, redessiner } from './etat'
+import { changer, changerFichiers, etat, redessiner, surChangement } from './etat'
 import { icone } from './icones'
 
 self.MonacoEnvironment = {
@@ -136,8 +138,51 @@ function suivreModifies(chemin: string): void {
   redessiner()
 }
 
+// ⌥Z : retour à la ligne, retenu d'une session à l'autre.
+export function basculerRetourLigne(): void {
+  changer((e) => (e.retourLigne = !e.retourLigne))
+}
+
+// Un fichier ouvert a changé sur le disque : rechargé s'il n'est pas modifié
+// dans Berger (curseur et défilement gardés) ; modifié des deux côtés, gardé.
+async function apresDisque(chemins: string[]): Promise<void> {
+  for (const chemin of new Set(chemins)) {
+    const o = ouverts.get(chemin)
+    if (!o) continue
+    const r = await window.berger.demander<{ texte?: string }>('berger:lire', { chemin })
+    if (ouverts.get(chemin) !== o || o.modele.isDisposed()) continue
+    if (quoiFaire(modifie(chemin), o.texteCharge, r.texte ?? null) !== 'recharger') continue
+    const texte = r.texte!
+    const vue = affiche === chemin && editeur ? editeur.saveViewState() : null
+    o.modele.pushEditOperations(
+      [],
+      [{ range: o.modele.getFullModelRange(), text: texte }],
+      () => null
+    )
+    o.texteCharge = texte
+    o.versionEnregistree = o.modele.getAlternativeVersionId()
+    if (vue) editeur?.restoreViewState(vue)
+    suivreModifies(chemin)
+  }
+}
+
 export function initEditeur(m: string): void {
   maison = m
+  // Le retour à la ligne suit l'état (relu au démarrage, basculé par ⌥Z).
+  surChangement((e) => {
+    const voulu = e.retourLigne ? 'on' : 'off'
+    if (editeur && editeur.getRawOptions().wordWrap !== voulu)
+      editeur.updateOptions({ wordWrap: voulu })
+  })
+  window.berger.ecouter(
+    'berger:disque',
+    ({ chemins }: { chemins: string[] }) => void apresDisque(chemins)
+  )
+  void colorationPrete.then(async () =>
+    definirTheme(
+      (await window.berger.demander<Reglages>('berger:reglages')).editeur.couleurSelection
+    )
+  )
   editeur = monaco.editor.create(el('editeur'), {
     theme: 'vscode-monokai',
     'semanticHighlighting.enabled': true,
@@ -147,6 +192,9 @@ export function initEditeur(m: string): void {
     fontFamily: 'Menlo, monospace',
     fontSize: 13,
     minimap: { enabled: true },
+    wordWrap: etat().retourLigne ? 'on' : 'off',
+    multiCursorModifier: 'alt',
+    folding: true,
     scrollBeyondLastLine: false,
     fixedOverflowWidgets: true,
     // Le menu du clic droit hors du shadow DOM, pour qu'il reçoive les couleurs du thème.

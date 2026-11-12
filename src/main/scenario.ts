@@ -812,6 +812,9 @@ async function jouerLangage(
     await souris('left', ligne(`${dossier}/src`))
     await pause(800)
   }
+  // Deux clics : le premier ouvre l'onglet, le second rend le clavier à l'explorateur.
+  await souris('left', ligne(`${dossier}/src/b.ts`))
+  await pause(1000)
   await souris('left', ligne(`${dossier}/src/b.ts`))
   await pause(500)
   touche('F2')

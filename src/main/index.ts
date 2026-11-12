@@ -17,6 +17,7 @@ import { brancherWorkspaces } from './workspaces'
 import { brancherEtatFichiers } from './etat-fichiers'
 import { brancherLangage } from './services/langage'
 import { brancherSchemas } from './services/schemas'
+import { brancherReglages } from './reglages'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -134,6 +135,7 @@ app.whenReady().then(() => {
   const etatFichiers = brancherEtatFichiers()
   const langage = brancherLangage(() => fenetre)
   brancherSchemas()
+  brancherReglages()
   app.on('will-quit', () => langage.arreter())
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
