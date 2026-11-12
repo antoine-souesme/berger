@@ -18,6 +18,7 @@ test('défauts', () => {
       tabulations: 2
     },
     terminal: { police: "'IBM Plex Mono', Menlo, monospace", taille: 12 },
+    sons: { actifs: true, fini: null, attente: null },
     raccourcis: {}
   })
   expect(lireReglages(null)).toEqual(REGLAGES_PAR_DEFAUT)
@@ -85,4 +86,13 @@ test('modifierReglage', () => {
   ).toEqual({ raccourcis: { a: ['x'], b: ['y'] } })
   expect(modifierReglage('{ mal', ['editeur', 'taille'], 14)).toBeNull()
   expect(modifierReglage('[1]', ['editeur', 'taille'], 14)).toBeNull()
+})
+
+test('les sons des agents : actifs par défaut, fichiers personnels gardés', () => {
+  expect(lireReglages({}).sons).toEqual({ actifs: true, fini: null, attente: null })
+  expect(lireReglages({ sons: { actifs: false, fini: '/a/b.mp3', attente: 3 } }).sons).toEqual({
+    actifs: false,
+    fini: '/a/b.mp3',
+    attente: null
+  })
 })

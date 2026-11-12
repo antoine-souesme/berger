@@ -20,12 +20,13 @@ import { changer, ouvrirChemins } from './etat'
 import { icone } from './icones'
 import { dispositionActuelle } from './table-raccourcis'
 
-export type Section = 'apparence' | 'editeur' | 'terminal' | 'raccourcis'
+export type Section = 'apparence' | 'editeur' | 'terminal' | 'alertes' | 'raccourcis'
 
 const SECTIONS: [Section, string, string][] = [
   ['apparence', 'Apparence', 'palette'],
   ['editeur', 'Éditeur', 'code'],
   ['terminal', 'Terminal', 'square-terminal'],
+  ['alertes', 'Alertes', 'bell'],
   ['raccourcis', 'Raccourcis', 'keyboard']
 ]
 
@@ -343,6 +344,26 @@ function pageTerminal(e: EtatReglages): HTMLElement[] {
   ]
 }
 
+function pageAlertes(e: EtatReglages): HTMLElement[] {
+  const r = e.reglages.sons
+  const ecouter = (son: 'fini' | 'attente'): HTMLElement => {
+    const b = creer('button', 'bouton-reglage', 'Écouter')
+    b.onclick = () => window.berger.envoyer('berger:son', { son, essai: true })
+    return b
+  }
+  const aide = (perso: string | null): string =>
+    perso ? `Fichier : ${perso}` : 'Son de macOS (un autre fichier : reglages.json)'
+  return [
+    ligne(
+      'Sons des agents',
+      'Quand un agent attend une réponse, ou finit sans être sous les yeux',
+      bascule(r.actifs, (v) => void changerReglage(['sons', 'actifs'], v))
+    ),
+    ligne('Agent qui attend', aide(r.attente), ecouter('attente')),
+    ligne('Agent qui a fini', aide(r.fini), ecouter('fini'))
+  ]
+}
+
 // --- Raccourcis ---
 
 function kbds(touches: string): HTMLElement {
@@ -531,7 +552,9 @@ export function ouvrirReglages(section: Section = 'apparence'): void {
           ? pageEditeur(e)
           : etat.section === 'terminal'
             ? pageTerminal(e)
-            : pageRaccourcis(e)
+            : etat.section === 'alertes'
+              ? pageAlertes(e)
+              : pageRaccourcis(e)
     const defilement = page.querySelector('.contenu-reglages')?.scrollTop ?? 0
     const zone = creer(
       'div',

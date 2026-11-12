@@ -1,6 +1,8 @@
 // Point d'entrée de la fenêtre Berger.
 import type { EtatFenetre } from '../../shared/etat-fenetre'
 import type { Vue } from '../../shared/spaces'
+import { sonAJouer } from '../../shared/sons'
+import type { EtatAgent } from '../../shared/libelles'
 import {
   afficherSpace,
   appliquerEtatRetenu,
@@ -145,7 +147,14 @@ window.berger.ecouter('berger:workspaces', (w: EtatWorkspaces) => {
   etat().workspaces = w
   redessiner()
 })
+// Comme dans Herdr : un son quand un agent attend Antoine, ou finit sans être
+// sous ses yeux (son terminal dans l'onglet affiché, la fenêtre au premier plan).
+const etatsAgents = (vue: Vue): Record<string, EtatAgent> =>
+  Object.fromEntries(Object.entries(vue.terminaux).map(([a, t]) => [a, t.agent]))
 window.berger.ecouter('berger:vue', (vue: Vue) => {
+  const regardes = document.hasFocus() ? adressesDeLOngletAffiche() : new Set<string>()
+  const son = sonAJouer(etatsAgents(etat().vue), etatsAgents(vue), regardes)
+  if (son) window.berger.envoyer('berger:son', { son })
   etat().vue = vue
   redessiner()
 })
