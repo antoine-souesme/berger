@@ -15,6 +15,7 @@ import { poserMenu } from './menu'
 import { jouerScenario } from './scenario'
 import { brancherWorkspaces } from './workspaces'
 import { brancherEtatFichiers } from './etat-fichiers'
+import { brancherLangage } from './services/langage'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -130,6 +131,8 @@ app.whenReady().then(() => {
   void coeur.demarrer()
   const etat = brancherEtat()
   const etatFichiers = brancherEtatFichiers()
+  const langage = brancherLangage(() => fenetre)
+  app.on('will-quit', () => langage.arreter())
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
     terminaux.attacher(adresse, cols, rows, actif !== false)
