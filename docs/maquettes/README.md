@@ -4,12 +4,21 @@ Maquettes validées par Antoine le 12 novembre 2026. Ouvrir chaque fichier dans
 un navigateur (fenêtre de 1440 × 900).
 
 - `vue-principale.html` : barre des workspaces, explorateur, spaces et agents,
-  un terminal d'agent et l'éditeur côte à côte, menu du clic droit sur un panneau.
+  un onglet de terminal découpé en trois (Claude Code, lazygit, zsh), barre
+  d'état en bas, menu du clic droit sur un panneau.
+- `vue-fichier.html` : un onglet de fichier, l'éditeur sur toute la largeur ;
+  menu du clic droit sur un onglet de terminal (Renommer, Nouvel onglet, Fermer).
 - `recherche-fichiers.html` : la recherche de fichiers (`cmd-p`).
 - `logos.html` : les variantes du logo ; la variante C est retenue
   (`docs/logo-berger.svg`), en petit sans pattes et laine pleine.
 
 Ce qu'il faut garder en tête en codant :
+
+- Disposition reprise de Herdr (corrigée le 12 novembre 2026) : un onglet de
+  terminal contient un ou plusieurs terminaux découpés ; un onglet de fichier
+  montre l'éditeur seul, sur toute la largeur. Un fichier et un terminal ne
+  sont jamais côte à côte. Les onglets de terminaux se renomment (F2). Rien à
+  droite de la barre d'onglets.
 
 - Couleurs : celles du thème Herdr `antoine-monokai`
   (`~/.config/herdr-app/themes/antoine-monokai.json`). États d'agent : jaune
@@ -22,6 +31,3 @@ Ce qu'il faut garder en tête en codant :
 - Icônes de l'interface : Lucide (`lucide-react`) ; icônes de fichiers :
   Material Icon Theme, comme dans le mod.
 - Spaces : pastille avec l'initiale, état git à droite (branche ou commits à pousser).
-
-Source modifiable (canevas Claude Design, privé) :
-https://claude.ai/artifact/PsAQGDeFWqgenKfWEG4p3R
