@@ -1,39 +1,49 @@
 import { homedir } from 'os'
 import type { Coeur } from './coeur'
-import { brancheDe } from './git'
+import { etatGit } from './git'
 import { construireVue, VUE_VIDE, type TerminalCore, type Vue } from '../shared/spaces'
 import { appliquerEvenement, evenementNeuf, type EvenementCore } from '../shared/terminaux'
 
 // Suit les terminaux (événements du core) et le document `herdr-app`
 // (spaces), et rend la vue à afficher à chaque changement.
-export function suivreLaVue(coeur: Coeur, envoyer: (vue: Vue) => void): () => Vue {
+export function suivreLaVue(
+  coeur: Coeur,
+  envoyer: (vue: Vue) => void,
+  surDoc: (doc: unknown) => void = () => {}
+): () => Vue {
   const table = new Map<string, TerminalCore>()
   let doc: unknown = null
   let derniere: Vue = VUE_VIDE
 
-  // Branche git de chaque dossier de space, relue au plus toutes les 5 s.
-  const branches = new Map<string, { branche?: string; lue: number; enCours: boolean }>()
-  const brancheDuDossier = (dossier: string): string | undefined => {
-    if (!dossier) return undefined
-    const connue = branches.get(dossier)
+  // État git (branche, commits à pousser) de chaque dossier de space, relu au
+  // plus toutes les 5 s.
+  type Git = { branche?: string; aPousser: number }
+  const gits = new Map<string, { git: Git; lue: number; enCours: boolean }>()
+  const gitDuDossier = (dossier: string): Git => {
+    if (!dossier) return { aPousser: 0 }
+    const connue = gits.get(dossier)
     if (!connue || (!connue.enCours && Date.now() - connue.lue > 5000)) {
-      const entree = { branche: connue?.branche, lue: Date.now(), enCours: true }
-      branches.set(dossier, entree)
-      void brancheDe(dossier).then((branche) => {
+      const entree = { git: connue?.git ?? { aPousser: 0 }, lue: Date.now(), enCours: true }
+      gits.set(dossier, entree)
+      void etatGit(dossier).then((git) => {
         entree.enCours = false
         entree.lue = Date.now()
-        if (branche !== entree.branche) {
-          entree.branche = branche
+        if (git.branche !== entree.git.branche || git.aPousser !== entree.git.aPousser) {
+          entree.git = git
           publier()
         }
       })
     }
-    return branches.get(dossier)!.branche
+    return gits.get(dossier)!.git
   }
 
   const publier = (): void => {
     const vue = construireVue(doc, [...table.values()], homedir())
-    for (const space of vue.spaces) space.branche = brancheDuDossier(space.dossier)
+    for (const space of vue.spaces) {
+      const git = gitDuDossier(space.dossier)
+      space.branche = git.branche
+      space.aPousser = git.aPousser
+    }
     derniere = vue
     envoyer(derniere)
   }
@@ -42,6 +52,7 @@ export function suivreLaVue(coeur: Coeur, envoyer: (vue: Vue) => void): () => Vu
     try {
       const r = await coeur.requetes!.requete<{ value: unknown }>('doc.get', { name: 'herdr-app' })
       doc = r.value
+      surDoc(doc)
     } catch (e) {
       console.error('[berger] lecture de herdr-app impossible :', (e as Error).message)
     }

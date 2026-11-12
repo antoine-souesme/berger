@@ -14,6 +14,7 @@ import {
   reprendreDeHerdr,
   spacesVisibles,
   spaceVu,
+  spacesDuDoc,
   supprimer,
   workspaceDe,
   type EtatWorkspaces,
@@ -214,4 +215,12 @@ test('etatInitial : Pro 💼 avec tous les spaces', () => {
   expect(e.liste).toHaveLength(1)
   expect(e.liste[0]).toMatchObject({ nom: 'Pro', emoji: '💼', spaces: ['a', 'b'] })
   expect(e.ouvert).toBe(e.liste[0].id)
+})
+
+test('spacesDuDoc : null tant que le document n’a pas de tableau spaces', () => {
+  expect(spacesDuDoc(null)).toBeNull()
+  expect(spacesDuDoc({})).toBeNull()
+  expect(spacesDuDoc({ spaces: 'x' })).toBeNull()
+  expect(spacesDuDoc({ spaces: [{ id: 'a' }, { name: 'sans id' }, null, { id: 3 }] })).toEqual(['a'])
+  expect(spacesDuDoc({ spaces: [] })).toEqual([])
 })

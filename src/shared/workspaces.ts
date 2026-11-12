@@ -243,3 +243,14 @@ export function premierEmoji(texte: string): string {
   const [premier] = new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(t)
   return premier?.segment ?? ''
 }
+
+// Les ids des spaces d'un document `herdr-app` ; null tant que le document n'a
+// pas été lu (pas de tableau `spaces`) : rapprocher à ce moment viderait tout.
+export function spacesDuDoc(doc: unknown): string[] | null {
+  const spaces = objet(doc)?.['spaces']
+  if (!Array.isArray(spaces)) return null
+  return spaces.flatMap((s) => {
+    const id = objet(s)?.['id']
+    return typeof id === 'string' ? [id] : []
+  })
+}
