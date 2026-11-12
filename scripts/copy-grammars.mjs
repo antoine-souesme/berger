@@ -3,7 +3,7 @@
 // les grammaires TextMate de ses extensions livrées, le registre de ses
 // langages (tiré de leurs package.json), le thème Monokai, les thèmes Dark Modern
 // et Light Modern, et la licence.
-// Produit src/renderer/public/vscode/. Usage : node scripts/copier-grammaires.mjs
+// Produit src/renderer/public/vscode/. Usage : node scripts/copy-grammars.mjs
 import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'fs'
 import { basename, dirname, join } from 'path'
 import { fileURLToPath } from 'url'
@@ -172,4 +172,4 @@ SOFTWARE.
 `
 )
 copyFileSync(join(APP, 'ThirdPartyNotices.txt'), join(SORTIE, 'ThirdPartyNotices.txt'))
-console.log(`VS Code ${version} : ${langages.size} langages, ${grammaires.length} grammaires.`)
+console.log(`VS Code ${version}: ${langages.size} languages, ${grammaires.length} grammars.`)

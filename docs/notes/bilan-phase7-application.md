@@ -44,7 +44,7 @@ jouent ce qui suit, avec une capture et une ligne de journal par étape.
   la fenêtre, plein écran, space, onglets et onglet affiché, largeur de la
   colonne des spaces, dossiers dépliés. Les phases 2 à 4 retenaient déjà le
   reste (explorateur masqué, onglets de fichiers).
-- **L'application installée.** `npm run installer` construit `Berger.app`, la
+- **L'application installée.** `npm run install-app` construit `Berger.app`, la
   signe localement et l'installe dans `/Applications` ; Spotlight la trouve
   (`fr.antoine.berger`). Lancée comme depuis le Dock (`open -a`) : branchée sur
   herdr-core, avec les workspaces et spaces d'Antoine et leurs terminaux. Les

@@ -104,7 +104,7 @@ function createWindow(): void {
         async () => {
           const image = await mainWindow.webContents.capturePage()
           writeFileSync(capture, image.toPNG())
-          console.log(`[berger] capture enregistrée : ${capture}`)
+          console.log(`[berger] capture saved: ${capture}`)
         },
         Number(process.env['BERGER_CAPTURE_DELAI'] ?? 4000)
       )
@@ -139,7 +139,7 @@ app.whenReady().then(() => {
   })
 
   coeur.surEtat((etat) => {
-    console.log(`[berger] herdr-core : ${etat}`)
+    console.log(`[berger] herdr-core: ${etat}`)
     etatConnexion = etat
     envoyerA(fenetre, 'berger:connexion', { etat })
   })

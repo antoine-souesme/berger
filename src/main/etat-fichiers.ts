@@ -31,9 +31,9 @@ function lireAuDemarrage(): { etat: EtatFichiers; neuf: boolean } {
     if (etat) return { etat, neuf: false }
     try {
       renameSync(fichier(), fichier() + '.illisible')
-      console.error('[berger] fichiers.json illisible, renommé en fichiers.json.illisible')
+      console.error('[berger] fichiers.json unreadable, renamed to fichiers.json.illisible')
     } catch (e) {
-      console.error('[berger] fichiers.json illisible :', (e as Error).message)
+      console.error('[berger] fichiers.json unreadable:', (e as Error).message)
     }
   }
   let partage: unknown
@@ -44,7 +44,7 @@ function lireAuDemarrage(): { etat: EtatFichiers; neuf: boolean } {
   }
   const etat = reprendreFichiersDeHerdr(partage)
   trace(
-    `premier lancement : fichiers de Herdr ${partage === null ? 'absents' : `lus (${Object.keys(etat).length} workspaces)`}`
+    `first launch: Herdr files ${partage === null ? 'missing' : `read (${Object.keys(etat).length} workspaces)`}`
   )
   return { etat, neuf: true }
 }
@@ -64,9 +64,9 @@ export function brancherEtatFichiers(): { vider: () => void } {
     try {
       mkdirSync(dirname(fichier()), { recursive: true })
       writeFileSync(fichier(), JSON.stringify(etat, null, 2))
-      trace('fichiers.json écrit')
+      trace('fichiers.json written')
     } catch (e) {
-      console.error('[berger] fichiers non enregistrés :', (e as Error).message)
+      console.error('[berger] files not saved:', (e as Error).message)
     }
   }
   if (aEcrire) ecrireMaintenant()

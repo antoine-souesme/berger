@@ -68,7 +68,7 @@ initJson()
 // Coloration et thème de VS Code (voir coloration.ts) : prêts avant le premier fichier.
 const colorationPrete = initColoration()
   .then(() => undefined)
-  .catch((e) => console.error('[berger] coloration de VS Code indisponible :', e))
+  .catch((e) => console.error('[berger] VS Code highlighting unavailable:', e))
 
 type Ouvert = {
   modele: monaco.editor.ITextModel

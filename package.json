@@ -15,8 +15,8 @@
     "build": "npm run typecheck && electron-vite build",
     "postinstall": "install-electron",
     "test": "vitest run",
-    "icone": "node scripts/icone.mjs",
-    "installer": "node scripts/installer.mjs"
+    "icon": "node scripts/icon.mjs",
+    "install-app": "node scripts/install-app.mjs"
   },
   "dependencies": {
     "@electron-toolkit/preload": "^3.0.2",

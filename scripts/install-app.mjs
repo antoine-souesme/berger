@@ -2,7 +2,7 @@
 // Construit Berger.app et l'installe dans /Applications, à la place de la
 // version précédente. Le dossier de données (~/Library/Application Support/Berger)
 // n'est jamais touché ; les terminaux survivent (Berger les détache en quittant).
-// Usage : npm run installer
+// Usage : npm run install-app
 import { execFileSync, spawnSync } from 'child_process'
 import { existsSync, readdirSync, renameSync, rmSync } from 'fs'
 import { dirname, join } from 'path'
@@ -22,7 +22,7 @@ lancer('npx', ['electron-builder', '--mac', '--dir'])
 const dossier = readdirSync(join(RACINE, 'dist')).find(
   (d) => d.startsWith('mac') && existsSync(join(RACINE, 'dist', d, 'Berger.app'))
 )
-if (!dossier) throw new Error('Berger.app introuvable dans dist/')
+if (!dossier) throw new Error('Berger.app not found in dist/')
 const app = join(RACINE, 'dist', dossier, 'Berger.app')
 // Signature locale (sans compte Apple) : macOS lance l'application sans la refuser.
 lancer('codesign', ['--force', '--deep', '-s', '-', app])
@@ -34,7 +34,7 @@ if (tournaitAvant) {
   spawnSync('osascript', ['-e', 'quit app id "fr.antoine.berger"'])
   for (let i = 0; i < 120 && tourne(); i++) attendre(500)
   if (tourne()) {
-    console.error('Berger tourne encore : quitte-le puis relance npm run installer.')
+    console.error('Berger is still running: quit it, then run npm run install-app again.')
     process.exit(1)
   }
 }
@@ -46,5 +46,5 @@ rmSync(ANCIEN, { recursive: true, force: true })
 if (existsSync(CIBLE)) renameSync(CIBLE, ANCIEN)
 renameSync(NOUVEAU, CIBLE)
 rmSync(ANCIEN, { recursive: true, force: true })
-console.log(`Berger installé : ${CIBLE}`)
+console.log(`Berger installed: ${CIBLE}`)
 if (tournaitAvant) spawnSync('open', ['-a', CIBLE])
