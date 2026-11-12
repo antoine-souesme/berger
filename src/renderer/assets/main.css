@@ -649,8 +649,143 @@ body {
 }
 
 /* Onglet de fichier */
-#zone-fichier {
+#zone-fichier,
+#zone-image {
   flex: 1;
+}
+#image-bandeau .chemin-sep {
+  color: var(--gris);
+}
+#image-bandeau .chemin-nom {
+  color: var(--vif);
+  font-weight: 600;
+}
+#image-fond {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  overflow: hidden;
+  background-color: #272822;
+  background-image:
+    linear-gradient(45deg, #2d2e28 25%, transparent 25%),
+    linear-gradient(-45deg, #2d2e28 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #2d2e28 75%),
+    linear-gradient(-45deg, transparent 75%, #2d2e28 75%);
+  background-size: 20px 20px;
+  background-position:
+    0 0,
+    0 10px,
+    10px -10px,
+    -10px 0;
+}
+#image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+#image-etat {
+  height: 26px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  font-size: 11px;
+  color: var(--gris-clair);
+}
+#image-etat .espace {
+  flex: 1;
+}
+.voile-recherche {
+  place-items: start center;
+  background: #0e0f0c99;
+}
+.palette {
+  margin-top: 140px;
+  width: 600px;
+  max-height: 520px;
+  display: flex;
+  flex-direction: column;
+  border-radius: 14px;
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  box-shadow: 0 24px 60px #00000080;
+  overflow: hidden;
+}
+.palette-champ {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 56px;
+  flex-shrink: 0;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--bord);
+}
+.palette-champ input {
+  flex: 1;
+  background: none;
+  border: 0;
+  outline: none;
+  color: var(--vif);
+  font-size: 16px;
+  font-family: inherit;
+}
+.palette-champ input::placeholder {
+  color: var(--gris);
+}
+.palette-liste {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px;
+  overflow-y: auto;
+}
+.palette-ligne {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  height: 40px;
+  flex-shrink: 0;
+  padding: 0 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.palette-ligne:hover {
+  background: var(--panneau);
+}
+.palette-ligne.choisie {
+  background: var(--actif);
+}
+.palette-ligne.choisie .palette-nom {
+  color: var(--vif);
+}
+.palette-nom b {
+  color: #e6db74;
+  font-weight: 600;
+}
+.palette-ou {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--gris-clair);
+  font-size: 12px;
+}
+.palette-titre {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 12px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--gris-clair);
+}
+.palette-vide {
+  padding: 10px 12px;
+  color: var(--gris);
 }
 #fichier-bandeau .chemin-sep {
   color: var(--gris);

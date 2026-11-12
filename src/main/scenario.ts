@@ -1,6 +1,7 @@
-import { appendFileSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import { appendFileSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import { app, type BrowserWindow } from 'electron'
+import { app, Menu, type BrowserWindow } from 'electron'
+import { execFile } from 'child_process'
 
 // Vérification sans clic (développement seulement), avec des captures.
 //
@@ -25,6 +26,16 @@ import { app, type BrowserWindow } from 'electron'
 // BERGER_SCENARIO=explorateur BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ajoute ce dossier comme racine, déplie `node_modules`, crée `nouveau.txt` (il doit
 //   apparaître seul), ⇧⌘E deux fois, retire la racine. Une capture par étape.
+// BERGER_SCENARIO=fichiers BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
+//   (BERGER_SCENARIO_REPONSE=1 : « Garder les deux » à la question de conflit). Le dossier
+//   contient src/main/index.ts, src/renderer/index.ts, logo.png ; un dossier voisin
+//   `<dossier>-externe` contient externe.txt et ouvert.md (« du Finder »). Ajoute le dossier
+//   comme racine, crée a.txt et notes sur place, renomme a.txt en b.txt, copie-colle b.txt,
+//   glisse b.txt sur notes, colle « b copie.txt » dans notes puis y glisse celui de la racine
+//   (conflit), dépose externe.txt sur notes et ouvert.md sur l'éditeur, ouvre logo.png, ⌘P
+//   « bt », ouvre les deux index.ts, en épingle un, ferme l'autre au clic molette, met
+//   notes/b.txt à la corbeille, retire la racine, puis ouvre « Fichier › Ouvrir un fichier… »
+//   (capture d'écran de macOS). Une capture et une ligne de journal par étape.
 // BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
 //   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
@@ -117,6 +128,11 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         }
       ])
     )
+    return
+  }
+
+  if (scenario === 'fichiers') {
+    jouerFichiers(w, capture, touche, sortie)
     return
   }
 
@@ -277,6 +293,7 @@ function pointeur(
       const texte = ${JSON.stringify(texte ?? null)}
       const el = texte === null ? liste[0] : liste.find((e) => e.textContent.trim() === texte)
       if (!el) return null
+      el.scrollIntoView({ block: 'nearest' })
       const r = el.getBoundingClientRect()
       return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
     })()`)
@@ -424,6 +441,204 @@ function jouerWorkspaces(
     // Retour au workspace d'origine, pour laisser les workspaces comme au début.
     [300, clic(`#workspaces [data-id="${origine}"]`)],
     [2500, etape('11-fin')]
+  ]
+  let t = 0
+  for (const [delai, faire] of liste) {
+    t += delai
+    setTimeout(() => void faire(), t)
+  }
+}
+
+// Le scénario des fichiers (phase 4) : vrais événements souris et clavier,
+// glisser-déposer par le protocole de débogage de Chromium.
+function jouerFichiers(
+  w: BrowserWindow,
+  capture: (nom: string) => Promise<void>,
+  touche: (keyCode: string, modifiers?: Mod[]) => void,
+  sortie: string
+): void {
+  const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+  if (!dossier.includes('berger-essai')) {
+    console.error('[berger] scénario fichiers refusé : le dossier doit contenir berger-essai')
+    return
+  }
+  const externe = `${dossier}-externe`
+  const wc = w.webContents
+  const souris = pointeur(wc)
+  const ligne = (chemin: string): string =>
+    `#arbre .ligne-arbre[data-chemin=${JSON.stringify(chemin)}]`
+  const centre = (selecteur: string): Promise<Point | null> =>
+    wc.executeJavaScript(`(() => {
+      const el = document.querySelector(${JSON.stringify(selecteur)})
+      if (!el) return null
+      el.scrollIntoView({ block: 'nearest' })
+      const r = el.getBoundingClientRect()
+      return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
+    })()`)
+  const journal = (nom: string): void => {
+    const liste = (d: string): string => {
+      try {
+        return readdirSync(d).sort().join(', ')
+      } catch {
+        return '(absent)'
+      }
+    }
+    console.log(
+      `[berger] scénario : ${nom} | racine : ${liste(dossier)} | notes : ${liste(`${dossier}/notes`)}`
+    )
+  }
+  const etape = (nom: string) => async (): Promise<void> => {
+    await capture(nom)
+    journal(nom)
+  }
+  const taper = (texte: string) => (): Promise<void> => wc.insertText(texte)
+
+  // Glisser-déposer : le glisser interne est intercepté puis rejoué ; un dépôt
+  // « du Finder » porte des fichiers.
+  const dbg = wc.debugger
+  let intercepte: ((data: unknown) => void) | null = null
+  const brancherDebogueur = async (): Promise<void> => {
+    if (!dbg.isAttached()) dbg.attach('1.3')
+    dbg.on('message', (_e, methode, params) => {
+      if (methode === 'Input.dragIntercepted' && intercepte) intercepte(params.data)
+    })
+    await dbg.sendCommand('Input.setInterceptDrags', { enabled: true })
+  }
+  const deposerDonnees = async (data: unknown, b: Point, modifiers = 0): Promise<void> => {
+    for (const type of ['dragEnter', 'dragOver'])
+      await dbg.sendCommand('Input.dispatchDragEvent', { type, x: b.x, y: b.y, data, modifiers })
+    await new Promise((ok) => setTimeout(ok, 300))
+    await dbg.sendCommand('Input.dispatchDragEvent', {
+      type: 'drop',
+      x: b.x,
+      y: b.y,
+      data,
+      modifiers
+    })
+  }
+  const glisser = (de: string, vers: string) => async (): Promise<void> => {
+    const a = await centre(ligne(de))
+    const b = await centre(ligne(vers))
+    if (!a || !b) return console.error(`[berger] scénario : glisser impossible ${de} → ${vers}`)
+    const recu = new Promise<unknown>((ok) => (intercepte = ok))
+    const m = (type: string, p: Point, extra = {}): Promise<unknown> =>
+      dbg.sendCommand('Input.dispatchMouseEvent', {
+        type,
+        x: p.x,
+        y: p.y,
+        button: 'left',
+        ...extra
+      })
+    await m('mousePressed', a, { clickCount: 1, buttons: 1 })
+    for (let i = 1; i <= 6; i++)
+      await m('mouseMoved', { x: a.x, y: a.y + ((b.y - a.y) * i) / 6 }, { buttons: 1 })
+    const data = await Promise.race([recu, new Promise((ok) => setTimeout(() => ok(null), 2000))])
+    intercepte = null
+    if (!data) return console.error('[berger] scénario : glisser non intercepté')
+    await deposerDonnees(data, b)
+    await m('mouseReleased', b, { clickCount: 1 })
+  }
+  const deposerFinder = (fichier: string, selecteur: string) => async (): Promise<void> => {
+    await dbg
+      .sendCommand('Input.dispatchDragEvent', {
+        type: 'dragCancel',
+        x: 0,
+        y: 0,
+        data: { items: [], dragOperationsMask: 1 }
+      })
+      .catch(() => {})
+    const b = await centre(selecteur)
+    if (!b) return console.error(`[berger] scénario : cible introuvable ${selecteur}`)
+    await deposerDonnees({ items: [], files: [fichier], dragOperationsMask: 1 }, b)
+  }
+
+  const index = [`${dossier}/src/main/index.ts`, `${dossier}/src/renderer/index.ts`]
+  const liste: [number, () => void | Promise<void>][] = [
+    [2500, () => brancherDebogueur()],
+    [100, () => wc.send('berger:scenario-oublier', { prefixe: dossier })],
+    [300, () => wc.send('berger:scenario-oublier', { prefixe: externe })],
+    [300, () => wc.send('berger:scenario-dossier', { chemin: dossier })],
+    [1500, () => void centre(ligne(dossier))],
+    [500, () => souris('right', ligne(dossier))],
+    [800, etape('01-menu-racine')],
+    [300, () => souris('left', '.menu .entree .libelle', 'Nouveau fichier')],
+    [600, etape('02-champ-nouveau')],
+    [300, taper('a.txt')],
+    [200, () => touche('Enter')],
+    [1200, etape('03-a-cree')],
+    [300, () => souris('right', ligne(dossier))],
+    [600, () => souris('left', '.menu .entree .libelle', 'Nouveau dossier')],
+    [600, taper('notes')],
+    [200, () => touche('Enter')],
+    [1200, etape('04-notes-cree')],
+    [300, () => souris('left', ligne(`${dossier}/a.txt`))],
+    [500, () => touche('F2')],
+    [600, etape('05-renommage')],
+    [300, taper('b')],
+    [200, () => touche('Enter')],
+    [1200, etape('06-renomme')],
+    [300, () => souris('left', ligne(`${dossier}/b.txt`))],
+    [400, () => touche('c', ['meta'])],
+    [800, () => touche('v', ['meta'])],
+    [1500, etape('07-colle')],
+    [300, glisser(`${dossier}/b.txt`, `${dossier}/notes`)],
+    [1500, etape('08-glisse')],
+    [300, () => souris('left', ligne(`${dossier}/b copie.txt`))],
+    [400, () => touche('c', ['meta'])],
+    [600, () => souris('left', ligne(`${dossier}/notes`))],
+    [600, () => souris('right', ligne(`${dossier}/notes`))],
+    [600, () => souris('left', '.menu .entree .libelle', 'Coller')],
+    [1500, etape('09-colle-dans-notes')],
+    [300, glisser(`${dossier}/b copie.txt`, `${dossier}/notes`)],
+    [2000, etape('10-conflit-garde')],
+    [300, deposerFinder(`${externe}/externe.txt`, ligne(`${dossier}/notes`))],
+    [1500, etape('11-depot-finder')],
+    [300, deposerFinder(`${externe}/ouvert.md`, '#barre-onglets')],
+    [1500, etape('12-depot-fenetre')],
+    [300, () => souris('left', ligne(`${dossier}/logo.png`))],
+    [1500, etape('13-image')],
+    [300, () => touche('p', ['meta'])],
+    [600, etape('14-recents')],
+    [300, taper('bt')],
+    [800, etape('15-recherche')],
+    [300, () => touche('Enter')],
+    [1200, etape('16-ouvert')],
+    [300, () => wc.send('berger:scenario-fichier', { chemin: index[0] })],
+    [600, () => wc.send('berger:scenario-fichier', { chemin: index[1] })],
+    [1200, etape('17-deux-index')],
+    [300, () => souris('right', `.onglet-fichier[data-chemin=${JSON.stringify(index[0])}]`)],
+    [600, etape('18-menu-onglet')],
+    [300, () => souris('left', '.menu .entree .libelle', 'Épingler')],
+    [800, () => souris('middle', `.onglet-fichier[data-chemin=${JSON.stringify(index[1])}]`)],
+    [1200, etape('19-epingle-ferme')],
+    [300, () => souris('left', ligne(`${dossier}/notes/b.txt`))],
+    [300, () => souris('left', ligne(`${dossier}/notes/b.txt`))],
+    [400, () => touche('Backspace', ['meta'])],
+    [800, etape('20-corbeille')],
+    [300, () => souris('left', '.dialogue .bouton-dialogue', 'Mettre à la corbeille')],
+    [1500, etape('21-jete')],
+    [300, () => souris('right', ligne(dossier))],
+    [800, etape('22-menu-retirer')],
+    [300, () => souris('left', '.menu .entree .libelle', "Retirer de l'explorateur")],
+    [1200, etape('23-retire')],
+    [
+      300,
+      () => {
+        const fichier = Menu.getApplicationMenu()?.items.find((i) => i.label === 'Fichier')
+        const ouvrir = fichier?.submenu?.items.find((i) => i.label === 'Ouvrir un fichier…')
+        console.log(
+          `[berger] scénario : menu Fichier › ${ouvrir?.label} (${ouvrir?.accelerator ?? 'sans raccourci'})`
+        )
+        ouvrir?.click()
+      }
+    ],
+    [
+      2500,
+      () =>
+        execFile('screencapture', ['-x', `${sortie}-24-ouvrir-macos.png`], () =>
+          console.log('[berger] scénario : capture 24-ouvrir-macos')
+        )
+    ]
   ]
   let t = 0
   for (const [delai, faire] of liste) {

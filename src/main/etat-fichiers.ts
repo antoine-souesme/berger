@@ -21,7 +21,7 @@ const trace = (texte: string): void => {
 
 function lireAuDemarrage(): { etat: EtatFichiers; neuf: boolean } {
   if (existsSync(fichier())) {
-    let brut: unknown = null
+    let brut: unknown
     try {
       brut = JSON.parse(readFileSync(fichier(), 'utf8'))
     } catch {
@@ -36,7 +36,7 @@ function lireAuDemarrage(): { etat: EtatFichiers; neuf: boolean } {
       console.error('[berger] fichiers.json illisible :', (e as Error).message)
     }
   }
-  let partage: unknown = null
+  let partage: unknown
   try {
     partage = JSON.parse(readFileSync(PARTAGE_HERDR, 'utf8'))
   } catch {

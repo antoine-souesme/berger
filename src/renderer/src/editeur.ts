@@ -64,6 +64,12 @@ let editeur: monaco.editor.IStandaloneCodeEditor | null = null
 let affiche: string | null = null
 let maison = ''
 let dernierEchec = ''
+// Un fichier ouvert d'un clic dans l'explorateur laisse le clavier à l'explorateur.
+let garderClavier = false
+
+export function laisserLeClavier(): void {
+  garderClavier = true
+}
 
 export function raisonEchec(): string {
   return dernierEchec
@@ -176,7 +182,8 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   dessinerPosition()
   annoncer('')
   editeur.layout()
-  editeur.focus()
+  if (garderClavier) garderClavier = false
+  else editeur.focus()
   return true
 }
 

@@ -21,6 +21,7 @@ import {
 } from './barre-onglets'
 import { lignesAgents, nouveauSpace, renommerSpaceEnPlace } from './colonne'
 import { dialogueOuvert } from './dialogue'
+import { ouvrirRechercheFichiers, rechercheOuverte } from './recherche-fichiers'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
 import { basculerExplorateur } from './explorateur'
@@ -129,7 +130,7 @@ function executer(a: ActionClavier): void {
       basculerExplorateur()
       return
     case 'fichier.rechercher':
-      // Tâche 9
+      ouvrirRechercheFichiers()
       return
     case 'explorateur.renommer':
       renommerChoisi()
@@ -156,7 +157,7 @@ export function brancherClavier(): void {
     'keydown',
     (ev) => {
       // Un dialogue ouvert garde le clavier pour lui (voir dialogue.ts).
-      if (dialogueOuvert()) return
+      if (dialogueOuvert() || rechercheOuverte()) return
       const action = actionDe(ev, cibleDe(document.activeElement))
       if (!action) return
       ev.preventDefault()

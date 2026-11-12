@@ -7,6 +7,7 @@ import {
   basculerDeplie,
   basculerRacine,
   deWorkspace,
+  estImage,
   racines,
   toutReplier
 } from '../../shared/etat-fichiers'
@@ -22,6 +23,7 @@ import {
   workspaceOuvert
 } from './etat'
 import { icone, iconeMaterial } from './icones'
+import { fichierAffiche, laisserLeClavier } from './editeur'
 
 export type Liste = { entrees: Entree[]; tronque: boolean } | { erreur: string }
 type Git = { depot: string; statut: [string, GenreGit][] } | null
@@ -184,8 +186,10 @@ function cliquer(l: Ligne, ev: MouseEvent): void {
   arbre().focus()
   if (ev.metaKey) return choisir(l, true)
   choisir(l)
-  if (!l.dossier) ouvrirChemins([l.chemin])
-  else if (l.chemin === l.racine) changerFichiers((x, ws) => basculerRacine(x, ws, l.chemin))
+  if (!l.dossier) {
+    if (fichierAffiche() !== l.chemin && !estImage(l.chemin)) laisserLeClavier()
+    ouvrirChemins([l.chemin])
+  } else if (l.chemin === l.racine) changerFichiers((x, ws) => basculerRacine(x, ws, l.chemin))
   else changerFichiers((x, ws) => basculerDeplie(x, ws, l.chemin))
 }
 
