@@ -22,6 +22,9 @@ export class TerminalOuvert {
   private processus: ChildProcessWithoutNullStreams
   private canal: number | null = null
   private fini = false
+  // Taille demandée avant que le core ait ouvert le canal : envoyée dès qu'il
+  // l'ouvre (sinon elle était perdue et le terminal gardait sa taille d'attache).
+  private tailleEnAttente: { cols: number; rows: number } | null = null
 
   constructor(
     private adresse: string,
@@ -80,6 +83,10 @@ export class TerminalOuvert {
 
   redimensionner(cols: number, rows: number): void {
     if (process.env['BERGER_TRACE']) console.log(`[berger] RESIZE ${this.adresse} ${cols}x${rows}`)
+    if (this.canal === null) {
+      this.tailleEnAttente = { cols, rows }
+      return
+    }
     this.envoyer(TYPE.RESIZE, taille(cols, rows))
   }
 
@@ -108,7 +115,12 @@ export class TerminalOuvert {
       const message = JSON.parse(new TextDecoder().decode(trame.donnees))
       if (message.id === 1) {
         if (message.error) this.terminer(message.error.data?.kind ?? message.error.message)
-        else this.canal = message.result.channel
+        else {
+          this.canal = message.result.channel
+          const t = this.tailleEnAttente
+          this.tailleEnAttente = null
+          if (t) this.redimensionner(t.cols, t.rows)
+        }
       }
       return
     }

@@ -74,6 +74,9 @@ function ouvrir(adresse: string, o: Ouvert): void {
     } catch {
       // Pas de WebGL : rendu ordinaire.
     }
+    // La carte graphique arrondit les cases au pixel (7 px au lieu de 7,2) : le
+    // nombre de colonnes et de lignes calculé avant elle laissait une marge.
+    ajuster(adresse, o)
   })
 }
 
