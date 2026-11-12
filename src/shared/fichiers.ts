@@ -1,4 +1,4 @@
-// Règles pures du choix de fichier et de l'éditeur.
+// Règles pures des fichiers : dossiers sautés hors git, limite de ⌘P, langage de l'éditeur.
 
 export const DOSSIERS_IGNORES = [
   '.git',
@@ -10,24 +10,10 @@ export const DOSSIERS_IGNORES = [
   'target',
   '.venv'
 ]
-export const LIMITE_FICHIERS = 5000
+// Au plus 50 000 fichiers par racine pour ⌘P.
+export const LIMITE_FICHIERS = 50_000
 
 export type ListeFichiers = { fichiers: string[]; tronquee: boolean }
-
-function contientDansLOrdre(texte: string, requete: string): boolean {
-  let i = 0
-  for (const c of texte) if (c === requete[i]) i++
-  return i === requete.length
-}
-
-export function filtrerFichiers(chemins: string[], requete: string): string[] {
-  const r = requete.toLowerCase()
-  if (!r) return chemins
-  const nom = (c: string): string => c.slice(c.lastIndexOf('/') + 1).toLowerCase()
-  const trouves = chemins.filter((c) => contientDansLOrdre(c.toLowerCase(), r))
-  const enBloc = trouves.filter((c) => nom(c).includes(r))
-  return [...enBloc, ...trouves.filter((c) => !nom(c).includes(r))]
-}
 
 const LANGAGES: Record<string, string> = {
   md: 'markdown',

@@ -57,7 +57,7 @@ function agentsEtTerminaux(): PlaceAgent[] {
 brancherClavier()
 initWorkspaces()
 brancherFichiers(fermerFichierAvecQuestion)
-initColonne({ ouvrirFichier: ouvrirUnFichier, choisirAgent: choisirPlace })
+initColonne({ choisirAgent: choisirPlace })
 
 // Le contenu de la colonne de droite : l'onglet de terminal ou le fichier.
 surChangement((e) => {

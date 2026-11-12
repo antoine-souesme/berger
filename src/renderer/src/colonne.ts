@@ -1,7 +1,5 @@
-// La colonne de gauche : zone « Explorateur » (en attendant la phase 4 : la
-// liste de fichiers de la phase 0), puis les spaces et les agents du
-// workspace ouvert. La barre des workspaces est dans workspaces.ts.
-import { filtrerFichiers, LIMITE_FICHIERS, type ListeFichiers } from '../../shared/fichiers'
+// La colonne de gauche : les spaces et les agents du workspace ouvert
+// (l'explorateur est dans explorateur.ts). La barre des workspaces est dans workspaces.ts.
 import { COULEUR_ETAT } from '../../shared/libelles'
 import { duree, listeAgents, type LigneAgent } from '../../shared/agents'
 import type { PlaceAgent } from '../../shared/onglets'
@@ -21,31 +19,15 @@ import { icone } from './icones'
 import { ouvrirDialogue } from './dialogue'
 import { ouvrirMenu } from './menus'
 
-const AFFICHES = 200
 const PASTILLES = ['#5d9e5d', '#2f9a9a', '#c47a3a', '#8a6fc4', '#c45b8a', '#4f86c6']
 
-let dossierListe: string | null = null
-let liste: ListeFichiers = { fichiers: [], tronquee: false }
-let surFichier: (chemin: string) => void = () => {}
 let surAgent: (a: PlaceAgent) => void = () => {}
 let spaceEnRenommage: string | null = null
 
 const el = (id: string): HTMLElement => document.getElementById(id)!
 
-export function initColonne(rappels: {
-  ouvrirFichier: (chemin: string) => void
-  choisirAgent: (a: PlaceAgent) => void
-}): void {
-  surFichier = rappels.ouvrirFichier
+export function initColonne(rappels: { choisirAgent: (a: PlaceAgent) => void }): void {
   surAgent = rappels.choisirAgent
-  const champ = el('filtre') as HTMLInputElement
-  champ.addEventListener('input', dessinerFichiers)
-  champ.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') {
-      const premier = filtrerFichiers(liste.fichiers, champ.value)[0]
-      if (premier) choisirFichier(premier)
-    }
-  })
   el('nouveau-space').onclick = () => void nouveauSpace()
   el('tri-agents').onclick = () =>
     changer((e) => (e.triAgents = e.triAgents === 'spaces' ? 'urgence' : 'spaces'))
@@ -66,57 +48,6 @@ export async function nouveauSpace(): Promise<void> {
     e.onglet = { type: 'terminal', id: r.onglet }
     e.focus[r.onglet] = r.panneau
   })
-}
-
-function choisirFichier(relatif: string): void {
-  surFichier(`${dossierListe}/${relatif}`)
-}
-
-async function chargerFichiers(dossier: string): Promise<void> {
-  dossierListe = dossier
-  liste = { fichiers: [], tronquee: false }
-  dessinerFichiers()
-  const r = await window.berger.demander<ListeFichiers>('berger:lister', { dossier })
-  if (dossierListe !== dossier) return
-  liste = r
-  dessinerFichiers()
-}
-
-function dessinerFichiers(): void {
-  const message = el('explorateur-message')
-  const champ = el('filtre') as HTMLInputElement
-  el('explorateur-vide').hidden = dossierListe !== null
-  if (dossierListe === null) {
-    champ.hidden = true
-    message.hidden = true
-  } else if (dossierListe === '') {
-    message.textContent = "Ce space n'a pas de dossier"
-    message.hidden = false
-    champ.hidden = true
-  } else {
-    champ.hidden = false
-    message.textContent = `Liste limitée aux ${LIMITE_FICHIERS.toLocaleString('fr-FR')} premiers fichiers`
-    message.hidden = !liste.tronquee
-  }
-  el('liste-fichiers').replaceChildren(
-    ...filtrerFichiers(liste.fichiers, champ.value)
-      .slice(0, AFFICHES)
-      .map((relatif) => {
-        const ligne = document.createElement('div')
-        ligne.className = 'fichier'
-        const nom = relatif.slice(relatif.lastIndexOf('/') + 1)
-        const dossier = relatif.includes('/') ? relatif.slice(0, relatif.lastIndexOf('/')) : ''
-        const n = document.createElement('span')
-        n.textContent = nom
-        const d = document.createElement('span')
-        d.className = 'gris'
-        d.textContent = dossier
-        ligne.append(n, d)
-        ligne.title = relatif
-        ligne.onclick = () => choisirFichier(relatif)
-        return ligne
-      })
-  )
 }
 
 function pastille(nom: string): HTMLElement {
@@ -291,15 +222,6 @@ function dessiner(): void {
   const e = etat()
   const s = spaceAffiche()
   const visibles = spacesVisiblesUi()
-  const dossier = s?.dossier ?? null
-  if (dossier === null) {
-    if (dossierListe !== null) {
-      dossierListe = null
-      liste = { fichiers: [], tronquee: false }
-      dessinerFichiers()
-    }
-  } else if (dossier !== dossierListe) void chargerFichiers(dossier)
-
   if (glisseEnCours()) {
     // Liste des spaces figée pendant un glissement (voir glisser.ts).
   } else if (visibles.length)
@@ -365,10 +287,12 @@ async function supprimerSpace(space: VueSpace): Promise<void> {
   await window.berger.demander('berger:structure', { type: 'space.fermer', space: space.id })
 }
 
-// Un message passager sous le filtre (fichier impossible à ouvrir…).
+// Un message passager en tête de l'explorateur (fichier impossible à ouvrir…).
 export function annoncerColonne(texte: string): void {
   const m = el('explorateur-message')
   m.textContent = texte
   m.hidden = false
-  setTimeout(dessinerFichiers, 4000)
+  setTimeout(() => {
+    if (m.textContent === texte) m.hidden = true
+  }, 4000)
 }
