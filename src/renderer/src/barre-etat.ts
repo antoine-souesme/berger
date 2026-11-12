@@ -1,6 +1,6 @@
 // La barre d'état en bas de la colonne de droite.
 import { COULEUR_ETAT, plusPressant } from '../../shared/libelles'
-import { etat, spaceAffiche, surChangement } from './etat'
+import { spaceAffiche, spacesVisiblesUi, surChangement } from './etat'
 import { icone } from './icones'
 
 function morceau(...enfants: (Node | string)[]): HTMLElement {
@@ -11,9 +11,11 @@ function morceau(...enfants: (Node | string)[]): HTMLElement {
 }
 
 function dessiner(): void {
-  const e = etat()
   const barre = document.getElementById('barre-etat')!
-  const vivants = Object.values(e.vue.terminaux).filter((t) => t.vivant && t.agent)
+  // Les agents des spaces visibles (workspace ouvert et spaces rangés nulle part).
+  const vivants = spacesVisiblesUi()
+    .flatMap((s) => s.terminaux)
+    .filter((t) => t.vivant && t.agent)
   const branche = spaceAffiche()?.branche
   const etatAgents = plusPressant(vivants.map((t) => t.agent))
   const point = document.createElement('span')
@@ -25,7 +27,9 @@ function dessiner(): void {
   barre.replaceChildren(
     morceau(icone('monitor', 'currentColor', 13), 'Cet ordinateur'),
     ...(branche ? [morceau(icone('git-branch', 'currentColor', 13), branche)] : []),
-    morceau(point, vivants.length === 1 ? '1 agent' : `${vivants.length} agents`),
+    vivants.length
+      ? morceau(point, vivants.length === 1 ? '1 agent' : `${vivants.length} agents`)
+      : morceau('Aucun agent'),
     droite
   )
 }

@@ -1,16 +1,26 @@
 // Les raccourcis de Berger : un écouteur en phase de capture, avant le
 // terminal et l'éditeur. La table et le partage des touches sont dans
 // `src/shared/raccourcis.ts`.
-import { agentVoisin, ongletN, ongletVoisin, type PlaceAgent } from '../../shared/onglets'
+import { agentVoisin } from '../../shared/agents'
+import { ongletN, ongletVoisin, type PlaceAgent } from '../../shared/onglets'
 import { actionDe, type ActionClavier, type Cible } from '../../shared/raccourcis'
-import { afficherSpace, changer, etat, ongletAffiche, ongletsAffiches, spaceAffiche } from './etat'
+import {
+  afficherSpace,
+  changer,
+  ongletAffiche,
+  ongletsAffiches,
+  rendreVisible,
+  spaceAffiche,
+  spacesVisiblesUi
+} from './etat'
 import {
   afficherOnglet,
   fermerOngletAffiche,
   nouvelOnglet,
   renommerOngletEnPlace
 } from './barre-onglets'
-import { renommerSpaceEnPlace } from './colonne'
+import { lignesAgents, nouveauSpace, renommerSpaceEnPlace } from './colonne'
+import { dialogueOuvert } from './dialogue'
 import { chercher, enregistrer, fichierAffiche } from './editeur'
 import { basculerColonne } from './fenetre'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
@@ -18,6 +28,7 @@ import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
 // Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
 export function choisirPlace(p: PlaceAgent): void {
   oublierClavier()
+  rendreVisible(p.space)
   changer((e) => {
     e.space = p.space
     e.onglet = { type: 'terminal', id: p.onglet }
@@ -41,7 +52,6 @@ function terminalActuel(): string | null {
 }
 
 function executer(a: ActionClavier): void {
-  const e = etat()
   switch (a.type) {
     case 'onglet.nouveau':
       void nouvelOnglet()
@@ -60,19 +70,22 @@ function executer(a: ActionClavier): void {
       return
     }
     case 'space.n': {
-      const s = e.vue.spaces[a.n - 1]
+      const s = spacesVisiblesUi()[a.n - 1]
       if (s) afficherSpace(s.id)
       return
     }
+    case 'space.nouveau':
+      void nouveauSpace()
+      return
     case 'space.voisin': {
-      const liste = e.vue.spaces
+      const liste = spacesVisiblesUi()
       if (!liste.length) return
       const i = liste.findIndex((s) => s.id === spaceAffiche()?.id)
       afficherSpace(liste[(i + a.pas + liste.length) % liste.length].id)
       return
     }
     case 'agent.voisin': {
-      const p = agentVoisin(e.vue, terminalActuel(), a.pas)
+      const p = agentVoisin(lignesAgents(), terminalActuel(), a.pas)
       if (p) choisirPlace(p)
       return
     }
@@ -112,6 +125,8 @@ export function brancherClavier(): void {
   window.addEventListener(
     'keydown',
     (ev) => {
+      // Un dialogue ouvert garde le clavier pour lui (voir dialogue.ts).
+      if (dialogueOuvert()) return
       const action = actionDe(ev, cibleDe(document.activeElement))
       if (!action) return
       ev.preventDefault()

@@ -1,8 +1,5 @@
 import { expect, test } from 'vitest'
-import doc from './fixtures/herdr-app.json'
 import {
-  agentVoisin,
-  agents,
   apresFermeture,
   barre,
   fermerFichier,
@@ -12,7 +9,7 @@ import {
   ouvrirFichier,
   type RefOnglet
 } from '../src/shared/onglets'
-import { construireVue, type TerminalCore, type VueOnglet } from '../src/shared/spaces'
+import type { VueOnglet } from '../src/shared/spaces'
 
 const o = (id: string): VueOnglet => ({
   id,
@@ -25,16 +22,6 @@ const liste: RefOnglet[] = [
   { type: 'terminal', id: 'tb2' },
   { type: 'fichier', chemin: '/a.ts' }
 ]
-const vivant = (address: string, etat?: string): TerminalCore => ({
-  address,
-  name: null,
-  title: '',
-  cwd: '/x',
-  state: 'live',
-  status: etat ? { state: etat } : null,
-  foreground: null,
-  labels: {}
-})
 
 test('barre : terminaux puis fichiers', () =>
   expect(barre([o('tb1'), o('tb2')], ['/a.ts'])).toEqual(liste))
@@ -70,19 +57,4 @@ test('memeOnglet', () => {
   )
   expect(memeOnglet({ type: 'terminal', id: 'a' }, { type: 'fichier', chemin: 'a' })).toBe(false)
   expect(memeOnglet(null, null)).toBe(true)
-})
-
-test("agentVoisin suit l'ordre des spaces puis des onglets", () => {
-  const vue = construireVue(doc, [
-    vivant('t2b', 'working'),
-    vivant('t2c'),
-    vivant('t99', 'idle'),
-    vivant('t3', 'done')
-  ])
-  expect(agents(vue).map((a) => a.adresse)).toEqual(['t2b', 't99', 't3'])
-  expect(agents(vue)[1]).toEqual({ space: 'sp1', onglet: 'tb2', panneau: 'p3', adresse: 't99' })
-  expect(agentVoisin(vue, 't2b', 1)?.adresse).toBe('t99')
-  expect(agentVoisin(vue, 't3', 1)?.adresse).toBe('t2b')
-  expect(agentVoisin(vue, 't2b', -1)?.adresse).toBe('t3')
-  expect(agentVoisin(vue, null, 1)?.adresse).toBe('t2b')
 })

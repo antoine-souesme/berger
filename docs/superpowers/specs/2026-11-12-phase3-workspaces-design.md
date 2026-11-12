@@ -82,7 +82,11 @@ git du dépôt du space : la branche, ou « ↑n » quand des commits restent à
 pousser (en vert). Le space affiché est mis en avant. « + » en tête de liste
 crée un space dans le workspace ouvert (un terminal shell dans le dossier
 personnel, comme Herdr). Workspace vide : un bouton « Nouveau space ».
-Glisser une ligne la déplace dans l'ordre du workspace.
+Glisser une ligne la déplace dans l'ordre du workspace. Clic droit sur une
+ligne (ajouté le 12 novembre 2026 à la demande d'Antoine) : « Renommer »
+(`⇧F2`, renommage sur place), séparateur, « Supprimer », qui demande
+« Supprimer « Nom » ? » / « Ses terminaux et leurs agents seront fermés. »
+puis ferme réellement le space (ses terminaux).
 
 **Liste des agents.** Les agents des spaces du workspace ouvert. Chaque ligne :
 icône du programme, nom du space, titre de l'agent en gris, depuis combien de
@@ -90,12 +94,10 @@ temps il est dans son état, l'état (jaune au travail, rose t'attend, vert
 fini). Le bouton en tête change le tri : « Ordre des spaces » (groupés par
 space dans l'ordre de la liste) ou par urgence. Les sous-agents se rangent sous
 leur parent, en arbre : ceux lancés par `hc run` (le core donne leur
-`parent`) et ceux que Claude Code lance en lui-même, que ses hooks posent en
-étiquettes `antoine.sub.<id>` sur son terminal (règles dans
-`~/.config/herdr-app/mods/antoine-agents/subs.js`). Clic sur un agent : Berger
-ouvre son space, son onglet et donne le clavier à son terminal ; un clic sur un
-sous-agent de hook (sans terminal à lui) mène au terminal de son parent.
-`⌘]` / `⌘[` suivent l'ordre de cette liste et sautent les sous-agents de hook.
+`parent`). Clic sur un agent : Berger ouvre son space, son onglet et donne le
+clavier à son terminal ; un clic sur un sous-agent sans panneau à lui mène au
+terminal de son parent. `⌘]` / `⌘[` suivent l'ordre de cette liste et sautent
+les sous-agents sans panneau.
 
 **Raccourcis.** `⌃1` … `⌃9` choisissent le n-ième space du workspace ouvert ;
 `⌥⌘]` / `⌥⌘[` passent au space suivant / précédent dans le workspace ;
@@ -103,7 +105,9 @@ sous-agent de hook (sans terminal à lui) mène au terminal de son parent.
 
 ## Hors périmètre
 
-Explorateur et fichiers (phase 4), recherche dans le projet (phase 5), autres
+Les sous-agents que Claude Code lance en lui-même (étiquettes `antoine.sub.<id>`
+posées par ses hooks, retirés le 12 novembre 2026 : peut-être plus tard),
+explorateur et fichiers (phase 4), recherche dans le projet (phase 5), autres
 machines (phase 6), synchronisation des workspaces avec Herdr au-delà de la
 reprise initiale, partage des workspaces entre plusieurs ordinateurs.
 
@@ -121,7 +125,7 @@ reprise initiale, partage des workspaces entre plusieurs ordinateurs.
 Les règles pures du mod `antoine` et leurs tests
 (`~/dev/playground/herdr-app-mod/tests/`) : `workspaces.js` (création,
 suppression, déplacement, rapprochement avec les spaces, état d'un workspace,
-spaces visibles) et `subs.js` du mod `antoine-agents`. Les noter dans
+spaces visibles). Les noter dans
 `docs/COPIES.md`. Le mod suit l'espace affiché par Herdr (`reconcile`, `seen`,
 `hold`) parce qu'il vit dans Herdr ; Berger choisit lui-même le space affiché :
 ne reprendre que ce qui sert.
@@ -140,5 +144,5 @@ utile).
 Antoine lance Berger pour la première fois et retrouve ses workspaces de
 Herdr ; il passe de l'un à l'autre et ne voit que leurs spaces et agents ;
 il crée, renomme, change l'emoji, déplace et supprime un workspace de test ;
-un clic sur un agent l'amène à son terminal ; les sous-agents de Claude Code
-s'affichent sous leur parent pendant qu'ils tournent ; `npm test` passe.
+un clic sur un agent l'amène à son terminal ; les sous-agents lancés par
+`hc run` s'affichent sous leur parent pendant qu'ils tournent ; `npm test` passe.

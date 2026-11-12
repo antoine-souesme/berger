@@ -13,6 +13,7 @@ import { brancherActions } from './actions'
 import { brancherEtat } from './etat'
 import { poserMenu } from './menu'
 import { jouerScenario } from './scenario'
+import { brancherWorkspaces } from './workspaces'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
@@ -107,16 +108,25 @@ app.whenReady().then(() => {
     etatConnexion = etat
     envoyerA(fenetre, 'berger:connexion', { etat })
   })
-  const vueActuelle = suivreLaVue(coeur, (vue) => envoyerA(fenetre, 'berger:vue', vue))
+  brancherFichiers(coeur, () => fenetre)
+  const actions = brancherActions(coeur, () => fenetre)
+  const workspaces = brancherWorkspaces({
+    envoyer: (e) => envoyerA(fenetre, 'berger:workspaces', e),
+    fermerSpaces: actions.fermerSpaces
+  })
+  const vueActuelle = suivreLaVue(
+    coeur,
+    (vue) => envoyerA(fenetre, 'berger:vue', vue),
+    workspaces.rapprocher
+  )
   // La fenêtre demande l'état courant au chargement (elle a pu rater les envois).
   ipcMain.handle('berger:etat', () => ({
     connexion: etatConnexion,
     vue: vueActuelle(),
-    maison: homedir()
+    maison: homedir(),
+    workspaces: workspaces.actuel()
   }))
   void coeur.demarrer()
-  brancherFichiers(coeur, () => fenetre)
-  brancherActions(coeur, () => fenetre)
   const etat = brancherEtat()
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
@@ -140,6 +150,7 @@ app.whenReady().then(() => {
     // Les terminaux sont détachés, jamais tués : ils continuent dans Herdr.
     terminaux.detacherTout()
     etat.vider()
+    workspaces.vider()
     fermetureAccordee = true
     fenetre?.close()
     if (quitter) app.quit()
@@ -147,6 +158,7 @@ app.whenReady().then(() => {
   app.on('before-quit', () => {
     quitter = true
     etat.vider()
+    workspaces.vider()
   })
 
   // Vérification sans clic (développement) : BERGER_OUVRIR=<adresse> ouvre ce

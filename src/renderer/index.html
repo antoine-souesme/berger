@@ -15,6 +15,24 @@
       <section id="explorateur" class="bande">
         <header class="entete"><span class="titre-bande">Explorateur</span></header>
         <input id="filtre" placeholder="Filtrer les fichiers…" spellcheck="false" />
+        <div id="explorateur-vide" hidden>
+          <svg
+            width="28"
+            height="28"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#75715e"
+            stroke-width="1.75"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path
+              d="m6 14 1.5-2.9A2 2 0 0 1 9.24 10H20a2 2 0 0 1 1.94 2.5l-1.54 6a2 2 0 0 1-1.95 1.5H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h3.9a2 2 0 0 1 1.69.9l.81 1.2a2 2 0 0 0 1.67.9H18a2 2 0 0 1 2 2v2"
+            ></path>
+          </svg>
+          <span>Aucun space dans ce workspace</span>
+        </div>
         <div id="explorateur-message" hidden></div>
         <div id="liste-fichiers"></div>
       </section>
@@ -42,10 +60,33 @@
             >Berger</span
           >
         </header>
-        <div class="titre-section">Spaces</div>
-        <div id="liste-spaces"></div>
-        <div class="titre-section">Agents</div>
-        <div id="liste-agents"></div>
+        <div class="section-spaces">
+          <div class="titre-section">
+            Spaces<button id="nouveau-space" aria-label="Nouveau space" title="Nouveau space">
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.75"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                aria-hidden="true"
+              >
+                <path d="M5 12h14"></path>
+                <path d="M12 5v14"></path>
+              </svg>
+            </button>
+          </div>
+          <div id="liste-spaces"></div>
+        </div>
+        <div class="section-agents">
+          <div class="titre-section">
+            Agents<button id="tri-agents" aria-label="Trier les agents"></button>
+          </div>
+          <div id="liste-agents"></div>
+        </div>
       </section>
       <div class="separateur" data-largeur="spaces"></div>
     </aside>
@@ -54,6 +95,27 @@
       <div id="barre-onglets"></div>
       <div id="contenu">
         <div id="zone-terminaux"></div>
+        <div id="workspace-vide" class="panneau" hidden>
+          <svg width="56" height="56" viewBox="9 13 48 36" aria-hidden="true" style="opacity: 0.35">
+            <g fill="#f8f8f2">
+              <circle cx="20" cy="32" r="9"></circle>
+              <circle cx="29" cy="25" r="10"></circle>
+              <circle cx="38" cy="30" r="9"></circle>
+              <circle cx="25" cy="39" r="8"></circle>
+              <circle cx="35" cy="39" r="8"></circle>
+            </g>
+            <rect x="38" y="24" width="17" height="19" rx="6" fill="#414339"></rect>
+            <path
+              d="M43.5 30l4 3.5-4 3.5"
+              fill="none"
+              stroke="#a6e22e"
+              stroke-width="3.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            ></path>
+          </svg>
+          <span id="workspace-vide-texte"></span>
+        </div>
         <div id="zone-fichier" class="panneau" hidden>
           <div class="bandeau" id="fichier-bandeau"></div>
           <div id="editeur"></div>

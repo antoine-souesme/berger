@@ -1,10 +1,13 @@
 import { dialog, ipcMain, type BrowserWindow } from 'electron'
+import { homedir } from 'os'
 import type { Coeur } from './coeur'
 import { ecrireDoc } from './ecriture'
 import { appliquer, idHerdr, placeDe, terminauxRetires, type Action } from '../shared/document'
 import type { Sens } from '../shared/arbre'
 
 export type DemandeStructure =
+  | { type: 'space.nouveau' }
+  | { type: 'space.fermer'; space: string }
   | { type: 'onglet.nouveau'; space: string; dossier: string }
   | {
       type: 'panneau.diviser'
@@ -21,7 +24,8 @@ export type DemandeStructure =
       { type: 'onglet.renommer' | 'space.renommer' | 'panneau.echanger' | 'panneau.poids' }
     >
 
-export type ReponseStructure = { ok: true; panneau?: string; onglet?: string } | { erreur: string }
+export type ReponseStructure =
+  { ok: true; panneau?: string; onglet?: string; space?: string } | { erreur: string }
 
 const trace = (texte: string): void => {
   if (process.env['BERGER_TRACE']) console.log(`[berger] ${texte}`)
@@ -30,7 +34,10 @@ const trace = (texte: string): void => {
 // Les actions de structure demandées par la fenêtre : créer, renommer,
 // découper, échanger, fermer. Berger fait le travail des commandes de Herdr
 // lui-même : il lance les terminaux et écrit le document `herdr-app`.
-export function brancherActions(coeur: Coeur, fenetre: () => BrowserWindow | null): void {
+export function brancherActions(
+  coeur: Coeur,
+  fenetre: () => BrowserWindow | null
+): { fermerSpaces: (ids: string[]) => Promise<void> } {
   const requete = (methode: string, params: object): Promise<unknown> => {
     if (!coeur.requetes) return Promise.reject(new Error('Déconnecté de herdr-core.'))
     return coeur.requetes.requete(methode, params)
@@ -68,12 +75,12 @@ export function brancherActions(coeur: Coeur, fenetre: () => BrowserWindow | nul
   const ecrireEtPlacer = async (
     action: Action,
     adresse: string
-  ): Promise<{ onglet: string; panneau: string }> => {
+  ): Promise<{ space: string; onglet: string; panneau: string }> => {
     try {
       await ecrireDoc(requete, action)
       const place = placeDe(await lireDoc(), adresse)
       if (!place) throw new Error("le terminal n'a pas trouvé sa place (onglet ou panneau disparu)")
-      return { onglet: place.onglet, panneau: place.panneau }
+      return place
     } catch (e) {
       await tuer(adresse)
       throw e
@@ -91,8 +98,51 @@ export function brancherActions(coeur: Coeur, fenetre: () => BrowserWindow | nul
     await ecrireDoc(requete, action)
   }
 
+  // Les spaces créés par ce lancement de Berger (seuls fermables pendant un scénario).
+  const crees = new Set<string>()
+
+  // Fermer des spaces (suppression d'un workspace) : pour chacun, les terminaux
+  // que sa fermeture retire vraiment, tués avant l'écriture, comme `fermer`.
+  const fermerSpaces = async (ids: string[]): Promise<void> => {
+    for (const space of ids) {
+      if (
+        process.env['BERGER_SCENARIO'] &&
+        !crees.has(space) &&
+        !space.startsWith('spbergertest')
+      ) {
+        console.log(`[berger] fermeture refusée : ${space} (scénario)`)
+        continue
+      }
+      try {
+        const action: Action = { type: 'space.fermer', space }
+        const doc = await lireDoc()
+        for (const adresse of terminauxRetires(doc, appliquer(doc, action))) await tuer(adresse)
+        await ecrireDoc(requete, action)
+        trace(`space fermé ${space}`)
+      } catch (e) {
+        console.error(`[berger] fermeture du space ${space} impossible :`, (e as Error).message)
+      }
+    }
+  }
+
   const traiter = async (d: DemandeStructure): Promise<ReponseStructure> => {
     switch (d.type) {
+      case 'space.nouveau': {
+        // Un terminal shell dans le dossier personnel, comme Herdr.
+        const space = idHerdr('sp')
+        const onglet = idHerdr('tb')
+        crees.add(space)
+        const adresse = await lancer(space, onglet, homedir())
+        const place = await ecrireEtPlacer(
+          { type: 'space.nouveau', space, onglet, panneau: idHerdr('p'), adresse },
+          adresse
+        )
+        crees.add(place.space)
+        return { ok: true, ...place }
+      }
+      case 'space.fermer':
+        await fermerSpaces([d.space])
+        return { ok: true }
       case 'onglet.nouveau': {
         const onglet = idHerdr('tb')
         const adresse = await lancer(d.space, onglet, d.dossier)
@@ -175,4 +225,6 @@ export function brancherActions(coeur: Coeur, fenetre: () => BrowserWindow | nul
       : await dialog.showMessageBox(options)
     return response
   })
+
+  return { fermerSpaces }
 }

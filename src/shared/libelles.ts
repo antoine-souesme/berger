@@ -73,3 +73,17 @@ export function plusPressant(etats: EtatAgent[]): EtatAgent {
   for (const e of ['attente', 'travail', 'fini'] as const) if (etats.includes(e)) return e
   return null
 }
+
+// Le titre d'un agent : celui qu'il donne dans son état, sinon le titre du
+// terminal sans ses signes de tête (`✳ Tests` → `Tests`). Jamais un chemin,
+// `utilisateur@machine` ni le nom du programme.
+export function titreAgent(t: TerminalCore): string {
+  const duStatut = t.status?.title?.trim()
+  if (duStatut) return duStatut
+  const brut = t.title ?? ''
+  const chemin = /^[~/]/.test(brut.replace(/^[^\p{L}\p{N}~/]+/u, ''))
+  const titre = brut.replace(/^[^\p{L}\p{N}]+/u, '').trim()
+  if (!titre || chemin || titre.includes('@')) return ''
+  const prog = programme(t).nom
+  return titre === prog || titre.toLowerCase() === prog.toLowerCase() ? '' : titre
+}

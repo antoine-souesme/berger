@@ -178,3 +178,52 @@ test('placeDe : onglet et panneau qui contiennent un terminal', () => {
   expect(placeDe(doc, 't2c')).toEqual({ space: 'sp1', onglet: 'tb1', panneau: 'p2' })
   expect(placeDe(doc, 'tZ')).toBeNull()
 })
+
+test('space.nouveau ajoute un space à la fin, avec un onglet et un panneau', () => {
+  const action: Action = {
+    type: 'space.nouveau',
+    space: 'spN',
+    onglet: 'tbN',
+    panneau: 'pN',
+    adresse: 't7'
+  }
+  const d = appliquer(mods, action) as any
+  expect(d.spaces.map((s: any) => s.id)).toEqual([
+    ...(mods as any).spaces.map((s: any) => s.id),
+    'spN'
+  ])
+  expect(d.spaces.at(-1)).toEqual({
+    id: 'spN',
+    name: '',
+    tabs: [
+      {
+        id: 'tbN',
+        name: '',
+        root: {
+          type: 'row',
+          id: 'tbN',
+          children: [{ type: 'block', id: 'pN', content: { terminal: 't7' }, size: { weight: 1 } }]
+        }
+      }
+    ]
+  })
+  // Ce que Berger ne comprend pas est gardé tel quel.
+  ;(mods as any).spaces.forEach((s: any, i: number) => expect(d.spaces[i]).toBe(s))
+  for (const k of Object.keys(mods)) if (k !== 'spaces') expect(d[k]).toBe((mods as any)[k])
+})
+
+test('space.nouveau ne change rien si le terminal est déjà rangé ou le space existe', () => {
+  const base = { type: 'space.nouveau', onglet: 'tbN', panneau: 'pN' } as const
+  expect(appliquer(doc, { ...base, space: 'spN', adresse: 't2b' })).toBe(doc)
+  expect(appliquer(doc, { ...base, space: 'sp1', adresse: 't7' })).toBe(doc)
+})
+
+test('space.fermer retire le space et rend tous ses terminaux', () => {
+  const d = appliquer(doc, { type: 'space.fermer', space: 'sp1' }) as any
+  expect(d.spaces.map((s: any) => s.id)).toEqual(['sp2'])
+  expect(d.spaces[0]).toBe(doc.spaces[1])
+  expect(terminauxRetires(doc, d)).toEqual(['t2b', 't2c', 't99'])
+  expect(appliquer(doc, { type: 'space.fermer', space: 'inconnu' })).toBe(doc)
+})
+
+test('idHerdr accepte sp', () => expect(idHerdr('sp')).toMatch(/^sp[0-9a-f]{32}$/))

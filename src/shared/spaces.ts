@@ -7,6 +7,7 @@ import {
   nomOnglet,
   plusPressant,
   programme,
+  titreAgent,
   type EtatAgent,
   type Icone
 } from './libelles'
@@ -17,7 +18,11 @@ export type TerminalCore = {
   title: string
   cwd: string
   state: string
-  status?: { state: string; app?: string } | null
+  status?: { state: string; app?: string; title?: string } | null
+  /** Quand le mot d'état a changé pour la dernière fois (ms). */
+  status_ms?: number | null
+  /** Le terminal qui l'a lancé (`hc run`). */
+  parent?: string | null
   foreground?: { cwd: string; name?: string; argv?: string[] } | null
   labels: Record<string, string>
   argv?: string[]
@@ -34,6 +39,10 @@ export type VueTerminal = {
   agent: EtatAgent
   vivant: boolean
   clicsDroitsAuProgramme: boolean
+  parent: string | null
+  /** Depuis quand il est dans son état (ms), null si inconnu. */
+  depuis: number | null
+  titre: string
 }
 export type VueOnglet = { id: string; nom: string; racine: Noeud; agent: EtatAgent }
 export type VueSpace = {
@@ -41,6 +50,8 @@ export type VueSpace = {
   nom: string
   dossier: string
   branche?: string
+  /** Commits à pousser vers l'amont. */
+  aPousser?: number
   onglets: VueOnglet[]
   terminaux: VueTerminal[]
 }
@@ -91,6 +102,7 @@ export function dossierDuSpace(space: SpaceDoc, terminaux: Map<string, TerminalC
 function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
   const prog = programme(t)
   const cwd = t.foreground?.cwd || t.cwd || ''
+  const vivant = t.state === 'live'
   return {
     adresse: t.address,
     libelle: t.name || prog.nom,
@@ -99,8 +111,11 @@ function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
     dossier: dossierAffiche(cwd, maison),
     cwd,
     agent: etatAgent(t),
-    vivant: t.state === 'live',
-    clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program'
+    vivant,
+    clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program',
+    parent: t.parent ?? null,
+    depuis: typeof t.status_ms === 'number' ? t.status_ms : null,
+    titre: titreAgent(t)
   }
 }
 

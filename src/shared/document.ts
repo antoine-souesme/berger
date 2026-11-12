@@ -18,6 +18,8 @@ export type Action =
   | { type: 'onglet.renommer'; space: string; onglet: string; nom: string }
   | { type: 'onglet.fermer'; space: string; onglet: string }
   | { type: 'space.renommer'; space: string; nom: string }
+  | { type: 'space.nouveau'; space: string; onglet: string; panneau: string; adresse: string }
+  | { type: 'space.fermer'; space: string }
   | {
       type: 'panneau.diviser'
       space: string
@@ -37,7 +39,7 @@ type SpaceDoc = { id: string; name?: string; tabs?: OngletDoc[]; [cle: string]: 
 type Doc = { spaces?: SpaceDoc[]; [cle: string]: unknown }
 
 export function idHerdr(
-  prefixe: 'tb' | 'p' | 's',
+  prefixe: 'sp' | 'tb' | 'p' | 's',
   hasard: () => string = () => {
     const octets = new Uint8Array(16)
     globalThis.crypto.getRandomValues(octets)
@@ -130,38 +132,44 @@ function blocDe(racine: Noeud, adresse: string): Bloc | undefined {
   return feuilles(racine).find((f) => f.content?.terminal === adresse)
 }
 
+// Un onglet neuf d'un seul panneau, comme `tab.new` de Herdr.
+const ongletNeuf = (onglet: string, panneau: string, adresse: string): OngletDoc => ({
+  id: onglet,
+  name: '',
+  root: {
+    type: 'row',
+    id: onglet,
+    children: [{ type: 'block', id: panneau, content: { terminal: adresse }, size: { weight: 1 } }]
+  }
+})
+
+const dejaRange = (doc: Doc, adresse: string): boolean =>
+  (doc.spaces ?? []).some((s) => (s.tabs ?? []).some((o) => terminauxDe(o.root).includes(adresse)))
+
 export function appliquer(docBrut: unknown, action: Action): unknown {
   if (!docBrut || typeof docBrut !== 'object') return docBrut
   const doc = docBrut as Doc
   switch (action.type) {
-    case 'onglet.nouveau': {
-      const dejaRange = (doc.spaces ?? []).some((s) =>
-        (s.tabs ?? []).some((o) => terminauxDe(o.root).includes(action.adresse))
-      )
-      if (dejaRange) return doc
+    case 'onglet.nouveau':
+      if (dejaRange(doc, action.adresse)) return doc
       return changerSpace(doc, action.space, (s) => ({
         ...s,
-        tabs: [
-          ...(s.tabs ?? []),
-          {
-            id: action.onglet,
-            name: '',
-            root: {
-              type: 'row',
-              id: action.onglet,
-              children: [
-                {
-                  type: 'block',
-                  id: action.panneau,
-                  content: { terminal: action.adresse },
-                  size: { weight: 1 }
-                }
-              ]
-            }
-          }
-        ]
+        tabs: [...(s.tabs ?? []), ongletNeuf(action.onglet, action.panneau, action.adresse)]
       }))
-    }
+    case 'space.nouveau':
+      // Herdr a pu adopter le terminal avant nous : on ne le double pas.
+      if (dejaRange(doc, action.adresse)) return doc
+      if ((doc.spaces ?? []).some((s) => s.id === action.space)) return doc
+      return avecSpaces(doc, [
+        ...(doc.spaces ?? []),
+        {
+          id: action.space,
+          name: '',
+          tabs: [ongletNeuf(action.onglet, action.panneau, action.adresse)]
+        }
+      ])
+    case 'space.fermer':
+      return changerSpace(doc, action.space, () => null)
     case 'onglet.renommer':
       return changerOnglet(doc, action.space, action.onglet, (o) =>
         o.name === action.nom.trim() ? o : { ...o, name: action.nom.trim() }

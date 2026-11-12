@@ -48,7 +48,6 @@ body {
 #workspaces {
   width: 76px;
   flex-shrink: 0;
-  border-right: 1px solid var(--bord);
   -webkit-app-region: drag;
 }
 .bande {
@@ -142,19 +141,52 @@ body {
 .fichier:hover {
   background: var(--panneau);
 }
+.section-spaces,
+.section-agents {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 10px;
+}
+.section-agents {
+  padding: 12px 10px;
+  border-top: 1px solid var(--bord);
+}
 .titre-section {
-  padding: 8px 18px 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 28px;
+  flex-shrink: 0;
+  padding: 0 8px;
   color: var(--gris-clair);
   font-size: 12px;
 }
-#liste-spaces {
-  padding: 0 10px 12px;
-  border-bottom: 1px solid var(--bord);
-  margin-bottom: 4px;
+.titre-section button {
+  width: 22px;
+  height: 22px;
+  margin-right: -4px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  background: none;
+  color: var(--gris-clair);
+  cursor: pointer;
+  padding: 0;
 }
+.titre-section button:hover {
+  background: var(--panneau);
+  color: var(--vif);
+}
+#liste-spaces,
 #liste-agents {
-  padding: 0 10px;
   flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   overflow: auto;
 }
 .ligne-space,
@@ -162,15 +194,21 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  height: 32px;
+  height: 34px;
+  flex-shrink: 0;
   padding: 0 8px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   white-space: nowrap;
+  position: relative;
 }
 .ligne-agent {
-  gap: 6px;
-  height: 30px;
+  gap: 8px;
+  height: 32px;
+}
+.ligne-space.glisse {
+  z-index: 3;
+  background: var(--actif);
 }
 .ligne-space:hover,
 .ligne-agent:hover {
@@ -180,9 +218,18 @@ body {
 .ligne-agent.choisi {
   background: var(--actif);
 }
-.ligne-space .nom,
+.ligne-space .nom {
+  color: var(--texte);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ligne-space.choisi .nom,
 .ligne-agent .nom {
   color: var(--vif);
+}
+.ligne-agent .nom {
+  flex-shrink: 0;
+  max-width: 50%;
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -192,18 +239,110 @@ body {
 .ligne-space .branche {
   font-size: 12px;
 }
-.ligne-agent .gris {
+.ligne-agent .titre-agent {
   flex: 1;
+  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
+  color: var(--gris);
+}
+.ligne-agent .duree,
+.ligne-space .branche {
+  font-size: 12px;
+  color: var(--gris);
+  flex-shrink: 0;
+}
+.a-pousser {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 12px;
+  color: #a6e22e;
+  flex-shrink: 0;
+}
+.point-attente {
+  width: 8px;
+  height: 8px;
+  margin: 0 2.5px;
+  border-radius: 50%;
+  background: #f92672;
+  flex-shrink: 0;
+}
+/* Sous-agents : retrait de 39 px, traits de l'arbre (repris du mod antoine-agents). */
+.ligne-agent.sous-agent {
+  height: 26px;
+  padding-left: 39px;
+  gap: 0;
+  font-size: 12.5px;
+}
+.ligne-agent.sous-agent .titre-agent {
+  margin-left: 0;
+}
+.ligne-agent.sous-agent .duree {
+  margin-right: 6px;
+  font-size: 11px;
+}
+.trait-arbre {
+  align-self: flex-start;
+  margin-top: -4px;
+  width: 9px;
+  height: 17px;
+  margin-right: 4px;
+  flex-shrink: 0;
+}
+.trait-arbre.ligne {
+  border-left: 1.5px solid var(--actif);
+}
+.trait-arbre.coin {
+  border-bottom: 1.5px solid var(--actif);
+  border-bottom-left-radius: 6px;
+}
+.nouveau-space {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 34px;
+  margin-top: 4px;
+  flex-shrink: 0;
+  border-radius: 8px;
+  border: 1px dashed var(--actif);
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+}
+.nouveau-space:hover {
+  color: var(--vif);
+}
+.aucun-agent {
+  padding: 6px 8px;
+  color: var(--gris);
+}
+#explorateur-vide {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 24px 80px;
+  text-align: center;
+  color: var(--gris);
+}
+#workspace-vide {
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: var(--gris);
 }
 .etat-agent {
   font-size: 12px;
 }
 .pastille {
-  width: 18px;
-  height: 18px;
-  border-radius: 4px;
+  width: 20px;
+  height: 20px;
+  border-radius: 5px;
   flex-shrink: 0;
   display: grid;
   place-items: center;
@@ -482,4 +621,210 @@ body {
    rester plein, sinon la fin des lignes longues se lit à travers. */
 #editeur .monaco-editor .minimap {
   background: var(--panneau);
+}
+
+/* Barre des workspaces (maquettes vue-principale.html et workspaces.html) */
+#workspaces {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding: 52px 0 16px;
+  box-sizing: border-box;
+}
+#workspaces button {
+  -webkit-app-region: no-drag;
+  width: 38px;
+  height: 38px;
+  flex-shrink: 0;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+}
+#workspaces .outil {
+  display: grid;
+  place-items: center;
+  cursor: default;
+}
+#workspaces .outil.actif {
+  background: var(--actif);
+  color: var(--vif);
+}
+#workspaces .outil.nouveau {
+  background: var(--actif);
+  color: #a6e22e;
+  cursor: pointer;
+}
+.trait-workspaces {
+  width: 28px;
+  height: 1px;
+  margin: 4px 0;
+  background: var(--bord);
+  flex-shrink: 0;
+}
+#workspaces .workspace {
+  font-size: 18px;
+  line-height: 38px;
+  opacity: 0.6;
+}
+#workspaces .workspace:hover {
+  opacity: 1;
+  background: var(--panneau);
+}
+#workspaces .workspace.ouvert {
+  opacity: 1;
+  background: var(--actif);
+  box-shadow: inset 0 0 0 1.5px #a6e22e;
+}
+#workspaces .workspace.glisse {
+  z-index: 3;
+  opacity: 1;
+  background: var(--actif);
+}
+.pastille-etat {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--fond);
+}
+#workspaces .espace {
+  flex: 1;
+}
+
+/* Menus : entrée rose, entrée grisée */
+.menu .entree.danger {
+  color: #f92672;
+}
+.menu .entree.danger:hover {
+  color: #f92672;
+}
+.menu .entree.inactif {
+  opacity: 0.4;
+  cursor: default;
+}
+.menu .entree.inactif:hover {
+  background: none;
+}
+
+/* Dialogues (maquette workspaces.html) */
+.voile {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: grid;
+  place-items: center;
+  background: #0e0f0dad;
+}
+.dialogue {
+  width: 420px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 20px;
+  border-radius: 12px;
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  box-shadow: 0 24px 60px #000000a0;
+}
+.titre-dialogue {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--vif);
+}
+.texte-dialogue {
+  font-size: 13px;
+  line-height: 20px;
+  color: var(--gris-clair);
+}
+.champs-dialogue {
+  display: flex;
+  gap: 12px;
+}
+.champ-dialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+.champ-dialogue.nom {
+  flex: 1;
+}
+.champ-dialogue .saisie {
+  height: 34px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  color: var(--vif);
+  font: inherit;
+  font-size: 13px;
+  padding: 0 10px;
+  outline: none;
+  user-select: text;
+}
+.champ-dialogue.emoji .saisie {
+  width: 48px;
+  padding: 0;
+  text-align: center;
+  font-size: 18px;
+}
+.champ-dialogue .saisie:focus {
+  border-color: var(--clavier);
+}
+.pied-dialogue {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
+}
+.pied-dialogue .espace {
+  flex: 1;
+}
+.aide-dialogue {
+  font-size: 12px;
+  color: var(--gris);
+}
+.aide-dialogue kbd {
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11px;
+  padding: 1px 5px;
+  border: 1px solid var(--bord);
+  border-radius: 4px;
+}
+.bouton-dialogue {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: 8px;
+  border: 1px solid var(--bord);
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  cursor: pointer;
+}
+.bouton-dialogue.principal {
+  border-color: transparent;
+  background: var(--actif);
+  color: #a6e22e;
+  font-weight: 600;
+}
+.bouton-dialogue.principal.danger {
+  background: #f9267224;
+  border: 1px solid #f9267266;
+  color: #f92672;
+}
+
+.menu[aria-label='Actions du workspace'] {
+  min-width: 220px;
+  width: 220px;
+  box-sizing: border-box;
 }

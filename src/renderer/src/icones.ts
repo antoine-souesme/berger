@@ -1,42 +1,65 @@
 // Icônes de l'interface, tirées du paquet `lucide` (ISC, voir docs/COPIES.md).
 import {
+  ArrowUp,
   Bot,
+  Check,
   ChevronRight,
+  Clock,
   Columns2,
   File,
+  Files,
+  Folder,
   GitBranch,
+  LoaderCircle,
   Maximize2,
   Monitor,
   Pencil,
   Plus,
   Puzzle,
   Rows2,
+  Search,
+  Smile,
   SquareTerminal,
   Terminal,
+  Trash2,
   X,
   type IconNode
 } from 'lucide'
 
 const ICONES: Record<string, IconNode> = {
+  'arrow-up': ArrowUp,
   bot: Bot,
+  check: Check,
   'chevron-right': ChevronRight,
+  clock: Clock,
   'columns-2': Columns2,
   file: File,
+  files: Files,
+  folder: Folder,
   'git-branch': GitBranch,
+  'loader-circle': LoaderCircle,
   'maximize-2': Maximize2,
   monitor: Monitor,
   pencil: Pencil,
   plus: Plus,
   puzzle: Puzzle,
   'rows-2': Rows2,
+  search: Search,
+  smile: Smile,
   'square-terminal': SquareTerminal,
   terminal: Terminal,
+  'trash-2': Trash2,
   x: X
 }
 
 const SVG = 'http://www.w3.org/2000/svg'
 
-export function icone(nom: string, couleur = 'currentColor', taille = 14): SVGElement {
+export function icone(
+  nom: string,
+  couleur = 'currentColor',
+  taille = 14,
+  epaisseur = 2
+): SVGElement {
   const svg = document.createElementNS(SVG, 'svg')
   const attributs: Record<string, string> = {
     width: String(taille),
@@ -44,7 +67,7 @@ export function icone(nom: string, couleur = 'currentColor', taille = 14): SVGEl
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: couleur,
-    'stroke-width': '2',
+    'stroke-width': String(epaisseur),
     'stroke-linecap': 'round',
     'stroke-linejoin': 'round',
     class: 'icone'

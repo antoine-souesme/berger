@@ -4,6 +4,13 @@
 import { ETAT_PAR_DEFAUT, type EtatFenetre } from '../../shared/etat-fenetre'
 import { barre, memeOnglet, type RefOnglet } from '../../shared/onglets'
 import { VUE_VIDE, type Vue, type VueSpace } from '../../shared/spaces'
+import {
+  ouvrir,
+  spacesVisibles,
+  workspaceDe,
+  type EtatWorkspaces,
+  type Workspace
+} from '../../shared/workspaces'
 
 export type EtatUi = EtatFenetre & {
   vue: Vue
@@ -12,6 +19,7 @@ export type EtatUi = EtatFenetre & {
   agrandi: Record<string, string> // onglet → panneau agrandi
   modifies: Set<string> // fichiers non enregistrés
   ongletParSpace: Record<string, RefOnglet> // dernier onglet affiché de chaque space
+  workspaces: EtatWorkspaces | null // null tant que le processus principal ne les a pas lus
 }
 
 const e: EtatUi = {
@@ -21,7 +29,8 @@ const e: EtatUi = {
   focus: {},
   agrandi: {},
   modifies: new Set(),
-  ongletParSpace: {}
+  ongletParSpace: {},
+  workspaces: null
 }
 
 const ecouteurs: ((e: EtatUi) => void)[] = []
@@ -44,7 +53,8 @@ function retenir(): void {
     colonneMasquee: e.colonneMasquee,
     space: spaceAffiche()?.id ?? e.space,
     onglet: a ?? e.onglet,
-    fichiers: e.fichiers
+    fichiers: e.fichiers,
+    triAgents: e.triAgents
   } satisfies EtatFenetre)
 }
 
@@ -75,12 +85,50 @@ export function appliquerEtatRetenu(retenu: EtatFenetre): void {
   redessiner()
 }
 
-export function spaceAffiche(): VueSpace | null {
-  return e.vue.spaces.find((s) => s.id === e.space) ?? e.vue.spaces[0] ?? null
+// Les spaces du workspace ouvert dans son ordre, puis ceux rangés nulle part.
+// Tant que les workspaces ne sont pas lus : tous.
+export function spacesVisiblesUi(): VueSpace[] {
+  if (!e.workspaces) return e.vue.spaces
+  const parId = new Map(e.vue.spaces.map((s) => [s.id, s]))
+  return spacesVisibles(e.workspaces, [...parId.keys()]).map((id) => parId.get(id)!)
 }
 
+export function workspaceOuvert(): Workspace | null {
+  const w = e.workspaces
+  return w ? (w.liste.find((x) => x.id === w.ouvert) ?? w.liste[0] ?? null) : null
+}
+
+// Le space retenu s'il est visible, sinon le premier visible, sinon aucun
+// (workspace vide).
+export function spaceAffiche(): VueSpace | null {
+  const visibles = spacesVisiblesUi()
+  return visibles.find((s) => s.id === e.space) ?? visibles[0] ?? null
+}
+
+type ReponseWorkspace = { etat: EtatWorkspaces; afficher: string | null } | { erreur: string }
+
+// Une demande au processus principal ; rend sa réponse, null en cas d'échec.
+export async function demanderWorkspace(
+  d: object
+): Promise<{ etat: EtatWorkspaces; afficher: string | null } | null> {
+  const r = await window.berger.demander<ReponseWorkspace>('berger:workspace', d)
+  if ('erreur' in r) return null
+  changer((x) => (x.workspaces = r.etat))
+  return r
+}
+
+// Ouvrir un workspace : Berger rouvre le dernier space qu'on y avait choisi.
+export async function ouvrirWorkspace(id: string): Promise<void> {
+  const r = await demanderWorkspace({ type: 'ouvrir', id })
+  if (!r) return
+  if (r.afficher) afficherSpace(r.afficher)
+  else changer((x) => (x.space = null))
+}
+
+// Workspace vide : aucun onglet (les fichiers ouverts reviennent avec un space).
 export function ongletsAffiches(): RefOnglet[] {
-  return barre(spaceAffiche()?.onglets ?? [], e.fichiers)
+  const s = spaceAffiche()
+  return s ? barre(s.onglets, e.fichiers) : []
 }
 
 export function ongletAffiche(): RefOnglet | null {
@@ -92,8 +140,19 @@ export function ongletAffiche(): RefOnglet | null {
   return liste[0] ?? null
 }
 
+// Un space qui n'est pas dans le workspace ouvert : on ouvre le sien.
+export function rendreVisible(id: string): void {
+  const w = e.workspaces
+  if (!w || spacesVisiblesUi().some((s) => s.id === id)) return
+  const sien = workspaceDe(w, id)
+  if (!sien) return
+  e.workspaces = ouvrir(w, sien).etat
+  void window.berger.demander('berger:workspace', { type: 'ouvrir', id: sien })
+}
+
 // Afficher un space : on revient sur son dernier onglet de terminal affiché.
 export function afficherSpace(id: string): void {
+  rendreVisible(id)
   changer((x) => {
     x.space = id
     const retenu = x.ongletParSpace[id]

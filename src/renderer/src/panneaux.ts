@@ -14,6 +14,7 @@ import type { ActionClavier } from '../../shared/raccourcis'
 import type { VueOnglet, VueSpace } from '../../shared/spaces'
 import { changer, etat, ongletAffiche, spaceAffiche } from './etat'
 import { icone } from './icones'
+import { dialogueOuvert } from './dialogue'
 import { ouvrirMenu } from './menus'
 import { aLeClavier, donnerClavier, raisonArret, vueTerminal } from './terminal'
 
@@ -264,7 +265,8 @@ export function dessinerOnglet(space: VueSpace, onglet: VueOnglet): void {
   const adresse = clavier?.content?.terminal
   if (cle !== dernierClavier && adresse) {
     const actif = document.activeElement
-    const occupe = actif instanceof HTMLInputElement && actif.id !== 'filtre'
+    // Un dialogue ouvert ou un champ de saisie gardent le clavier.
+    const occupe = dialogueOuvert() || (actif instanceof HTMLInputElement && actif.id !== 'filtre')
     if (!occupe && !aLeClavier(adresse)) donnerClavier(adresse)
     dernierClavier = cle
   }

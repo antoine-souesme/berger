@@ -16,7 +16,14 @@ test('état complet relu tel quel', () => {
     colonneMasquee: true,
     space: 'sp1',
     onglet: { type: 'fichier', chemin: '/a' },
-    fichiers: ['/a', 3, '/b']
+    fichiers: ['/a', 3, '/b'],
+    triAgents: 'urgence'
   }
   expect(lireEtatFenetre(e)).toEqual({ ...e, fichiers: ['/a', '/b'] })
+})
+
+test('tri des agents retenu, valeur inconnue ramenée à « spaces »', () => {
+  expect(lireEtatFenetre({ triAgents: 'urgence' }).triAgents).toBe('urgence')
+  expect(lireEtatFenetre({ triAgents: 'x' }).triAgents).toBe('spaces')
+  expect(lireEtatFenetre(null).triAgents).toBe('spaces')
 })

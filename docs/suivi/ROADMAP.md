@@ -9,7 +9,7 @@ commence que quand la précédente marche, vue dans l'application lancée.
 | 0 | Preuve de concept | Faite (bilan : `docs/notes/bilan-phase0-poc.md`) |
 | 1 | Maquette et conception globale | Faite (maquettes : `docs/maquettes/`) |
 | 2 | Le cadre de la fenêtre | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase2-cadre.md`) |
-| 3 | Workspaces, spaces et agents | À faire |
+| 3 | Workspaces, spaces et agents | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase3-workspaces.md`) |
 | 4 | Fichiers | À faire |
 | 5 | L'éditeur complet | À faire |
 | 6 | Les autres machines | Remise à plus tard |
@@ -65,7 +65,7 @@ Reprendre l'organisation du mod `antoine`.
 - La liste des spaces filtrée sur le workspace, « Nouveau space » quand il est
   vide.
 - La liste des agents : filtrée, nom du space sur chaque ligne, tri « Ordre des
-  spaces », sous-agents de Claude Code (par les hooks), clic qui ramène au
+  spaces », sous-agents lancés par `hc run`, clic qui ramène au
   terminal.
 
 ## Phase 4 : fichiers

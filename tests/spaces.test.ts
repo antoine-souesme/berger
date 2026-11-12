@@ -103,3 +103,12 @@ test('un space sans dossier garde un dossier vide', () => {
   const sansDossier = { spaces: [{ id: 'sp9', name: 'x', tabs: [] }] }
   expect(construireVue(sansDossier, []).spaces[0].dossier).toBe('')
 })
+
+test('construireVue : parent, depuis et titre repris', () => {
+  const vue = construireVue(doc, [
+    vivant('t2b', { status: { state: 'working', app: 'claude', title: 'Tâche' }, status_ms: 1234 }),
+    vivant('t5', { parent: 't2b' })
+  ])
+  expect(vue.terminaux['t2b']).toMatchObject({ parent: null, depuis: 1234, titre: 'Tâche' })
+  expect(vue.terminaux['t5']).toMatchObject({ parent: 't2b', depuis: null })
+})

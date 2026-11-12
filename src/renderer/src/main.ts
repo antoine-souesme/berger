@@ -30,6 +30,8 @@ import {
 import { adressesDeLOngletAffiche, dessinerOnglet, viderZoneTerminaux } from './panneaux'
 import { initTerminaux, oublierTerminauxSauf } from './terminal'
 import { brancherClavier, choisirPlace } from './clavier'
+import { initWorkspaces } from './workspaces'
+import type { EtatWorkspaces } from '../../shared/workspaces'
 
 initFenetre()
 initBarreEtat()
@@ -53,6 +55,7 @@ function agentsEtTerminaux(): PlaceAgent[] {
 }
 
 brancherClavier()
+initWorkspaces()
 brancherFichiers(fermerFichierAvecQuestion)
 initColonne({ ouvrirFichier: ouvrirUnFichier, choisirAgent: choisirPlace })
 
@@ -83,22 +86,28 @@ surChangement((e) => {
 window.berger.ecouter('berger:connexion', ({ etat: c }) =>
   changer((e) => (e.connecte = c === 'connecte'))
 )
+window.berger.ecouter('berger:workspaces', (w: EtatWorkspaces) => {
+  etat().workspaces = w
+  redessiner()
+})
 window.berger.ecouter('berger:vue', (vue: Vue) => {
   etat().vue = vue
   redessiner()
 })
 
 void (async () => {
-  const { connexion, vue, maison } = await window.berger.demander<{
+  const { connexion, vue, maison, workspaces } = await window.berger.demander<{
     connexion: 'connecte' | 'deconnecte'
     vue: Vue
     maison: string
+    workspaces: EtatWorkspaces | null
   }>('berger:etat')
   initEditeur(maison)
   appliquerEtatRetenu(await window.berger.demander<EtatFenetre>('berger:etat-fenetre'))
   changer((e) => {
     e.connecte = connexion === 'connecte'
     e.vue = vue
+    e.workspaces ??= workspaces
   })
 })()
 
