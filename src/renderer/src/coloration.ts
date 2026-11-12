@@ -1,5 +1,5 @@
 // La coloration de VS Code dans Monaco : les grammaires TextMate de VS Code
-// (copiées par scripts/copier-grammaires.mjs dans public/vscode/), lues par
+// (copiées par scripts/copy-grammars.mjs dans public/vscode/), lues par
 // vscode-textmate et vscode-oniguruma. Le thème de l'éditeur change à chaud
 // (réglages) : les fichiers ouverts sont alors recoloriés.
 import * as monaco from 'monaco-editor'

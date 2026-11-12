@@ -140,9 +140,9 @@ export class ServeursLangage {
       env: l.env ?? process.env,
       stdio: ['pipe', 'pipe', 'pipe']
     })
-    trace(`langage : lancement de ${cle}`)
+    trace(`language: starting ${cle}`)
     enfant.stdin!.on('error', () => {})
-    enfant.stderr!.on('data', (d: Buffer) => trace(`langage ${cle} : ${d.toString().trim()}`))
+    enfant.stderr!.on('data', (d: Buffer) => trace(`language ${cle}: ${d.toString().trim()}`))
     const connexion = createMessageConnection(
       new StreamMessageReader(enfant.stdout!),
       new StreamMessageWriter(enfant.stdin!)
@@ -229,10 +229,10 @@ export class ServeursLangage {
     const liste = (this.arrets.get(p.cle) ?? []).filter((t) => maintenant - t < FENETRE_ARRETS)
     liste.push(maintenant)
     this.arrets.set(p.cle, liste)
-    trace(`langage : arrêt de ${p.cle} (${liste.length} en 5 min)`)
+    trace(`language: ${p.cle} stopped (${liste.length} in 5 min)`)
     if (liste.length >= ARRETS_MAX && !this.abandonnes.has(p.cle)) {
       this.abandonnes.add(p.cle)
-      trace(`langage : ${p.cle} abandonné`)
+      trace(`language: ${p.cle} given up`)
       this.o.arrete(p.serveur)
     }
   }
@@ -250,7 +250,7 @@ export class ServeursLangage {
     const p = this.lancer(serveur, racine, cle)
     this.procs.set(cle, p)
     if (this.deja.has(cle)) {
-      trace(`langage : relance de ${cle}`)
+      trace(`language: restarting ${cle}`)
       p.pret.then(() => this.o.redemarre(cle)).catch(() => {})
     }
     this.deja.add(cle)

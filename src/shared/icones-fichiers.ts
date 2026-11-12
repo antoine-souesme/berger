@@ -1,6 +1,6 @@
 // L'icône Material Icon Theme (MIT, voir src/renderer/public/material/LICENSE)
 // d'un fichier ou d'un dossier. Reprise de `icons.js` du mod `antoine`
-// (voir docs/COPIES.md), la table `material.ts` intégrée.
+//, la table `material.ts` intégrée.
 import material from './material'
 
 export function iconeFichier(nom: string, dossier: boolean, ouvert = false): string {

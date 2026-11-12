@@ -1,5 +1,5 @@
 // Generated from material-icon-theme 5.40.0 (MIT): name -> icon file in icons/material/.
-// Copié tel quel de ~/.config/herdr-app/mods/antoine/material.js (voir docs/COPIES.md).
+// Copié tel quel de ~/.config/herdr-app/mods/antoine/material.js.
 type TableMaterial = {
   file: string
   folder: string

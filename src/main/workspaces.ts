@@ -52,9 +52,9 @@ function lireAuDemarrage(): { etat: EtatWorkspaces | null; herdr: unknown } {
     if (etat) return { etat, herdr: undefined }
     try {
       renameSync(fichier(), fichier() + '.illisible')
-      console.error('[berger] workspaces.json illisible, renommé en workspaces.json.illisible')
+      console.error('[berger] workspaces.json unreadable, renamed to workspaces.json.illisible')
     } catch (e) {
-      console.error('[berger] workspaces.json illisible :', (e as Error).message)
+      console.error('[berger] workspaces.json unreadable:', (e as Error).message)
     }
   }
   let herdr: unknown
@@ -64,7 +64,7 @@ function lireAuDemarrage(): { etat: EtatWorkspaces | null; herdr: unknown } {
   } catch {
     herdr = undefined
   }
-  trace(`premier lancement : workspaces de Herdr ${herdr === undefined ? 'absents' : 'lus'}`)
+  trace(`first launch: Herdr workspaces ${herdr === undefined ? 'missing' : 'read'}`)
   return { etat: null, herdr }
 }
 
@@ -86,7 +86,7 @@ export function brancherWorkspaces(o: {
       mkdirSync(dirname(fichier()), { recursive: true })
       writeFileSync(fichier(), JSON.stringify(etat, null, 2))
     } catch (e) {
-      console.error('[berger] workspaces non enregistrés :', (e as Error).message)
+      console.error('[berger] workspaces not saved:', (e as Error).message)
     }
   }
 
@@ -96,7 +96,7 @@ export function brancherWorkspaces(o: {
     etat = nouveau
     aEcrire = true
     trace(
-      `workspaces : ${nouveau.liste.map((w) => `${w.emoji} ${w.nom} (${w.spaces.length})`).join(', ')} ; ouvert ${nouveau.ouvert}`
+      `workspaces: ${nouveau.liste.map((w) => `${w.emoji} ${w.nom} (${w.spaces.length})`).join(', ')}; open ${nouveau.ouvert}`
     )
     o.envoyer(nouveau)
     if (toutDeSuite) ecrireMaintenant()
@@ -147,9 +147,9 @@ export function brancherWorkspaces(o: {
         changer(r.etat, true)
         if (fermer.length)
           setImmediate(() => {
-            trace(`fermeture des spaces ${fermer.join(', ')}`)
+            trace(`closing spaces ${fermer.join(', ')}`)
             o.fermerSpaces(fermer).catch((e) =>
-              console.error('[berger] fermeture des spaces :', (e as Error).message)
+              console.error('[berger] closing spaces:', (e as Error).message)
             )
           })
         return { etat, afficher: r.afficher }
@@ -162,7 +162,7 @@ export function brancherWorkspaces(o: {
     try {
       return traiter(d)
     } catch (e) {
-      console.error(`[berger] workspace ${d.type} impossible :`, (e as Error).message)
+      console.error(`[berger] workspace ${d.type} failed:`, (e as Error).message)
       return { erreur: (e as Error).message }
     }
   })

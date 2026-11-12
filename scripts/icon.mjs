@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // L'icône de Berger, tirée du logo (build/icone.svg ; build/icone-petite.svg pour
 // 16 et 32 px) : build/icon.icns, build/icon.png et resources/icon.png (512 px).
-// Outils : rsvg-convert (Homebrew) et iconutil (macOS). Usage : npm run icone
+// Outils : rsvg-convert (Homebrew) et iconutil (macOS). Usage : npm run icon
 import { execFileSync } from 'child_process'
 import { copyFileSync, mkdirSync, mkdtempSync } from 'fs'
 import { tmpdir } from 'os'
@@ -25,4 +25,4 @@ for (const taille of [16, 32, 128, 256, 512]) {
 execFileSync('iconutil', ['-c', 'icns', jeu, '-o', join(RACINE, 'build/icon.icns')])
 dessiner(GRANDE, 512, join(RACINE, 'build/icon.png'))
 copyFileSync(join(RACINE, 'build/icon.png'), join(RACINE, 'resources/icon.png'))
-console.log('Icône écrite : build/icon.icns, build/icon.png, resources/icon.png')
+console.log('Icon written: build/icon.icns, build/icon.png, resources/icon.png')

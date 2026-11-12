@@ -19,7 +19,7 @@ import {
 import { envoyerA } from './envoi'
 
 // Presse-papiers de macOS par JavaScript for Automation (des URL de fichiers,
-// comme le Finder) : repris de `explorer.js` du mod `antoine` (voir docs/COPIES.md).
+// comme le Finder) : repris de `explorer.js` du mod `antoine`.
 const CLIP_WRITE =
   'function run(a){ObjC.import("AppKit");const pb=$.NSPasteboard.generalPasteboard;pb.clearContents;const l=$.NSMutableArray.array;a.forEach(p=>l.addObject($.NSURL.fileURLWithPath(p)));return pb.writeObjects(l)?"ok":"";}'
 const CLIP_READ =
@@ -70,7 +70,7 @@ function brancherDisque(fenetre: () => BrowserWindow | null): void {
       }
     for (const r of voulues)
       if (!surveillees.has(r)) {
-        trace(`surveillance de ${r}`)
+        trace(`watching ${r}`)
         surveillees.set(
           r,
           surveiller(r, (chemins) => {
@@ -91,7 +91,7 @@ function brancherDisque(fenetre: () => BrowserWindow | null): void {
     for (const c of chemins) {
       try {
         await shell.trashItem(c)
-        trace(`à la corbeille : ${c}`)
+        trace(`moved to trash: ${c}`)
       } catch (e) {
         erreurs.push(`${c.slice(c.lastIndexOf('/') + 1)} : ${(e as Error).message}`)
       }
@@ -133,7 +133,7 @@ export function brancherFichiers(coeur: Coeur, fenetre: () => BrowserWindow | nu
   ipcMain.handle('berger:lire', (_e, { chemin }) => lire(chemin))
   const confirmer = async (message: string): Promise<boolean> => {
     const w = fenetre()
-    console.log(`[berger] question posée : ${message}`)
+    console.log(`[berger] question asked: ${message}`)
     const options = {
       type: 'warning' as const,
       message,

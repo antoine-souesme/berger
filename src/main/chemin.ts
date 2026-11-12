@@ -16,6 +16,6 @@ export function completerPath(): void {
     const duShell = extrairePath(sortie)
     if (duShell) process.env['PATH'] = fusionnerPath(process.env['PATH'] ?? '', duShell)
   } catch (e) {
-    console.log(`[berger] PATH du shell illisible : ${(e as Error).message}`)
+    console.log(`[berger] shell PATH unreadable: ${(e as Error).message}`)
   }
 }

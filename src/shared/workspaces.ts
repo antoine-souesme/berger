@@ -1,5 +1,5 @@
 // Règles pures des workspaces : des groupes de spaces, choisis dans la barre
-// de gauche. Reprises de `workspaces.js` du mod `antoine` (voir docs/COPIES.md),
+// de gauche. Reprises de `workspaces.js` du mod `antoine`,
 // sans ce qui servait à suivre le space affiché par Herdr (`seen`, `hold`) :
 // Berger choisit lui-même le space affiché.
 import type { EtatAgent } from './libelles'

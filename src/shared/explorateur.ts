@@ -1,7 +1,7 @@
 // Règles pures de l'explorateur : fichiers masqués, tri, couleurs git,
 // copier-coller et glisser-déposer, dossiers à relire.
 // Repris et réécrits de `git.js`, `clip.js`, `files.js` (`staleDirs`) et des
-// règles d'affichage de `explorer.js` du mod `antoine` (voir docs/COPIES.md).
+// règles d'affichage de `explorer.js` du mod `antoine`.
 
 // Masqués comme le `files.exclude` par défaut de VS Code.
 export const MASQUES: ReadonlySet<string> = new Set([

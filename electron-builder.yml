@@ -1,4 +1,4 @@
-# Empaquetage de Berger pour ce Mac (npm run installer) : un dossier, sans
+# Empaquetage de Berger pour ce Mac (npm run install-app) : un dossier, sans
 # signature Apple ni mise à jour automatique.
 appId: fr.antoine.berger
 productName: Berger

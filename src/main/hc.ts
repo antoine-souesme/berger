@@ -95,7 +95,7 @@ export class Hc {
     try {
       message = JSON.parse(ligne)
     } catch {
-      console.error('[hc] ligne illisible', ligne.slice(0, 200))
+      console.error('[hc] unreadable line', ligne.slice(0, 200))
       return
     }
     if (message.id != null && this.enAttente.has(message.id)) {
