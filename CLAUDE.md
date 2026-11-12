@@ -27,3 +27,12 @@ branchée sur herdr-core, avec l'éditeur de VS Code (Monaco). Lis d'abord
 - Code repris d'ailleurs (Herdr, mod `antoine`, projets libres) : note sa
   source et sa licence dans `COPIES.md`.
 - Avant de dire qu'une chose marche, lance l'application et regarde-la.
+
+## Lancer
+
+- `npm install`, puis `npm run dev` (fenêtre Berger), `npm test` (règles pures), `npm run typecheck`.
+- Vérifier sans cliquer (développement) : `BERGER_CAPTURE=<fichier.png>` enregistre une image de
+  la fenêtre ; `BERGER_OUVRIR=<terminal>` et `BERGER_TAPER=<texte>` ouvrent un terminal et y
+  tapent ; `BERGER_SCENARIO=editeur|conflit` avec `BERGER_SCENARIO_DOSSIER` joue l'éditeur
+  (voir `src/main/scenario.ts`) ; `BERGER_TRACE=1` journalise les changements d'état.
+- Le format des échanges avec un terminal du core : `docs/notes/trames-herdr-core.md`.
