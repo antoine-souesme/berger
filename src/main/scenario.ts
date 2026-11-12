@@ -19,6 +19,8 @@ import { app, type BrowserWindow } from 'electron'
 //   change son emoji, le glisse en premier, revient au workspace d'origine, puis
 //   le supprime (son space est fermé) et rouvre le workspace d'origine. Capture
 //   et journal de workspaces.json à chaque étape. Ne ferme que le space créé.
+// BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
+//   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
 type LireSpace = (id: string) => Promise<unknown>
 
@@ -74,6 +76,41 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       [11500, () => touche('w', ['meta'])],
       [12500, () => capture('question-fermeture')]
     ])
+    return
+  }
+
+  if (scenario === 'raccourcis') {
+    // ⌃1, ⌃2, ⌥⌘], ⌘], ⌘[ et le bouton de tri des agents : journal du space et
+    // de l'agent choisis après chaque touche (aucune écriture).
+    const choisis = async (nom: string): Promise<void> => {
+      const r = await wc.executeJavaScript(`({
+        space: document.querySelector('.ligne-space.choisi .nom')?.textContent,
+        agent: document.querySelector('.ligne-agent.choisi')?.dataset.cle,
+        tri: document.getElementById('tri-agents')?.title
+      })`)
+      console.log(`[berger] scénario : ${nom} ${JSON.stringify(r)}`)
+    }
+    const etapes: [string, () => void][] = [
+      ['debut', () => {}],
+      ['ctrl-1', () => touche('1', ['control'])],
+      ['ctrl-2', () => touche('2', ['control'])],
+      ['alt-cmd-]', () => touche(']', ['alt', 'meta'])],
+      ['alt-cmd-[', () => touche('[', ['alt', 'meta'])],
+      ['cmd-]', () => touche(']', ['meta'])],
+      ['cmd-]-bis', () => touche(']', ['meta'])],
+      ['cmd-[', () => touche('[', ['meta'])],
+      ['tri', () => void wc.executeJavaScript("document.getElementById('tri-agents').click()")]
+    ]
+    jouer(
+      etapes.map(([nom, faire], i) => [
+        3000 + i * 1500,
+        async () => {
+          faire()
+          await new Promise((ok) => setTimeout(ok, 700))
+          await choisis(nom)
+        }
+      ])
+    )
     return
   }
 

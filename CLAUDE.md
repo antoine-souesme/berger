@@ -47,8 +47,11 @@ avec leur `README.md`).
   l'éditeur ; `BERGER_SCENARIO=cadre` avec `BERGER_SCENARIO_SPACE=<spbergertest…>` joue les
   onglets et découpages dans ce space de test (`BERGER_SCENARIO_LARGEUR=<px>` tire aussi un
   séparateur), `BERGER_SCENARIO=ranger` le ferme (`BERGER_SCENARIO_REPONSE=0` accepte la
-  question) ; voir `src/main/scenario.ts`. `BERGER_TRACE=1` journalise les changements d'état,
+  question) ; `BERGER_SCENARIO=workspaces` crée, renomme, déplace puis supprime un workspace de
+  test (et le space qu'il y crée), `BERGER_SCENARIO=raccourcis` journalise ⌃1, ⌥⌘], ⌘] et le tri
+  des agents ; voir `src/main/scenario.ts`. Les workspaces de Berger sont dans
+  `~/Library/Application Support/berger/workspaces.json` : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état,
   les écritures du document, les terminaux lancés et fermés, les `RESIZE` et le premier plan.
 - Space de test : `hc run --bg --keep --no-parent --label herdr.space=spbergertest<hex>
-  --label herdr.tab=tbbergertest<hex> -- zsh` (Herdr l'adopte). Jamais les spaces d'Antoine.
+--label herdr.tab=tbbergertest<hex> -- zsh` (Herdr l'adopte). Jamais les spaces d'Antoine.
 - Le format des échanges avec un terminal du core : `docs/notes/trames-herdr-core.md`.
