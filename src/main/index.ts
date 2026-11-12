@@ -3,6 +3,10 @@ import { join } from 'path'
 import { writeFileSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { Coeur } from './coeur'
+
+const coeur = new Coeur()
+let fenetre: BrowserWindow | null = null
 
 function createWindow(): void {
   // Create the browser window.
@@ -18,6 +22,7 @@ function createWindow(): void {
     }
   })
 
+  fenetre = mainWindow
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
   })
@@ -63,6 +68,16 @@ app.whenReady().then(() => {
     optimizer.watchWindowShortcuts(window)
   })
 
+
+  coeur.surEtat((etat) => {
+    console.log(`[berger] herdr-core : ${etat}`)
+    fenetre?.webContents.send('berger:connexion', { etat })
+  })
+  coeur.surConnexion(async (c) => {
+    const liste = await c.requetes!.requete<{ terminals: unknown[] }>('terminal.list')
+    console.log(`[berger] ${c.requetes!.infos?.core.name} : ${liste.terminals.length} terminaux vivants`)
+  })
+  void coeur.demarrer()
 
   createWindow()
 
