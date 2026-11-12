@@ -31,6 +31,7 @@ export type ActionClavier =
   | { type: 'explorateur.coller' }
   | { type: 'explorateur.copierChemin' }
   | { type: 'explorateur.corbeille' }
+  | { type: 'editeur.retourLigne' }
   | { type: 'rien' }
 
 export type Touche = {
@@ -144,6 +145,9 @@ function table(t: Touche): ActionClavier | null {
       if (t.code === 'BracketLeft') return { type: 'space.voisin', pas: -1 }
       if (FLECHES[t.code]) return { type: 'panneau.aller', direction: FLECHES[t.code] }
       return null
+    case 'a':
+      if (t.code === 'KeyZ') return { type: 'editeur.retourLigne' }
+      return null
     case 'asm':
       if (FLECHES[t.code]) return { type: 'panneau.echanger', direction: FLECHES[t.code] }
       return null
@@ -166,7 +170,8 @@ const PRIS_A_L_EDITEUR = new Set<ActionClavier['type']>([
   'explorateur.basculer',
   'fichier.rechercher',
   'zoom',
-  'rien'
+  'rien',
+  'editeur.retourLigne'
 ])
 
 export function actionDe(touche: Touche, cible: Cible): ActionClavier | null {
@@ -177,6 +182,8 @@ export function actionDe(touche: Touche, cible: Cible): ActionClavier | null {
   const action = table(touche)
   if (!action) return null
   if (cible === 'editeur') return PRIS_A_L_EDITEUR.has(action.type) ? action : null
+  // ⌥Z : seulement quand l'éditeur ou l'explorateur a le clavier.
+  if (action.type === 'editeur.retourLigne') return cible === 'explorateur' ? action : null
   if (
     cible === 'terminal' &&
     (action.type === 'fichier.enregistrer' || action.type === 'fichier.chercher')

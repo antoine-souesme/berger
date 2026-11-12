@@ -41,6 +41,11 @@ avec leur `README.md`).
 ## Lancer
 
 - `npm install`, puis `npm run dev` (fenêtre Berger), `npm test` (règles pures), `npm run typecheck`.
+- Coloration et thème de l'éditeur : `node scripts/copier-grammaires.mjs` recopie de VS Code
+  (`/Applications/Visual Studio Code.app`) les grammaires, le registre des langages et le thème
+  Monokai dans `src/renderer/public/vscode/`. Couleur de sélection : clé
+  `editeur.couleurSelection` de `~/Library/Application Support/berger/reglages.json` (écrit à la
+  main, jamais créé par Berger).
 - Vérifier sans cliquer (développement) : `BERGER_CAPTURE=<fichier.png>` enregistre une image de
   la fenêtre ; `BERGER_OUVRIR=<terminal>` et `BERGER_TAPER=<texte>` ouvrent un terminal et y
   tapent ; `BERGER_SCENARIO=editeur|conflit|supprime` avec `BERGER_SCENARIO_DOSSIER` joue
@@ -51,9 +56,12 @@ avec leur `README.md`).
   test (et le space qu'il y crée), `BERGER_SCENARIO=raccourcis` journalise ⌃1, ⌥⌘], ⌘] et le tri
   des agents ; `BERGER_SCENARIO=fichiers` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
   joue l'explorateur, ⌘P, les onglets de fichiers et la visionneuse (`explorateur` et `onglets` en
-  plus court) ; voir `src/main/scenario.ts`. L'état des fichiers par workspace est dans
+  plus court) ; `BERGER_SCENARIO=langage` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
+  joue l'aide du langage (F12, erreurs, survol, complétion, schémas JSON et YAML, fichier
+  réécrit par un agent, renommage, ⌥Z ; contenu du dossier décrit en tête du scénario) ; voir
+  `src/main/scenario.ts`. L'état des fichiers par workspace est dans
   `fichiers.json`, à côté de `workspaces.json`. Les workspaces de Berger sont dans
-  `~/Library/Application Support/berger/workspaces.json` : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état,
+  `~/Library/Application Support/berger/workspaces.json` : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état, les lancements, arrêts et relances des serveurs de langage,
   les écritures du document, les terminaux lancés et fermés, les `RESIZE` et le premier plan.
 - Space de test : `hc run --bg --keep --no-parent --label herdr.space=spbergertest<hex>
 --label herdr.tab=tbbergertest<hex> -- zsh` (Herdr l'adopte). Jamais les spaces d'Antoine.

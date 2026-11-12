@@ -17,7 +17,8 @@ test('état complet relu tel quel', () => {
     space: 'sp1',
     onglet: { type: 'fichier', chemin: '/a' },
     explorateurMasque: true,
-    triAgents: 'urgence'
+    triAgents: 'urgence',
+    retourLigne: true
   }
   expect(lireEtatFenetre(e)).toEqual(e)
 })
@@ -33,4 +34,9 @@ test('tri des agents retenu, valeur inconnue ramenée à « spaces »', () => {
   expect(lireEtatFenetre({ triAgents: 'urgence' }).triAgents).toBe('urgence')
   expect(lireEtatFenetre({ triAgents: 'x' }).triAgents).toBe('spaces')
   expect(lireEtatFenetre(null).triAgents).toBe('spaces')
+})
+
+test('retour à la ligne retenu', () => {
+  expect(lireEtatFenetre({ retourLigne: true }).retourLigne).toBe(true)
+  expect(lireEtatFenetre({}).retourLigne).toBe(false)
 })

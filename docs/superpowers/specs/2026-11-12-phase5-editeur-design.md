@@ -3,6 +3,15 @@
 Date : 2026-11-12. Contexte : `docs/suivi/ROADMAP.md`,
 `CLAUDE.md`. Phases précédentes : phases 2 à 4 dans ce dossier.
 
+> **Décisions d'Antoine du 12 novembre 2026, en écrivant le plan.**
+> La recherche dans le projet (objectif 2) et les différences git (objectif 3)
+> sont remises à plus tard : elles ne font pas partie de cette phase, leurs
+> paragraphes ci-dessous restent comme référence pour une phase à venir. Le
+> thème de l'éditeur est **exactement** celui qu'Antoine a dans VS Code : le
+> thème « Monokai » livré avec VS Code, avec la même coloration que VS Code
+> (grammaires TextMate et coloration sémantique), et non `antoine-monokai`.
+> Le reste de la fenêtre garde les couleurs `antoine-monokai` de Herdr.
+
 ## Intention
 
 L'éditeur est la raison d'être de Berger : celui de Herdr n'a ni recherche
@@ -25,11 +34,12 @@ toute la journée, au niveau de VS Code, pour les langages qu'il touche le plus.
    définition (y compris dans un autre fichier ou dans `node_modules`),
    survol avec le type et la doc, erreurs soulignées, renommer un symbole.
    Même chose pour JavaScript, JSON et YAML, dans un premier temps.
-2. **Chercher et remplacer dans tout le projet**, et sauter aux résultats.
-3. **Voir ce qui a changé** depuis le dernier commit : dans la marge, et côte à
-   côte.
+2. ~~**Chercher et remplacer dans tout le projet**, et sauter aux résultats.~~
+   Remis à plus tard.
+3. ~~**Voir ce qui a changé** depuis le dernier commit : dans la marge, et côte à
+   côte.~~ Remis à plus tard.
 4. **Régler son confort** : retour à la ligne, couleur de sélection,
-   plusieurs curseurs, repli du code, minicarte, thème `antoine-monokai`.
+   plusieurs curseurs, repli du code, minicarte, thème Monokai de VS Code.
 
 ## Le comportement attendu
 
@@ -83,8 +93,8 @@ arrivent au fil de l'eau, la recherche s'annule quand on retape.
   réglages suffit).
 - Plusieurs curseurs (`⌥` clic, `⌘D` dans l'éditeur pour la prochaine
   occurrence, `⌥⌘↑↓`), repli du code, minicarte : ceux de Monaco, actifs.
-- Thème `antoine-monokai` complet pour tous les langages (pas seulement
-  commentaires, chaînes et mots-clés).
+- Thème Monokai de VS Code, identique à celui de VS Code pour tous les
+  langages (voir les décisions en tête de spec).
 
 **Raccourcis de cette phase** : `⇧⌘F` rechercher dans le projet, `⇧⌘H`
 remplacer dans le projet, `⇧⌘E` revenir à l'explorateur, `F12` / `⇧F12`,
@@ -135,7 +145,7 @@ JSON et YAML (SchemaStore).
 
 Antoine, dans l'application lancée, sur le dépôt de Berger : `F12` sur un
 symbole importé ouvre sa définition dans un autre fichier ; une erreur de type
-s'affiche soulignée en tapant ; un `package.json` mal formé est signalé ;
-`⇧⌘F` trouve un mot dans tout le dépôt et le remplace dans deux fichiers ; la
-marge montre ses changements et la vue côte à côte s'ouvre ; `⌥Z` replie les
-lignes longues ; `npm test` passe.
+s'affiche soulignée en tapant ; un `package.json` mal formé est signalé ; un
+fichier TypeScript a les mêmes couleurs que dans VS Code ; `⌥Z` replie les
+lignes longues ; `npm test` passe. (Recherche dans le projet et différences
+git : remises à plus tard.)

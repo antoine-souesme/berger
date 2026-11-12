@@ -22,7 +22,14 @@
     "@xterm/addon-webgl": "^0.19.0",
     "@xterm/xterm": "^6.0.0",
     "lucide": "^1.72.0",
-    "monaco-editor": "^0.57.0"
+    "monaco-editor": "^0.57.0",
+    "typescript": "^5.9.3",
+    "typescript-language-server": "^6.0.3",
+    "vscode-jsonrpc": "^10.0.0",
+    "vscode-languageserver-protocol": "^3.18.5",
+    "vscode-oniguruma": "^2.0.1",
+    "vscode-textmate": "^9.3.2",
+    "yaml-language-server": "^2.0.0"
   },
   "devDependencies": {
     "@electron-toolkit/eslint-config-prettier": "^3.0.1",
@@ -34,7 +41,6 @@
     "electron-vite": "^6.0.0",
     "eslint": "^10.12.0",
     "prettier": "^3.9.10",
-    "typescript": "^5.9.3",
     "vite": "^8.3.4",
     "vitest": "^5.1.0"
   }

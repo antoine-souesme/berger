@@ -22,7 +22,10 @@ import { execFile } from 'child_process'
 //   et journal de workspaces.json à chaque étape. Ne ferme que le space créé.
 // BERGER_SCENARIO=onglets BERGER_SCENARIO_FICHIERS=<chemin>:<chemin>:… BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ouvre ces fichiers (chemins contenant `berger-essai`), épingle celui qui finit par
-//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture.
+//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture. Vérifie aussi
+//   que le menu de l'onglet se ferme au clic dans l'éditeur, se pilote au clavier et rend le
+//   clavier à l'éditeur (journal), que la molette fait défiler les onglets de fichiers seuls,
+//   puis replie tout le premier fichier (un Markdown : repli par titres).
 // BERGER_SCENARIO=explorateur BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ajoute ce dossier comme racine, déplie `node_modules`, crée `nouveau.txt` (il doit
 //   apparaître seul), ⇧⌘E deux fois, retire la racine. Une capture par étape.
@@ -36,6 +39,16 @@ import { execFile } from 'child_process'
 //   « bt », ouvre les deux index.ts, en épingle un, ferme l'autre au clic molette, met
 //   notes/b.txt à la corbeille, retire la racine, puis ouvre « Fichier › Ouvrir un fichier… »
 //   (capture d'écran de macOS). Une capture et une ligne de journal par étape.
+// BERGER_SCENARIO=langage BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
+//   L'aide du langage. Le dossier contient tsconfig.json (strict), package.json,
+//   node_modules/typescript (lien vers celui de Berger), node_modules/petit-paquet/
+//   {package.json,index.d.ts} (exporte bonjour), src/b.ts (exporte somme), src/a.ts
+//   (importe somme et bonjour, ligne `const café = somme(1, 2) // 🐑`), mauvais/package.json
+//   (virgule manquante), .github/workflows/ci.yml (`jobs: 3`), long.txt. Ajoute la racine,
+//   ouvre a.ts, F12 sur somme puis sur bonjour, tape une erreur de type, survol, complétion,
+//   menu du clic droit, réécrit b.ts sur le disque, ouvre les deux fichiers mal formés,
+//   renomme b.ts en c.ts par l'explorateur (a.ts modifié), ⌥Z deux fois sur long.txt.
+//   Une capture et une ligne de journal par étape.
 // BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
 //   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
@@ -131,6 +144,11 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  if (scenario === 'langage') {
+    void jouerLangage(w, capture, touche)
+    return
+  }
+
   if (scenario === 'fichiers') {
     jouerFichiers(w, capture, touche, sortie)
     return
@@ -176,10 +194,48 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       () => wc.send('berger:scenario-fichier', { chemin })
     ])
     const t = 2500 + fichiers.length * 800 + 1000
-    const notes = fichiers.find((c) => c.endsWith('notes.md'))
+    const notes = fichiers.find((c) => c.endsWith('notes.md')) ?? fichiers[0]
+    const journal = async (quoi: string): Promise<void> =>
+      console.log(
+        `[berger] scénario : ${quoi} : ` +
+          JSON.stringify(
+            await wc.executeJavaScript(`({
+              menu: document.querySelectorAll('.menu').length,
+              designee: document.querySelector('.menu .designee')?.textContent ?? null,
+              clavier: document.activeElement?.className ?? null,
+              fichiers: document.querySelector('.onglets-fichiers')?.scrollLeft ?? null,
+              page: [document.scrollingElement.scrollLeft, document.scrollingElement.scrollTop,
+                document.getElementById('droite').scrollLeft]
+            })`)
+          )
+      )
+    const molette = async (): Promise<void> => {
+      const p = await wc.executeJavaScript(`(() => {
+        const r = document.querySelector('.onglets-fichiers').getBoundingClientRect()
+        return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
+      })()`)
+      wc.sendInputEvent({
+        type: 'mouseWheel',
+        x: p.x,
+        y: p.y,
+        deltaX: 0,
+        deltaY: 300,
+        hasPreciseScrollingDeltas: true,
+        canScroll: true
+      })
+    }
     etapes.push(
       [t, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
       [t + 800, () => capture('01-menu-onglet')],
+      // Un clic dans l'éditeur ferme le menu ; la molette fait défiler les fichiers seuls.
+      [t + 900, () => souris('left', '#editeur .view-lines')],
+      [t + 1000, () => journal("menu après clic dans l'éditeur")],
+      [t + 1050, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
+      [t + 1100, () => touche('Down')],
+      [t + 1150, () => journal('menu après ↓')],
+      [t + 1180, () => touche('Escape')],
+      [t + 1190, () => journal('menu après Échap')],
+      [t + 1195, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
       [t + 1200, () => souris('left', '.menu .entree', 'Épingler')],
       [
         t + 2000,
@@ -187,7 +243,19 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       ],
       [t + 2600, () => souris('left', '#editeur .view-lines')],
       [t + 3000, () => wc.insertText('// modifié par Berger\n')],
-      [t + 4000, () => capture('02-onglets')]
+      [t + 4000, () => capture('02-onglets')],
+      [t + 4100, () => journal('avant la molette')],
+      [t + 4200, () => molette()],
+      [t + 4700, () => journal('après la molette')],
+      [t + 4800, () => capture('03-molette')],
+      // Un fichier Markdown ouvert en premier : ses titres se replient.
+      [t + 4900, () => souris('left', `.onglet-fichier[data-chemin="${fichiers[0]}"]`)],
+      [
+        t + 5600,
+        () =>
+          void wc.executeJavaScript("window.bergerEssai?.editeur.getAction('editor.foldAll').run()")
+      ],
+      [t + 6200, () => capture('04-replis')]
     )
     jouer(etapes)
     return
@@ -645,4 +713,196 @@ function jouerFichiers(
     t += delai
     setTimeout(() => void faire(), t)
   }
+}
+
+// Le scénario de l'aide du langage : Monaco est piloté par `window.bergerEssai`
+// (posé par editeur.ts en développement).
+async function jouerLangage(
+  w: BrowserWindow,
+  capture: (nom: string) => Promise<void>,
+  touche: (keyCode: string, modifiers?: Mod[]) => void
+): Promise<void> {
+  const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+  if (!dossier.includes('berger-essai')) {
+    console.error('[berger] scénario langage refusé : le dossier doit contenir berger-essai')
+    return
+  }
+  const wc = w.webContents
+  const lent = Number(process.env['BERGER_SCENARIO_LENTEUR'] ?? 1)
+  const pause = (ms: number): Promise<void> => new Promise((ok) => setTimeout(ok, ms * lent))
+  const souris = pointeur(wc)
+  const a = `${dossier}/src/a.ts`
+  const js = <T>(code: string): Promise<T> =>
+    wc.executeJavaScript(
+      `(() => { const { monaco, editeur, modifie } = window.bergerEssai; ${code} })()`
+    )
+  const affiche = (): Promise<string> => js('return editeur.getModel()?.uri.fsPath ?? null')
+  const marqueurs = (chemin: string): Promise<string[]> =>
+    js(`return monaco.editor.getModelMarkers({ resource: monaco.Uri.file(${JSON.stringify(chemin)}) })
+      .map((m) => (m.code ?? '') + ' ' + m.message.split('\\n')[0])`)
+  const journal = (nom: string, valeur: unknown): void =>
+    console.log(`[berger] scénario : ${nom} ${JSON.stringify(valeur)}`)
+  const ouvrir = async (chemin: string, attente = 2500): Promise<void> => {
+    wc.send('berger:scenario-fichier', { chemin })
+    await pause(attente)
+  }
+  // Place le curseur sur un mot de a.ts (sa première occurrence après `apres`).
+  const curseurSur = (mot: string, apres = ''): Promise<void> =>
+    js(`const m = editeur.getModel()
+      const t = m.getValue()
+      const i = t.indexOf(${JSON.stringify(mot)}, t.indexOf(${JSON.stringify(apres)}))
+      const p = m.getPositionAt(i + 1)
+      editeur.setPosition(p)
+      editeur.focus()`)
+  const commande = (id: string): Promise<void> =>
+    js(`editeur.trigger('scenario', ${JSON.stringify(id)}, {})`)
+
+  await pause(2500)
+  wc.send('berger:scenario-oublier', { prefixe: dossier })
+  await pause(300)
+  wc.send('berger:scenario-dossier', { chemin: dossier })
+  await pause(1500)
+  await capture('01-racine')
+
+  await ouvrir(a, 4000)
+  await capture('02-a')
+  journal('02-a', {
+    affiche: await affiche(),
+    selection: await js(
+      `return getComputedStyle(document.querySelector('.monaco-editor')).getPropertyValue('--vscode-editor-selectionBackground')`
+    )
+  })
+
+  await curseurSur('somme', 'const café')
+  await commande('editor.action.revealDefinition')
+  await pause(3000)
+  await capture('03-f12-somme')
+  journal('03-f12-somme', await affiche())
+
+  await ouvrir(a)
+  await curseurSur('bonjour', 'export const message')
+  await commande('editor.action.revealDefinition')
+  await pause(3000)
+  await capture('04-f12-bonjour')
+  journal('04-f12-bonjour', await affiche())
+
+  await ouvrir(a)
+  await js(`const m = editeur.getModel()
+    const fin = m.getFullModelRange().getEndPosition()
+    editeur.executeEdits('scenario', [{ range: new monaco.Range(fin.lineNumber, fin.column, fin.lineNumber, fin.column), text: "const n: number = 'x'\\n" }])`)
+  await pause(3000)
+  await capture('05-erreur')
+  journal('05-erreur', await marqueurs(a))
+
+  await curseurSur('café', 'const café')
+  await commande('editor.action.showHover')
+  await pause(2500)
+  await capture('06-survol')
+  journal(
+    '06-survol',
+    await js(`return document.querySelector('.monaco-hover-content')?.textContent ?? null`)
+  )
+  touche('Escape')
+
+  await js(`const m = editeur.getModel()
+    const fin = m.getFullModelRange().getEndPosition()
+    editeur.setPosition(fin)
+    editeur.pushUndoStop()
+    editeur.executeEdits('scenario', [{ range: new monaco.Range(fin.lineNumber, fin.column, fin.lineNumber, fin.column), text: 'som' }])
+    editeur.pushUndoStop()
+    editeur.focus()`)
+  await commande('editor.action.triggerSuggest')
+  await pause(2500)
+  await capture('07-completion')
+  journal(
+    '07-completion',
+    await js(
+      `return [...document.querySelectorAll('.suggest-widget .monaco-list-row .label-name')].slice(0, 5).map((e) => e.textContent)`
+    )
+  )
+  touche('Escape')
+  await js(`editeur.trigger('scenario', 'undo', {})`)
+  await pause(500)
+
+  await souris('right', '#editeur .view-lines')
+  await pause(800)
+  await capture('08-menu')
+  journal(
+    '08-menu',
+    await js(
+      `const racine = [...document.querySelectorAll('.shadow-root-host')].map((h) => h.shadowRoot).find((r) => r?.querySelector('.monaco-menu')) ?? document
+      const menu = racine.querySelector('.monaco-menu')
+      const c = racine.querySelector('.monaco-menu-container'); return { fond: menu ? getComputedStyle(menu).backgroundColor : null, conteneur: c ? getComputedStyle(c).backgroundColor : null, variable: c ? getComputedStyle(c).getPropertyValue('--vscode-menu-background') : null, html: c?.outerHTML.slice(0, 300), entrees: [...racine.querySelectorAll('.action-label')].map((e) => e.textContent).filter(Boolean) }`
+    )
+  )
+  touche('Escape')
+  await pause(300)
+
+  // Un agent ajoute un paramètre à somme : a.ts (modifié) garde son texte, l'erreur arrive.
+  writeFileSync(
+    `${dossier}/src/b.ts`,
+    'export function somme(a: number, b: number, c: number): number {\n  return a + b + c\n}\n'
+  )
+  await pause(5000)
+  await capture('09-agent')
+  journal('09-agent', {
+    marqueurs: await marqueurs(a),
+    modifie: await js(`return modifie(${JSON.stringify(a)})`),
+    intact: await js(
+      `return monaco.editor.getModel(monaco.Uri.file(${JSON.stringify(a)})).getValue().includes("const n: number = 'x'")`
+    )
+  })
+
+  await ouvrir(`${dossier}/mauvais/package.json`, 4000)
+  await capture('10-package')
+  journal('10-package', await marqueurs(`${dossier}/mauvais/package.json`))
+
+  await ouvrir(`${dossier}/.github/workflows/ci.yml`, 8000)
+  await capture('11-ci')
+  journal('11-ci', await marqueurs(`${dossier}/.github/workflows/ci.yml`))
+
+  // Renommer b.ts (ouvert) en c.ts par l'explorateur, a.ts restant modifié.
+  const ligne = (chemin: string): string =>
+    `#arbre .ligne-arbre[data-chemin=${JSON.stringify(chemin)}]`
+  const existe = (sel: string): Promise<boolean> =>
+    wc.executeJavaScript(`!!document.querySelector(${JSON.stringify(sel)})`)
+  if (!(await existe(ligne(`${dossier}/src/b.ts`)))) {
+    await souris('left', ligne(`${dossier}/src`))
+    await pause(800)
+  }
+  // Deux clics : le premier ouvre l'onglet, le second rend le clavier à l'explorateur.
+  await souris('left', ligne(`${dossier}/src/b.ts`))
+  await pause(1000)
+  await souris('left', ligne(`${dossier}/src/b.ts`))
+  await pause(500)
+  touche('F2')
+  await pause(600)
+  await wc.insertText('c')
+  touche('Enter')
+  await pause(2500)
+  await capture('12-renomme')
+  journal('12-renomme', {
+    modeles: await js(
+      `return monaco.editor.getModels().map((m) => m.uri.toString()).filter((u) => u.includes('/src/'))`
+    ),
+    aModifie: await js(`return modifie(${JSON.stringify(a)})`)
+  })
+
+  await ouvrir(`${dossier}/long.txt`)
+  await js('editeur.focus()')
+  touche('z', ['alt'])
+  await pause(1000)
+  await capture('13-retour-ligne')
+  journal(
+    '13-retour-ligne',
+    await js(`return editeur.getOption(monaco.editor.EditorOption.wordWrap)`)
+  )
+  touche('z', ['alt'])
+  await pause(1000)
+  await capture('14-sans-retour')
+  journal(
+    '14-sans-retour',
+    await js(`return editeur.getOption(monaco.editor.EditorOption.wordWrap)`)
+  )
+  console.log('[berger] scénario : fin')
 }

@@ -197,30 +197,73 @@ function ongletFichier(
   return el
 }
 
+// Les terminaux restent fixes à gauche ; les fichiers défilent à la molette.
+// Les deux conteneurs sont gardés d'un dessin à l'autre pour ne pas perdre le
+// défilement.
+let conteneurs: { terminaux: HTMLElement; trait: HTMLElement; fichiers: HTMLElement } | null = null
+let dernierActif = ''
+
+function lesConteneurs(): NonNullable<typeof conteneurs> {
+  if (conteneurs) return conteneurs
+  const terminaux = document.createElement('div')
+  terminaux.className = 'onglets-terminaux'
+  const trait = document.createElement('div')
+  trait.className = 'trait-onglets'
+  const fichiers = document.createElement('div')
+  fichiers.className = 'onglets-fichiers'
+  fichiers.addEventListener(
+    'wheel',
+    (e) => {
+      const pas = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+      if (!pas || fichiers.scrollWidth <= fichiers.clientWidth) return
+      e.preventDefault()
+      fichiers.scrollLeft += pas
+    },
+    { passive: false }
+  )
+  barreEl().replaceChildren(terminaux, trait, fichiers)
+  conteneurs = { terminaux, trait, fichiers }
+  return conteneurs
+}
+
+// Fait voir l'onglet de fichier actif sans faire défiler autre chose que la
+// liste des fichiers (scrollIntoView décalait toute la fenêtre).
+function montrerActif(liste: HTMLElement): void {
+  const a = liste.querySelector<HTMLElement>('.onglet.actif')
+  if (!a) return
+  const marge = 4
+  if (a.offsetLeft < liste.scrollLeft) liste.scrollLeft = a.offsetLeft - marge
+  else if (a.offsetLeft + a.offsetWidth > liste.scrollLeft + liste.clientWidth)
+    liste.scrollLeft = a.offsetLeft + a.offsetWidth - liste.clientWidth + marge
+}
+
 export function dessinerBarre(): void {
   const space = spaceAffiche()
   const actif = ongletAffiche()
-  const enfants: HTMLElement[] = []
-  for (const o of space?.onglets ?? [])
-    enfants.push(ongletTerminal(space!, o, memeOnglet(actif, { type: 'terminal', id: o.id })))
+  const c = lesConteneurs()
+  c.terminaux.replaceChildren(
+    ...(space?.onglets ?? []).map((o) =>
+      ongletTerminal(space!, o, memeOnglet(actif, { type: 'terminal', id: o.id }))
+    )
+  )
   // Workspace vide : aucun onglet, pas même les fichiers ouverts.
   const fichiers = space ? fichiersDuWorkspace() : []
-  if (fichiers.length) {
-    const trait = document.createElement('div')
-    trait.className = 'trait-onglets'
-    enfants.push(trait)
-  }
+  c.trait.hidden = fichiers.length === 0
   const libelles = libellesOnglets(fichiers.map((o) => o.chemin))
-  for (const o of fichiers)
-    enfants.push(
+  c.fichiers.replaceChildren(
+    ...fichiers.map((o) =>
       ongletFichier(
         o,
         libelles.get(o.chemin)!,
         memeOnglet(actif, { type: 'fichier', chemin: o.chemin })
       )
     )
-  barreEl().replaceChildren(...enfants)
-  barreEl().querySelector('.onglet.actif')?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+  )
+  const cle = JSON.stringify(actif) + fichiers.length
+  if (cle !== dernierActif) {
+    dernierActif = cle
+    montrerActif(c.fichiers)
+  }
 }
 
 export function renommerOngletEnPlace(): void {

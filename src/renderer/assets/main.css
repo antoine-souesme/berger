@@ -530,11 +530,31 @@ body {
   align-items: center;
   gap: 4px;
   padding: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
+  overflow: hidden;
   -webkit-app-region: drag;
 }
-#barre-onglets::-webkit-scrollbar {
+.onglets-terminaux {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+/* Ne s'étire pas : la place libre à droite reste une zone pour déplacer la fenêtre. */
+.onglets-fichiers {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-app-region: no-drag;
+}
+.onglets-fichiers::-webkit-scrollbar {
+  display: none;
+}
+.onglets-terminaux:empty {
   display: none;
 }
 .onglet {
@@ -896,7 +916,11 @@ body {
   cursor: pointer;
   white-space: nowrap;
 }
-.menu .entree:hover {
+.menu,
+.menu .entree {
+  outline: none;
+}
+.menu .entree.designee {
   background: var(--actif);
   color: var(--vif);
 }
@@ -1000,7 +1024,7 @@ body {
 .menu .entree.danger {
   color: #f92672;
 }
-.menu .entree.danger:hover {
+.menu .entree.danger.designee {
   color: #f92672;
 }
 .menu .entree.inactif {
