@@ -157,6 +157,9 @@ export function vueTerminal(adresse: string): HTMLElement {
   const xterm = new Terminal({
     fontFamily: POLICE,
     fontSize: 12,
+    // Le rendu natif de Herdr est plus épais : la graisse « Medium » s'en approche.
+    fontWeight: '500',
+    fontWeightBold: '700',
     cursorBlink: true,
     allowProposedApi: true,
     theme: THEME
