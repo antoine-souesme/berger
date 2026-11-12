@@ -161,7 +161,11 @@ function iconeEtat(agent: LigneAgent['agent']): HTMLElement {
     c.style.color = COULEUR_ETAT.travail
     c.setAttribute('aria-label', 'au travail')
   } else if (agent === 'fini') {
-    c.append(icone('check', COULEUR_ETAT.fini, 13))
+    // Un rond vert, comme dans Herdr.
+    const p = document.createElement('span')
+    p.className = 'point-fini'
+    p.style.background = COULEUR_ETAT.fini
+    c.append(p)
     c.setAttribute('aria-label', 'fini')
   } else if (agent === 'attente') {
     const p = document.createElement('span')
