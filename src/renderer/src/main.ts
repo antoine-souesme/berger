@@ -39,8 +39,13 @@ import {
   type EtatFichiers
 } from '../../shared/etat-fichiers'
 import { feuilles } from '../../shared/arbre'
+import { initLangage } from './langage'
 import {
   afficherFichier,
+  annoncerArret,
+  attendreAffichage,
+  modeleOuvert,
+  revelerPlage,
   cacherEditeur,
   fermerFichierAvecQuestion,
   fichierAffiche,
@@ -148,6 +153,16 @@ void (async () => {
     workspaces: EtatWorkspaces | null
   }>('berger:etat')
   initEditeur(maison)
+  initLangage({
+    // Comme ⌘P : l'onglet s'ouvre, puis la définition est montrée.
+    ouvrirA: async (chemin, plage) => {
+      ouvrirChemins([chemin])
+      await attendreAffichage(chemin)
+      if (plage) revelerPlage(chemin, plage)
+    },
+    modeleOuvert,
+    annoncerArret
+  })
   initExplorateur(maison)
   initRanger()
   initRechercheFichiers(maison)

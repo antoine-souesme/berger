@@ -5,7 +5,7 @@ import * as monaco from 'monaco-editor'
 import { INITIAL, parseRawGrammar, Registry, type IGrammar, type StateStack } from 'vscode-textmate'
 import { createOnigScanner, createOnigString, loadWASM } from 'vscode-oniguruma'
 import urlOnig from 'vscode-oniguruma/release/onig.wasm?url'
-import type { LangageVsCode } from '../../shared/fichiers'
+import { langageDe, type LangageVsCode } from '../../shared/fichiers'
 import { reglesSemantiques, type ThemeVsCode } from '../../shared/theme'
 
 type Grammaire = {
@@ -40,6 +40,7 @@ const lireTexte = async (chemin: string): Promise<string> => (await lire(chemin,
 const idMonaco = (id: string): string => (id === 'jsonc' ? 'json' : id)
 
 let theme: ThemeVsCode | null = null
+let langagesVsCode: LangageVsCode[] | undefined
 let registre: Registry | null = null
 let selection = '#878b9180'
 
@@ -233,7 +234,13 @@ export async function initColoration(): Promise<LangageVsCode[]> {
     })
   }
   definirTheme(selection)
+  langagesVsCode = reg.langages
   return reg.langages
+}
+
+// Le langage Monaco d'un fichier, d'après le registre de VS Code (une fois chargé).
+export function langageDuFichier(chemin: string): string {
+  return langageDe(chemin, langagesVsCode)
 }
 
 const sansDiese = (c: string): string => c.replace(/^#/, '')

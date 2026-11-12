@@ -5,9 +5,10 @@ import EditorWorker from 'monaco-editor/editor/editor.worker?worker'
 import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
 import CssWorker from 'monaco-editor/language/css/css.worker?worker'
 import HtmlWorker from 'monaco-editor/language/html/html.worker?worker'
-import TsWorker from 'monaco-editor/language/typescript/ts.worker?worker'
-import { langageDe, type LangageVsCode } from '../../shared/fichiers'
-import { initColoration } from './coloration'
+import { serveurDe } from '../../shared/langage'
+import { initColoration, langageDuFichier } from './coloration'
+import { initJson, suivreJson } from './json'
+import { organiserImports, suivreModele } from './langage'
 import { dossierAffiche } from '../../shared/libelles'
 import { fermerFichierWs } from '../../shared/etat-fichiers'
 import { changer, changerFichiers, etat, redessiner } from './etat'
@@ -18,17 +19,42 @@ self.MonacoEnvironment = {
     if (label === 'json') return new JsonWorker()
     if (['css', 'scss', 'less'].includes(label)) return new CssWorker()
     if (['html', 'handlebars', 'razor'].includes(label)) return new HtmlWorker()
-    if (['typescript', 'javascript'].includes(label)) return new TsWorker()
     return new EditorWorker()
   }
 }
 
+// L'aide du langage vient des serveurs de la partie Node (langage.ts) : les
+// services TypeScript intégrés de Monaco sont coupés.
+const SANS_SERVICES = {
+  completionItems: false,
+  hovers: false,
+  documentSymbols: false,
+  definitions: false,
+  references: false,
+  documentHighlights: false,
+  rename: false,
+  diagnostics: false,
+  documentRangeFormattingEdits: false,
+  signatureHelp: false,
+  onTypeFormattingEdits: false,
+  codeActions: false,
+  inlayHints: false
+}
+monaco.typescript.typescriptDefaults.setModeConfiguration(SANS_SERVICES)
+monaco.typescript.javascriptDefaults.setModeConfiguration(SANS_SERVICES)
+monaco.typescript.typescriptDefaults.setDiagnosticsOptions({
+  noSemanticValidation: true,
+  noSyntaxValidation: true
+})
+monaco.typescript.javascriptDefaults.setDiagnosticsOptions({
+  noSemanticValidation: true,
+  noSyntaxValidation: true
+})
+initJson()
+
 // Coloration et thème de VS Code (voir coloration.ts) : prêts avant le premier fichier.
-let langages: LangageVsCode[] | undefined
 const colorationPrete = initColoration()
-  .then((l) => {
-    langages = l
-  })
+  .then(() => undefined)
   .catch((e) => console.error('[berger] coloration de VS Code indisponible :', e))
 
 type Ouvert = {
@@ -56,9 +82,17 @@ export function raisonEchec(): string {
 
 const el = (id: string): HTMLElement => document.getElementById(id)!
 
+// Un message qui reste (un service de langage arrêté) revient quand l'autre s'efface.
+let messageGarde = ''
+
 function annoncer(texte: string, duree = 0): void {
-  el('fichier-message').textContent = texte
-  if (duree) setTimeout(() => (el('fichier-message').textContent = ''), duree)
+  el('fichier-message').textContent = texte || messageGarde
+  if (duree) setTimeout(() => (el('fichier-message').textContent = messageGarde), duree)
+}
+
+export function annoncerArret(texte: string): void {
+  messageGarde = texte
+  annoncer(texte)
 }
 
 function nomDuLangage(id: string): string {
@@ -114,16 +148,80 @@ export function initEditeur(m: string): void {
     fontSize: 13,
     minimap: { enabled: true },
     scrollBeyondLastLine: false,
-    fixedOverflowWidgets: true
+    fixedOverflowWidgets: true,
+    // Le menu du clic droit hors du shadow DOM, pour qu'il reçoive les couleurs du thème.
+    useShadowDOM: false
   })
   // ⌘S : enregistrer. ⌘F est la recherche intégrée de Monaco.
   editeur.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
     if (affiche) void enregistrer(affiche)
   })
+  // « Organiser les imports » (⇧⌥O et menu du clic droit), fichiers TypeScript et JavaScript.
+  const estTs = editeur.createContextKey<boolean>('bergerTypeScript', false)
+  editeur.onDidChangeModel(() => {
+    const m = editeur?.getModel()
+    estTs.set(!!m && serveurDe(m.uri.fsPath) === 'typescript')
+  })
+  editeur.addAction({
+    id: 'berger.organiserImports',
+    label: 'Organiser les imports',
+    keybindings: [monaco.KeyMod.Shift | monaco.KeyMod.Alt | monaco.KeyCode.KeyO],
+    precondition: 'bergerTypeScript',
+    contextMenuGroupId: '1_modification',
+    run: (e) => {
+      const m = e.getModel()
+      if (m) void organiserImports(m)
+    }
+  })
+  // Développement : le scénario `langage` pilote Monaco (voir src/main/scenario.ts).
+  if (import.meta.env.DEV)
+    (window as unknown as { bergerEssai: unknown }).bergerEssai = { monaco, editeur, modifie }
   editeur.onDidChangeCursorPosition(dessinerPosition)
   editeur.onDidChangeModelContent(() => {
     if (affiche) suivreModifies(affiche)
   })
+}
+
+// Le modèle porte l'adresse du fichier ; un modèle d'aperçu (⇧F12) est repris.
+function adopter(chemin: string, texte: string): Ouvert {
+  const uri = monaco.Uri.file(chemin)
+  let modele = monaco.editor.getModel(uri)
+  if (modele) {
+    if (modele.getValue() !== texte) modele.setValue(texte)
+  } else modele = monaco.editor.createModel(texte, langageDuFichier(chemin), uri)
+  const o: Ouvert = {
+    modele,
+    texteCharge: texte,
+    versionEnregistree: modele.getAlternativeVersionId(),
+    vue: null
+  }
+  ouverts.set(chemin, o)
+  brancherModele(chemin, modele)
+  return o
+}
+
+function brancherModele(chemin: string, modele: monaco.editor.ITextModel): void {
+  if (serveurDe(chemin)) suivreModele(chemin, modele)
+  if (modele.getLanguageId() === 'json') suivreJson(chemin, modele)
+}
+
+// Attendre qu'un fichier soit affiché (aller à une définition dans un autre fichier).
+const attentes = new Map<string, (() => void)[]>()
+export function attendreAffichage(chemin: string): Promise<void> {
+  if (affiche === chemin && editeur?.getModel() === ouverts.get(chemin)?.modele)
+    return Promise.resolve()
+  return new Promise((ok) => attentes.set(chemin, [...(attentes.get(chemin) ?? []), ok]))
+}
+
+export function revelerPlage(chemin: string, plage: monaco.IRange): void {
+  if (!editeur || affiche !== chemin) return
+  editeur.setSelection(plage)
+  editeur.revealRangeInCenter(plage)
+  editeur.focus()
+}
+
+export function modeleOuvert(chemin: string): monaco.editor.ITextModel | null {
+  return ouverts.get(chemin)?.modele ?? null
 }
 
 // Montre un fichier ; le lit au premier affichage. Rend faux s'il est illisible.
@@ -147,16 +245,7 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
       return false
     }
     o = ouverts.get(chemin)
-    if (!o) {
-      const modele = monaco.editor.createModel(r.texte ?? '', langageDe(chemin, langages))
-      o = {
-        modele,
-        texteCharge: r.texte ?? '',
-        versionEnregistree: modele.getAlternativeVersionId(),
-        vue: null
-      }
-      ouverts.set(chemin, o)
-    }
+    if (!o) o = adopter(chemin, r.texte ?? '')
   }
   editeur.setModel(o.modele)
   if (o.vue) editeur.restoreViewState(o.vue)
@@ -167,6 +256,8 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   editeur.layout()
   if (garderClavier) garderClavier = false
   else editeur.focus()
+  for (const ok of attentes.get(chemin) ?? []) ok()
+  attentes.delete(chemin)
   return true
 }
 
@@ -299,10 +390,24 @@ export function suivreDeplacementEditeur(paires: [string, string][]): void {
     if (nouveau === ancien) continue
     ouverts.delete(ancien)
     ouverts.set(nouveau, o)
+    // Le modèle porte l'adresse du fichier : il est recréé sous la nouvelle,
+    // avec son texte ; une modification en attente reste en attente.
+    const avant = o.modele
+    const etaitModifie = avant.getAlternativeVersionId() !== o.versionEnregistree
+    const vue = affiche === ancien && editeur ? editeur.saveViewState() : o.vue
+    const uri = monaco.Uri.file(nouveau)
+    monaco.editor.getModel(uri)?.dispose()
+    o.modele = monaco.editor.createModel(avant.getValue(), langageDuFichier(nouveau), uri)
+    o.versionEnregistree = etaitModifie ? -1 : o.modele.getAlternativeVersionId()
+    o.vue = vue
     if (affiche === ancien) {
       affiche = nouveau
+      editeur?.setModel(o.modele)
+      if (vue) editeur?.restoreViewState(vue)
       dessinerBandeau(nouveau)
     }
+    avant.dispose()
+    brancherModele(nouveau, o.modele)
   }
   changer((e) => {
     e.modifies = new Set([...e.modifies].map((c) => suivre(c, paires)))
