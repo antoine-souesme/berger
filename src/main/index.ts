@@ -35,7 +35,7 @@ function createWindow(): void {
     title: 'Berger',
     backgroundColor: '#1e1f1c',
     titleBarStyle: 'hiddenInset',
-    trafficLightPosition: { x: 18, y: 18 },
+    trafficLightPosition: { x: 14, y: 16 },
     show: false,
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),

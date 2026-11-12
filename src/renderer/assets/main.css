@@ -48,7 +48,6 @@ body {
 #workspaces {
   width: 76px;
   flex-shrink: 0;
-  border-right: 1px solid var(--bord);
   -webkit-app-region: drag;
 }
 .bande {
