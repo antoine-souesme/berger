@@ -25,3 +25,55 @@ body {
 #terminal {
   border-right: 1px solid #3a3b35;
 }
+
+#colonne {
+  padding: 8px 0;
+  user-select: none;
+}
+.bandeau {
+  margin: 0 8px 8px;
+  padding: 6px 8px;
+  background: #5c2b2b;
+  border-radius: 4px;
+}
+.space {
+  margin-bottom: 6px;
+}
+.space .titre {
+  padding: 4px 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.space.choisi .titre {
+  background: #3a3b35;
+}
+.space.autres .titre {
+  color: #908f87;
+  cursor: default;
+}
+.terminal {
+  display: flex;
+  gap: 8px;
+  padding: 2px 12px 2px 24px;
+  cursor: pointer;
+}
+.terminal:hover,
+.terminal.choisi {
+  background: #2d2e29;
+}
+.terminal .libelle {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.terminal .etat {
+  color: #908f87;
+  white-space: nowrap;
+}
+.terminal .etat.travail {
+  color: #e6c86e;
+}
+.terminal .etat.attente {
+  color: #8fc66e;
+}

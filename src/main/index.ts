@@ -1,12 +1,14 @@
-import { app, shell, BrowserWindow } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { writeFileSync } from 'fs'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { Coeur } from './coeur'
+import { Coeur, type EtatConnexion } from './coeur'
+import { suivreLaVue } from './vue'
 
 const coeur = new Coeur()
 let fenetre: BrowserWindow | null = null
+let etatConnexion: EtatConnexion = 'deconnecte'
 
 function createWindow(): void {
   // Create the browser window.
@@ -71,12 +73,12 @@ app.whenReady().then(() => {
 
   coeur.surEtat((etat) => {
     console.log(`[berger] herdr-core : ${etat}`)
+    etatConnexion = etat
     fenetre?.webContents.send('berger:connexion', { etat })
   })
-  coeur.surConnexion(async (c) => {
-    const liste = await c.requetes!.requete<{ terminals: unknown[] }>('terminal.list')
-    console.log(`[berger] ${c.requetes!.infos?.core.name} : ${liste.terminals.length} terminaux vivants`)
-  })
+  const vueActuelle = suivreLaVue(coeur, (vue) => fenetre?.webContents.send('berger:vue', vue))
+  // La fenêtre demande l'état courant au chargement (elle a pu rater les envois).
+  ipcMain.handle('berger:etat', () => ({ connexion: etatConnexion, vue: vueActuelle() }))
   void coeur.demarrer()
 
   createWindow()
