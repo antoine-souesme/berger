@@ -20,6 +20,7 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | Choix de l'icône d'un fichier (`src/shared/icones-fichiers.ts`) | `icons.js` du mod `antoine`, réécrit en TypeScript | code personnel d'Antoine |
 | Table des icônes Material (`src/shared/material.ts`) | `material.js` du mod `antoine`, copié tel quel (généré depuis material-icon-theme 5.40.0) | MIT |
 | Icônes de fichiers de l'application (`src/renderer/public/material/`, avec son `LICENSE`) | Material Icon Theme, copiées depuis `~/.config/herdr-app/mods/antoine/icons/material/` | MIT |
+| État des fichiers par workspace (`src/shared/etat-fichiers.ts` : onglets épinglés et ouverts, récents, dossiers ajoutés, libellés d'onglets, images) et ses tests (`tests/etat-fichiers.test.ts`) | `files.js` et `remember` de `quickopen.js` du mod `antoine`, tests de `~/dev/playground/herdr-app-mod/tests/files.test.mjs`, réécrits en TypeScript (onglets ouverts retenus au relancement, contrairement à `boot`) | code personnel d'Antoine |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
 (`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT), Lucide (`lucide`, icônes
