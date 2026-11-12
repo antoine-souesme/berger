@@ -1131,3 +1131,23 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* La croix qui ferme un panneau, à droite de son bandeau. */
+.fermer-panneau {
+  margin-left: auto;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 5px;
+  padding: 0;
+  background: none;
+  color: var(--gris);
+  cursor: pointer;
+}
+.fermer-panneau:hover {
+  background: var(--actif);
+  color: var(--vif);
+}

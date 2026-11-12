@@ -43,6 +43,21 @@ export function dossierDuClavier(space: VueSpace, onglet: VueOnglet | null): str
   return (adresse && etat().vue.terminaux[adresse]?.cwd) || space.dossier
 }
 
+// La croix à droite du bandeau ferme le panneau (le clic sur le panneau l'a
+// d'abord choisi) : elle reste là quand les clics droits vont au programme.
+function croixPanneau(): HTMLElement {
+  const b = document.createElement('button')
+  b.className = 'fermer-panneau'
+  b.title = 'Fermer le panneau (⇧⌘W)'
+  b.setAttribute('aria-label', 'Fermer le panneau')
+  b.append(icone('x', 'currentColor', 13))
+  b.addEventListener('click', (e) => {
+    e.stopPropagation()
+    void actionPanneau({ type: 'panneau.fermer' })
+  })
+  return b
+}
+
 function remplirBandeau(bandeau: HTMLElement, bloc: Bloc): void {
   const adresse = bloc.content?.terminal
   if (!adresse) {
@@ -52,7 +67,7 @@ function remplirBandeau(bandeau: HTMLElement, bloc: Bloc): void {
     const mod = document.createElement('span')
     mod.className = 'gris'
     mod.textContent = bloc.content?.mod ?? ''
-    bandeau.replaceChildren(icone('puzzle', '#a59f85'), nom, mod)
+    bandeau.replaceChildren(icone('puzzle', '#a59f85'), nom, mod, croixPanneau())
     return
   }
   const t = etat().vue.terminaux[adresse]
@@ -63,7 +78,12 @@ function remplirBandeau(bandeau: HTMLElement, bloc: Bloc): void {
   const dossier = document.createElement('span')
   dossier.className = 'gris'
   dossier.textContent = t?.dossier ?? ''
-  bandeau.replaceChildren(icone(t?.programme.icone ?? 'terminal', couleur), nom, dossier)
+  bandeau.replaceChildren(
+    icone(t?.programme.icone ?? 'terminal', couleur),
+    nom,
+    dossier,
+    croixPanneau()
+  )
 }
 
 function message(texte: string): HTMLElement {
