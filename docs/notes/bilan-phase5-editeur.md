@@ -59,6 +59,11 @@ ce qui suit, avec une capture et une ligne de journal par étape.
 - `jsonc` est rangé sous `json` (seul langage du service JSON de Monaco) :
   les commentaires sont acceptés dans tous les fichiers JSON.
 
+- Les services TypeScript intégrés de Monaco sont coupés au profit du vrai
+  service du projet : l'aide aux paramètres, « Mettre en forme le document »
+  (⇧⌥F), la liste des symboles (⇧⌘O) et le surlignage des occurrences, qu'ils
+  donnaient avant cette phase, ne sont pas encore branchés sur le serveur.
+
 ## Ce qui reste
 
 Voir `docs/suivi/DETTE.md` : recherche et différences git, fichiers ouverts

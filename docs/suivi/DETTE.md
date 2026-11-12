@@ -21,6 +21,14 @@ Une entrée par point, la plus récente en haut.
 
 ---
 
+### Aide aux paramètres, mise en forme, symboles et occurrences
+
+- **Bloc** : `mission`.
+- **Origine** : Tâche 4 du plan de la phase 5 (services TypeScript intégrés de Monaco coupés), relecture finale.
+- **Ce qui est différé** : seuls complétion, définition, références, survol, renommage, jetons sémantiques, erreurs et « Organiser les imports » passent par le serveur ; l'aide aux paramètres, ⇧⌥F, ⇧⌘O et le surlignage des occurrences, que Monaco donnait avant, ont disparu pour TypeScript et JavaScript.
+- **Pourquoi** : la spec ne les demande pas ; les brancher dépasse le plan.
+- **Ce qu'il faudrait faire** : dans `brancherLangage` de `src/renderer/src/langage.ts`, ajouter `registerSignatureHelpProvider` (`textDocument/signatureHelp`), `registerDocumentFormattingEditProvider` (`textDocument/formatting`), `registerDocumentSymbolProvider` (`textDocument/documentSymbol`) et `registerDocumentHighlightProvider` (`textDocument/documentHighlight`), et déclarer ces capacités client dans `src/main/services/langage.ts`.
+
 ### Recherche dans le projet et différences git
 
 - **Bloc** : `mission`.
