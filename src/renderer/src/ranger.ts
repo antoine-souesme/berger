@@ -40,6 +40,7 @@ import {
 } from './explorateur'
 import { icone } from './icones'
 import { ouvrirMenu } from './menus'
+import { CHEMINS_GLISSES } from '../../shared/depot'
 
 type Edition =
   | { type: 'renommer'; chemin: string }
@@ -47,7 +48,7 @@ type Edition =
   | null
 
 let edition: Edition = null
-const INTERNE = 'application/x-berger-chemins'
+const INTERNE = CHEMINS_GLISSES
 const RACINE = 'application/x-berger-racine'
 const DANS_LUI_MEME = 'Impossible de déplacer un dossier dans lui-même.'
 
