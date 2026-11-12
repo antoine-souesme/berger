@@ -1,0 +1,37 @@
+{
+  "background": "#21252b",
+  "foreground": "#abb2bf",
+  "selection": "#323844",
+  "cursor": "#abb2bf",
+  "ansi": [
+    "#454c59",
+    "#e06c75",
+    "#98c379",
+    "#e5c07b",
+    "#61afef",
+    "#c678dd",
+    "#56b6c2",
+    "#abb2bf",
+    "#767676",
+    "#e06c75",
+    "#98c379",
+    "#e5c07b",
+    "#61afef",
+    "#c678dd",
+    "#56b6c2",
+    "#abb2bf"
+  ],
+  "editeur": {
+    "commentaire": "#7f848e",
+    "chaine": "#98c379",
+    "motCle": "#c678dd",
+    "fonction": "#61afef",
+    "type": "#e5c07b",
+    "nombre": "#d19a66",
+    "constante": "#d19a66",
+    "variable": "#e06c75",
+    "balise": "#e06c75",
+    "attribut": "#d19a66",
+    "operateur": "#56b6c2"
+  }
+}

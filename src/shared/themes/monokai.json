@@ -1,0 +1,49 @@
+{
+  "background": "#272822",
+  "foreground": "#f8f8f2",
+  "selection": "#49483e",
+  "cursor": "#f8f8f0",
+  "ansi": [
+    "#333333",
+    "#c4265e",
+    "#86b42b",
+    "#b3b42b",
+    "#6a7ec8",
+    "#8c6bc8",
+    "#56adbc",
+    "#c4c4be",
+    "#666666",
+    "#f92672",
+    "#a6e22e",
+    "#e2e22e",
+    "#819aff",
+    "#ae81ff",
+    "#66d9ef",
+    "#d8d8d2"
+  ],
+  "colors": {
+    "canvas": "#1e1f1c",
+    "chrome": "#1e1f1c",
+    "surface": "#272822",
+    "popover": "#1e1f1c",
+    "raised": "#3e3d32",
+    "hover": "#3e3d32",
+    "selected": "#414339",
+    "border": "#34352f",
+    "input": "#414339",
+    "muted": "#a59f85",
+    "dim": "#75715e",
+    "accent": "#66d9ef",
+    "accent_foreground": "#1e1f1c",
+    "solid": "#75715e",
+    "solid_foreground": "#f8f8f2",
+    "working": "#e6db74",
+    "blocked": "#f92672",
+    "done": "#a6e22e",
+    "idle": "#75715e",
+    "unknown": "#75715e"
+  },
+  "editeur": {
+    "vscode": "monokai-color-theme.json"
+  }
+}
