@@ -1,5 +1,5 @@
 // Règles pures de la liste des agents : les agents des spaces visibles, leurs
-// sous-agents en arbre (ceux de `hc run` et ceux des hooks de Claude Code),
+// sous-agents lancés par `hc run`, en arbre,
 // le tri, l'agent voisin et la durée affichée. L'arbre et le tri s'inspirent
 // de `main.js` du mod `antoine-agents` (voir docs/COPIES.md).
 import { feuilles } from './arbre'
@@ -10,10 +10,8 @@ import type { Vue, VueTerminal } from './spaces'
 export type TriAgents = 'spaces' | 'urgence'
 export type Trait = '├' | '└' | '│' | ''
 export type LigneAgent = {
-  /** L'adresse, ou `${parent}#${id}` pour un sous-agent de hook. */
   cle: string
-  /** null pour un sous-agent de hook (il n'a pas de terminal). */
-  adresse: string | null
+  adresse: string
   /** Où mène un clic : sa place, sinon celle de son parent ; null si aucune. */
   place: PlaceAgent | null
   space: string
@@ -24,7 +22,6 @@ export type LigneAgent = {
   depuis: number | null
   /** Vide pour un agent de premier niveau. */
   traits: Trait[]
-  hook: boolean
 }
 
 export const URGENCE: Record<'attente' | 'fini' | 'travail', number> = {
@@ -89,8 +86,7 @@ export function listeAgents(vue: Vue, visibles: string[], tri: TriAgents): Ligne
       programme: t.programme,
       agent: t.agent,
       depuis: t.depuis,
-      traits,
-      hook: false
+      traits
     }
   }
 
@@ -118,26 +114,7 @@ export function listeAgents(vue: Vue, visibles: string[], tri: TriAgents): Ligne
     .map((p, ordre) => {
       const t = vue.terminaux[p.adresse]
       const enfants = arbre(p.adresse, p, [], new Set([p.adresse]))
-      // Les hooks à la fin, à plat : seule la toute dernière ligne ferme l'arbre.
-      if (t.hooks.length)
-        for (const e of enfants) {
-          if (e.traits[0] === '└') e.traits[0] = '├'
-          else if (e.traits.length > 1 && e.traits[0] === '') e.traits[0] = '│'
-        }
-      const hooks = t.hooks.map((h, i): LigneAgent => ({
-        cle: `${p.adresse}#${h.id}`,
-        adresse: null,
-        place: p,
-        space: p.space,
-        nomSpace: nomSpace.get(p.space) ?? '',
-        titre: h.type || 'sous-agent',
-        programme: t.programme,
-        agent: 'travail',
-        depuis: h.depuis || null,
-        traits: [i === t.hooks.length - 1 ? '└' : '├'],
-        hook: true
-      }))
-      const lignes = [ligne(t, p, [], p), ...enfants, ...hooks]
+      const lignes = [ligne(t, p, [], p), ...enfants]
       return {
         lignes,
         ordre,
@@ -160,15 +137,13 @@ export function listeAgents(vue: Vue, visibles: string[], tri: TriAgents): Ligne
 }
 
 // L'agent suivant ou précédent : seulement les lignes qui ont leur propre
-// panneau (ni sous-agent de hook, ni sous-agent sans panneau), en boucle.
+// panneau (pas un sous-agent sans panneau), en boucle.
 export function agentVoisin(
   lignes: LigneAgent[],
   actuel: string | null,
   pas: 1 | -1
 ): PlaceAgent | null {
-  const liste = lignes.flatMap((l) =>
-    l.adresse && l.place && l.place.adresse === l.adresse ? [l.place] : []
-  )
+  const liste = lignes.flatMap((l) => (l.place && l.place.adresse === l.adresse ? [l.place] : []))
   if (liste.length === 0) return null
   const i = liste.findIndex((p) => p.adresse === actuel)
   if (i < 0) return pas === 1 ? liste[0] : liste[liste.length - 1]

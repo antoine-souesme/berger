@@ -222,7 +222,6 @@ function ligneAgent(l: LigneAgent, maintenant: number): HTMLElement {
   const a = l.place
   const ligne = document.createElement('div')
   const affiche =
-    !l.hook &&
     !!a &&
     a.adresse === l.adresse &&
     spaceAffiche()?.id === a.space &&
@@ -239,7 +238,6 @@ function ligneAgent(l: LigneAgent, maintenant: number): HTMLElement {
         'trait-arbre' + (t ? ' ligne' : '') + (t === '└' || t === '├' ? ' coin' : '')
       ligne.append(trait)
     }
-    if (l.hook) ligne.title = `Sous-agent${l.titre !== 'sous-agent' ? ` : ${l.titre}` : ''}`
   } else {
     const nom = document.createElement('span')
     nom.className = 'nom'

@@ -15,7 +15,7 @@ Chaque morceau de code repris dans Berger, avec sa source et sa licence.
 | Table des raccourcis (`src/shared/raccourcis.ts`) | `~/.config/herdr-app/keys.json` (raccourcis de Herdr), aucun code repris | — |
 | Format des trames de herdr-core (`src/shared/trames.ts`) | observé sur `hc` 0.1.20, aucun code repris | herdr-core : Apache 2.0 |
 | Règles des workspaces (`src/shared/workspaces.ts`) et leurs tests (`tests/workspaces.test.ts`) | `~/.config/herdr-app/mods/antoine/workspaces.js` et `~/dev/playground/herdr-app-mod/tests/workspaces.test.mjs`, réécrits en TypeScript sans le suivi du space affiché par Herdr | code personnel d'Antoine |
-| Sous-agents des hooks de Claude Code (`src/shared/sous-agents.ts`) et leurs tests (`tests/sous-agents.test.ts`) ; arbre et tri de la liste des agents (`src/shared/agents.ts`) | `~/.config/herdr-app/mods/antoine-agents/subs.js` et `~/dev/playground/herdr-app-mod/tests/subs.test.mjs` réécrits en TypeScript ; arbre, tri et durée inspirés de `main.js` du même mod | code personnel d'Antoine |
+| Arbre et tri de la liste des agents (`src/shared/agents.ts`) | arbre, tri et durée inspirés de `~/.config/herdr-app/mods/antoine-agents/main.js` | code personnel d'Antoine |
 
 Dépendances utilisées sans modification : Monaco (`monaco-editor`, MIT), xterm.js
 (`@xterm/xterm`, `@xterm/addon-fit`, MIT), Electron (MIT), Lucide (`lucide`, icônes

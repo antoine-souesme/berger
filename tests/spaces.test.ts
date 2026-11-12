@@ -104,30 +104,11 @@ test('un space sans dossier garde un dossier vide', () => {
   expect(construireVue(sansDossier, []).spaces[0].dossier).toBe('')
 })
 
-test('construireVue : hooks seulement sous Claude Code, parent et depuis repris', () => {
-  const sub = { 'antoine.sub.h': '{"type":"Explore","at":900}' }
-  const vue = construireVue(
-    doc,
-    [
-      vivant('t2b', {
-        status: { state: 'working', app: 'claude', title: 'Tâche' },
-        status_ms: 1234,
-        labels: sub
-      }),
-      vivant('t2c', { labels: sub, foreground: { cwd: '/x', name: 'zsh' } }),
-      vivant('t99', { labels: sub, foreground: { cwd: '/x', name: 'claude' } }),
-      vivant('t5', { parent: 't2b' })
-    ],
-    '',
-    1000
-  )
-  expect(vue.terminaux['t2b']).toMatchObject({
-    parent: null,
-    depuis: 1234,
-    titre: 'Tâche',
-    hooks: [{ id: 'h', type: 'Explore', depuis: 900 }]
-  })
-  expect(vue.terminaux['t2c'].hooks).toEqual([])
-  expect(vue.terminaux['t99'].hooks).toHaveLength(1)
-  expect(vue.terminaux['t5']).toMatchObject({ parent: 't2b', depuis: null, hooks: [] })
+test('construireVue : parent, depuis et titre repris', () => {
+  const vue = construireVue(doc, [
+    vivant('t2b', { status: { state: 'working', app: 'claude', title: 'Tâche' }, status_ms: 1234 }),
+    vivant('t5', { parent: 't2b' })
+  ])
+  expect(vue.terminaux['t2b']).toMatchObject({ parent: null, depuis: 1234, titre: 'Tâche' })
+  expect(vue.terminaux['t5']).toMatchObject({ parent: 't2b', depuis: null })
 })

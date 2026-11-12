@@ -65,7 +65,7 @@ Reprendre l'organisation du mod `antoine`.
 - La liste des spaces filtrée sur le workspace, « Nouveau space » quand il est
   vide.
 - La liste des agents : filtrée, nom du space sur chaque ligne, tri « Ordre des
-  spaces », sous-agents de Claude Code (par les hooks), clic qui ramène au
+  spaces », sous-agents lancés par `hc run`, clic qui ramène au
   terminal.
 
 ## Phase 4 : fichiers

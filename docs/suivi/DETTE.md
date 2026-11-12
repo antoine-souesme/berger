@@ -11,10 +11,6 @@ décisions prises sont dans les bilans de phase (`docs/notes/`).
   essais (un lancement précédent pas encore fermé). À trancher avec la phase 7
   (application installée) : un verrou d'instance unique
   (`app.requestSingleInstanceLock`) ou relire le fichier avant d'écrire.
-- **Sous-agents d'un sous-agent.** Les sous-agents des hooks ne sont lus que
-  sous un agent de premier niveau (comme le mod `antoine-agents`) ; un Claude
-  Code lancé par `hc run` sous un autre agent n'affiche pas les siens. À voir
-  si Antoine en a besoin.
 - **Relecture de fin de phase, points laissés.** Dans le dialogue de
   suppression, le focus est sur « Supprimer » (la barre d'espace confirme) ;
   `workspaces.json` est écrit en place (un arrêt brutal pendant l'écriture le

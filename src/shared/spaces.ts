@@ -11,7 +11,6 @@ import {
   type EtatAgent,
   type Icone
 } from './libelles'
-import { sousAgentsHooks, type SousAgentHook } from './sous-agents'
 
 export type TerminalCore = {
   address: string
@@ -44,8 +43,6 @@ export type VueTerminal = {
   /** Depuis quand il est dans son état (ms), null si inconnu. */
   depuis: number | null
   titre: string
-  /** Sous-agents posés par les hooks de Claude Code (vide pour un autre programme). */
-  hooks: SousAgentHook[]
 }
 export type VueOnglet = { id: string; nom: string; racine: Noeud; agent: EtatAgent }
 export type VueSpace = {
@@ -102,10 +99,7 @@ export function dossierDuSpace(space: SpaceDoc, terminaux: Map<string, TerminalC
   return premier?.foreground?.cwd || premier?.cwd || space.folder || ''
 }
 
-const estClaude = (t: TerminalCore, nom: string): boolean =>
-  t.status?.app ? /^claude/i.test(t.status.app) : nom === 'Claude Code'
-
-function vueTerminal(t: TerminalCore, maison: string, maintenant: number): VueTerminal {
+function vueTerminal(t: TerminalCore, maison: string): VueTerminal {
   const prog = programme(t)
   const cwd = t.foreground?.cwd || t.cwd || ''
   const vivant = t.state === 'live'
@@ -121,8 +115,7 @@ function vueTerminal(t: TerminalCore, maison: string, maintenant: number): VueTe
     clicsDroitsAuProgramme: t.labels?.['herdr.right-click'] === 'program',
     parent: t.parent ?? null,
     depuis: typeof t.status_ms === 'number' ? t.status_ms : null,
-    titre: titreAgent(t),
-    hooks: vivant && estClaude(t, prog.nom) ? sousAgentsHooks(t.labels, maintenant) : []
+    titre: titreAgent(t)
   }
 }
 
@@ -130,15 +123,10 @@ function dernierSegment(chemin: string): string {
   return chemin.split('/').filter(Boolean).pop() ?? chemin
 }
 
-export function construireVue(
-  doc: unknown,
-  terminaux: TerminalCore[],
-  maison = '',
-  maintenant = Date.now()
-): Vue {
+export function construireVue(doc: unknown, terminaux: TerminalCore[], maison = ''): Vue {
   const parAdresse = new Map(terminaux.map((t) => [t.address, t]))
   const vues: Record<string, VueTerminal> = {}
-  for (const t of terminaux) vues[t.address] = vueTerminal(t, maison, maintenant)
+  for (const t of terminaux) vues[t.address] = vueTerminal(t, maison)
   const spacesDoc = ((doc as { spaces?: SpaceDoc[] } | null)?.spaces ?? []) as SpaceDoc[]
   const ranges = new Set<string>()
   const spaces = spacesDoc.map((space) => {

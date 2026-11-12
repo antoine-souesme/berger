@@ -20,7 +20,7 @@ const claude = (state: string, plus: Partial<TerminalCore> = {}): Partial<Termin
   ...plus
 })
 const vue = (terminaux: TerminalCore[]): ReturnType<typeof construireVue> =>
-  construireVue(doc, terminaux, '', 10_000)
+  construireVue(doc, terminaux, '')
 const cles = (l: LigneAgent[]): [string, string[]][] => l.map((x) => [x.cle, x.traits])
 
 test('ancienne règle : agents dans l’ordre des spaces puis des onglets', () => {
@@ -37,8 +37,7 @@ test('ancienne règle : agents dans l’ordre des spaces puis des onglets', () =
     space: 'sp2',
     nomSpace: 'Front',
     agent: 'fini',
-    traits: [],
-    hook: false
+    traits: []
   })
 })
 
@@ -56,7 +55,7 @@ test('un sous-agent hc run se range sous son parent, avec ses traits', () => {
     ['t6', ['', '└']]
   ])
   expect(l[2].place).toEqual(l[0].place)
-  expect(l[1]).toMatchObject({ agent: 'attente', space: 'sp1', hook: false })
+  expect(l[1]).toMatchObject({ agent: 'attente', space: 'sp1' })
 })
 
 test('un enfant avec son propre panneau garde sa place, sans ligne de premier niveau', () => {
@@ -69,37 +68,17 @@ test('un enfant avec son propre panneau garde sa place, sans ligne de premier ni
   expect(l[1].place).toEqual({ space: 'sp1', onglet: 'tb2', panneau: 'p3', adresse: 't99' })
 })
 
-test('sous-agents de hook après les enfants, le dernier ferme l’arbre', () => {
+test('petits-enfants rangés en profondeur, avec leurs traits', () => {
   const v = vue([
-    t(
-      't2b',
-      claude('working', {
-        labels: {
-          'antoine.sub.h2': '{"type":"Explore","at":9000}',
-          'antoine.sub.h1': '{"type":"","at":0}'
-        }
-      })
-    ),
+    t('t2b', claude('working')),
     t('t5', { parent: 't2b' }),
     t('t6', { parent: 't5' })
   ])
-  const l = listeAgents(v, ['sp1'], 'spaces')
-  expect(cles(l)).toEqual([
+  expect(cles(listeAgents(v, ['sp1'], 'spaces'))).toEqual([
     ['t2b', []],
-    ['t5', ['├']],
-    ['t6', ['│', '└']],
-    ['t2b#h1', ['├']],
-    ['t2b#h2', ['└']]
+    ['t5', ['└']],
+    ['t6', ['', '└']]
   ])
-  expect(l[3]).toMatchObject({
-    adresse: null,
-    hook: true,
-    agent: 'travail',
-    depuis: null,
-    titre: 'sous-agent',
-    place: l[0].place
-  })
-  expect(l[4]).toMatchObject({ titre: 'Explore', depuis: 9000 })
 })
 
 test('un enfant dont le parent n’est pas visible garde sa propre ligne', () => {
@@ -147,15 +126,15 @@ test('tri urgence : un parent prend l’urgence de son sous-agent, qui le suit',
   expect(listeAgents(v, ['sp1', 'sp2'], 'urgence').map((x) => x.cle)).toEqual(['t2b', 't5', 't3'])
 })
 
-test('agentVoisin saute les sous-agents de hook et boucle', () => {
+test('agentVoisin saute les sous-agents sans panneau et boucle', () => {
   const v = vue([
-    t('t2b', claude('working', { labels: { 'antoine.sub.h': '{"type":"x","at":0}' } })),
+    t('t2b', claude('working')),
     t('t5', { parent: 't2b' }),
     t('t99', claude('idle')),
     t('t3', claude('done'))
   ])
   const l = listeAgents(v, ['sp1', 'sp2'], 'spaces')
-  expect(l.map((x) => x.cle)).toEqual(['t2b', 't5', 't2b#h', 't99', 't3'])
+  expect(l.map((x) => x.cle)).toEqual(['t2b', 't5', 't99', 't3'])
   expect(agentVoisin(l, 't2b', 1)?.adresse).toBe('t99') // t5 n'a pas de panneau à lui
   expect(agentVoisin(l, 't3', 1)?.adresse).toBe('t2b')
   expect(agentVoisin(l, 't2b', -1)?.adresse).toBe('t3')

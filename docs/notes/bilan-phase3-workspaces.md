@@ -39,9 +39,8 @@ fin, les spaces du document et `workspaces.json` étaient identiques aux copies.
 - **Liste des agents** : icône du programme, nom du space, titre en gris,
   durée, état (cercle jaune qui tourne, point rose, coche verte). Le bouton du
   titre bascule « Ordre des spaces » / « Par urgence », retenu après relance.
-- **Sous-agents** : dans un space de test, un Claude Code lancé, un `hc run`
-  lancé depuis son terminal et une étiquette `antoine.sub.<id>` posée à la main
-  se sont affichés sous l'agent, en arbre (le shell enfant, puis « Explore »).
+- **Sous-agents** : dans un space de test, un `hc run` lancé depuis le
+  terminal d'un Claude Code s'est affiché sous lui, en arbre.
 - **Raccourcis** (scénario `BERGER_SCENARIO=raccourcis`) : `⌃1`, `⌃2`,
   `⌥⌘]`, `⌥⌘[` suivent la liste des spaces du workspace ouvert ; `⌘]`, `⌘[`
   suivent la liste des agents et sautent les sous-agents sans terminal.
@@ -77,14 +76,11 @@ fin, les spaces du document et `workspaces.json` étaient identiques aux copies.
   agent n'a pas de ligne à lui, même s'il y a un shell entre les deux.
 - La barre d'état compte les agents du workspace ouvert, et dit « Aucun agent »
   quand il n'y en a pas (maquette d).
+- Les sous-agents que Claude Code lance en lui-même (étiquettes posées par ses
+  hooks) ont été retirés à la demande d'Antoine : seuls ceux de `hc run` s'affichent.
 - Les maquettes ont été comparées dans Chrome lancé en arrière-plan
   (l'extension Chrome n'était pas branchée).
 
 ## À vérifier par Antoine
 
 - Au premier lancement : ses vrais workspaces, tels qu'il les a dans Herdr.
-- Les sous-agents de ses vrais agents Claude Code sous leur parent. Le hook
-  `~/.config/herdr-app/mods/antoine-agents/hooks/subagents.sh` n'est pas
-  branché dans `~/.claude/settings.json` sur cet ordinateur : sans lui, Claude
-  Code ne pose pas les étiquettes `antoine.sub.<id>`, et seuls les sous-agents
-  lancés par `hc run` s'affichent.
