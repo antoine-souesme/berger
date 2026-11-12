@@ -4,9 +4,11 @@ import type { Vue } from '../../shared/spaces'
 import {
   afficherSpace,
   appliquerEtatRetenu,
+  appliquerFichiersRetenus,
   changer,
   etat,
   ongletAffiche,
+  ouvrirChemins,
   redessiner,
   spaceAffiche,
   surChangement
@@ -14,8 +16,9 @@ import {
 import { initFenetre } from './fenetre'
 import { annoncerColonne, initColonne } from './colonne'
 import { initBarreEtat } from './barre-etat'
-import { afficherOnglet, brancherFichiers, dessinerBarre } from './barre-onglets'
-import { ouvrirFichier, type PlaceAgent } from '../../shared/onglets'
+import { brancherFichiers, dessinerBarre } from './barre-onglets'
+import type { PlaceAgent } from '../../shared/onglets'
+import type { EtatFichiers } from '../../shared/etat-fichiers'
 import { feuilles } from '../../shared/arbre'
 import {
   afficherFichier,
@@ -36,10 +39,6 @@ import type { EtatWorkspaces } from '../../shared/workspaces'
 initFenetre()
 initBarreEtat()
 initTerminaux({ fin: () => redessiner() })
-function ouvrirUnFichier(chemin: string): void {
-  changer((e) => (e.fichiers = ouvrirFichier(e.fichiers, chemin)))
-  afficherOnglet({ type: 'fichier', chemin })
-}
 
 // Tous les terminaux rangés, à leur place (pour BERGER_OUVRIR).
 function agentsEtTerminaux(): PlaceAgent[] {
@@ -103,6 +102,7 @@ void (async () => {
     workspaces: EtatWorkspaces | null
   }>('berger:etat')
   initEditeur(maison)
+  appliquerFichiersRetenus(await window.berger.demander<EtatFichiers>('berger:etat-fichiers'))
   appliquerEtatRetenu(await window.berger.demander<EtatFenetre>('berger:etat-fenetre'))
   changer((e) => {
     e.connecte = connexion === 'connecte'
@@ -121,4 +121,5 @@ window.berger.ecouter('berger:ouvrir', ({ adresse }) => {
   if (place) choisirPlace(place)
 })
 window.berger.ecouter('berger:scenario-space', ({ space }) => afficherSpace(space))
-window.berger.ecouter('berger:scenario-fichier', ({ chemin }) => ouvrirUnFichier(chemin))
+window.berger.ecouter('berger:scenario-fichier', ({ chemin }) => ouvrirChemins([chemin]))
+window.berger.ecouter('berger:ouvrir-fichiers', ({ chemins }) => ouvrirChemins(chemins))

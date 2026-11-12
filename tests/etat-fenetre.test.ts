@@ -16,10 +16,17 @@ test('état complet relu tel quel', () => {
     colonneMasquee: true,
     space: 'sp1',
     onglet: { type: 'fichier', chemin: '/a' },
-    fichiers: ['/a', 3, '/b'],
+    explorateurMasque: true,
     triAgents: 'urgence'
   }
-  expect(lireEtatFenetre(e)).toEqual({ ...e, fichiers: ['/a', '/b'] })
+  expect(lireEtatFenetre(e)).toEqual(e)
+})
+
+test('explorateur masqué retenu, défaut faux ; la liste globale de fichiers disparaît', () => {
+  const e = lireEtatFenetre({ explorateurMasque: true, fichiers: ['/a'] })
+  expect(e.explorateurMasque).toBe(true)
+  expect('fichiers' in e).toBe(false)
+  expect(lireEtatFenetre(null).explorateurMasque).toBe(false)
 })
 
 test('tri des agents retenu, valeur inconnue ramenée à « spaces »', () => {

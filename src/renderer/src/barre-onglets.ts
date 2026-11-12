@@ -1,10 +1,28 @@
 // La barre d'onglets : les onglets de terminaux du space affiché, un trait,
 // puis les onglets de fichiers. Rien d'autre.
-import { apresFermeture, fermerFichier, memeOnglet, type RefOnglet } from '../../shared/onglets'
+import { apresFermeture, memeOnglet, type RefOnglet } from '../../shared/onglets'
 import { COULEUR_ETAT } from '../../shared/libelles'
+import {
+  desepingler,
+  epingler,
+  estImage,
+  fermerFichierWs,
+  libellesOnglets,
+  type OngletFichier
+} from '../../shared/etat-fichiers'
+import { iconeFichier } from '../../shared/icones-fichiers'
 import { terminauxDeLArbre, type VueOnglet, type VueSpace } from '../../shared/spaces'
-import { changer, etat, ongletAffiche, ongletsAffiches, spaceAffiche } from './etat'
-import { icone } from './icones'
+import {
+  changer,
+  changerFichiers,
+  etat,
+  fichiersDuWorkspace,
+  ongletAffiche,
+  ongletsAffiches,
+  spaceAffiche
+} from './etat'
+import { enregistrer } from './editeur'
+import { icone, iconeMaterial } from './icones'
 import { ouvrirMenu } from './menus'
 import { dossierDuClavier, oublierClavier } from './panneaux'
 
@@ -100,31 +118,81 @@ function ongletTerminal(space: VueSpace, onglet: VueOnglet, actif: boolean): HTM
   return el
 }
 
-function ongletFichier(chemin: string, actif: boolean): HTMLElement {
+// Un onglet de fichier (maquette explorateur.html d) : icône Material, nom,
+// dossier en gris quand deux noms se ressemblent ; à droite la punaise d'un
+// épinglé, le point d'un fichier non enregistré (il gagne), sinon la croix.
+function ongletFichier(
+  o: OngletFichier,
+  libelle: { nom: string; dossier: string },
+  actif: boolean
+): HTMLElement {
+  const { chemin, epingle } = o
   const el = document.createElement('div')
-  el.className = 'onglet' + (actif ? ' actif' : '')
+  el.className = 'onglet onglet-fichier' + (actif ? ' actif' : '') + (epingle ? ' epingle' : '')
   el.title = chemin
+  el.dataset['chemin'] = chemin
   const ref: RefOnglet = { type: 'fichier', chemin }
   const nom = document.createElement('span')
-  nom.textContent = chemin.slice(chemin.lastIndexOf('/') + 1)
-  const fermer = document.createElement('span')
+  nom.textContent = libelle.nom
+  el.append(iconeMaterial(iconeFichier(libelle.nom, false)), nom)
+  if (libelle.dossier) {
+    const d = document.createElement('span')
+    d.className = 'dossier-onglet'
+    d.textContent = libelle.dossier
+    el.append(d)
+  }
+  const bout = document.createElement('span')
   const modifie = etat().modifies.has(chemin)
-  fermer.className = 'fermer' + (modifie ? ' modifie' : '')
+  bout.className = 'fermer' + (modifie ? ' modifie' : epingle ? ' punaise' : '')
   if (modifie) {
-    fermer.textContent = '●'
-    fermer.style.fontSize = '10px'
-  } else fermer.append(icone('x', 'currentColor', 12))
-  fermer.addEventListener('click', (e) => {
+    bout.textContent = '●'
+    bout.style.fontSize = '10px'
+  } else if (epingle) {
+    bout.append(icone('pin', 'currentColor', 12))
+    bout.title = 'Désépingler'
+  } else bout.append(icone('x', 'currentColor', 12))
+  bout.addEventListener('click', (e) => {
     e.stopPropagation()
-    void fermerOnglet(ref)
+    if (epingle && !modifie) changerFichiers((x, ws) => desepingler(x, ws, chemin))
+    else void fermerOnglet(ref)
   })
-  el.append(icone('file', '#a59f85'), nom, fermer)
+  el.append(bout)
   el.addEventListener('click', () => afficherOnglet(ref))
   el.addEventListener('auxclick', (e) => {
     if (e.button === 1) void fermerOnglet(ref)
   })
   el.addEventListener('mousedown', (e) => {
     if (e.button === 1) e.preventDefault()
+  })
+  el.addEventListener('contextmenu', (e) => {
+    e.preventDefault()
+    ouvrirMenu(
+      e.clientX,
+      e.clientY,
+      [
+        epingle
+          ? {
+              libelle: 'Désépingler',
+              icone: 'pin-off',
+              faire: () => changerFichiers((x, ws) => desepingler(x, ws, chemin))
+            }
+          : {
+              libelle: 'Épingler',
+              icone: 'pin',
+              faire: () => changerFichiers((x, ws) => epingler(x, ws, chemin))
+            },
+        {
+          libelle: 'Enregistrer',
+          raccourci: '⌘S',
+          icone: 'save',
+          inactif: estImage(chemin),
+          faire: () => void enregistrer(chemin)
+        },
+        'separateur',
+        { libelle: 'Fermer', raccourci: '⌘W', icone: 'x', faire: () => void fermerOnglet(ref) }
+      ],
+      "Actions de l'onglet"
+    )
   })
   return el
 }
@@ -136,14 +204,21 @@ export function dessinerBarre(): void {
   for (const o of space?.onglets ?? [])
     enfants.push(ongletTerminal(space!, o, memeOnglet(actif, { type: 'terminal', id: o.id })))
   // Workspace vide : aucun onglet, pas même les fichiers ouverts.
-  const fichiers = space ? etat().fichiers : []
+  const fichiers = space ? fichiersDuWorkspace() : []
   if (fichiers.length) {
     const trait = document.createElement('div')
     trait.className = 'trait-onglets'
     enfants.push(trait)
   }
-  for (const chemin of fichiers)
-    enfants.push(ongletFichier(chemin, memeOnglet(actif, { type: 'fichier', chemin })))
+  const libelles = libellesOnglets(fichiers.map((o) => o.chemin))
+  for (const o of fichiers)
+    enfants.push(
+      ongletFichier(
+        o,
+        libelles.get(o.chemin)!,
+        memeOnglet(actif, { type: 'fichier', chemin: o.chemin })
+      )
+    )
   barreEl().replaceChildren(...enfants)
   barreEl().querySelector('.onglet.actif')?.scrollIntoView({ inline: 'nearest', block: 'nearest' })
 }
@@ -177,8 +252,8 @@ export async function fermerOnglet(ref: RefOnglet): Promise<void> {
   const etaitAffiche = memeOnglet(ongletAffiche(), ref)
   if (ref.type === 'fichier') {
     if (!(await fermerFichierAvecQuestion(ref.chemin))) return
+    changerFichiers((x, ws) => fermerFichierWs(x, ws, ref.chemin))
     changer((e) => {
-      e.fichiers = fermerFichier(e.fichiers, ref.chemin)
       e.modifies.delete(ref.chemin)
       if (etaitAffiche) e.onglet = suivant
     })

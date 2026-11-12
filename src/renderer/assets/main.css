@@ -429,6 +429,17 @@ body {
 .onglet .renommage {
   width: 110px;
 }
+.icone-fichier {
+  flex-shrink: 0;
+}
+.onglet .dossier-onglet {
+  color: var(--gris);
+  font-size: 12px;
+}
+.onglet .fermer.punaise {
+  visibility: visible;
+  color: var(--gris-clair);
+}
 .trait-onglets {
   width: 1px;
   height: 20px;

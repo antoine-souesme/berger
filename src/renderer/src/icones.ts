@@ -14,9 +14,12 @@ import {
   Maximize2,
   Monitor,
   Pencil,
+  Pin,
+  PinOff,
   Plus,
   Puzzle,
   Rows2,
+  Save,
   Search,
   Smile,
   SquareTerminal,
@@ -41,9 +44,12 @@ const ICONES: Record<string, IconNode> = {
   'maximize-2': Maximize2,
   monitor: Monitor,
   pencil: Pencil,
+  pin: Pin,
+  'pin-off': PinOff,
   plus: Plus,
   puzzle: Puzzle,
   'rows-2': Rows2,
+  save: Save,
   search: Search,
   smile: Smile,
   'square-terminal': SquareTerminal,
@@ -79,4 +85,16 @@ export function icone(
     svg.append(el)
   }
   return svg
+}
+
+// Une icône de fichier Material Icon Theme (MIT, voir public/material/LICENSE).
+export function iconeMaterial(nom: string, taille = 16): HTMLImageElement {
+  const img = document.createElement('img')
+  img.className = 'icone-fichier'
+  img.src = `./material/${nom}.svg`
+  img.width = taille
+  img.height = taille
+  img.alt = ''
+  img.draggable = false
+  return img
 }

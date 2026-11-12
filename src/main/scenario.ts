@@ -19,6 +19,9 @@ import { app, type BrowserWindow } from 'electron'
 //   change son emoji, le glisse en premier, revient au workspace d'origine, puis
 //   le supprime (son space est fermé) et rouvre le workspace d'origine. Capture
 //   et journal de workspaces.json à chaque étape. Ne ferme que le space créé.
+// BERGER_SCENARIO=onglets BERGER_SCENARIO_FICHIERS=<chemin>:<chemin>:… BERGER_SCENARIO_SORTIE=<préfixe>
+//   Ouvre ces fichiers (chemins contenant `berger-essai`), épingle celui qui finit par
+//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture.
 // BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
 //   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
@@ -114,6 +117,33 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  if (scenario === 'onglets') {
+    const fichiers = (process.env['BERGER_SCENARIO_FICHIERS'] ?? '')
+      .split(':')
+      .filter((c) => c.includes('berger-essai'))
+    const souris = pointeur(wc)
+    const etapes: [number, () => void | Promise<void>][] = fichiers.map((chemin, i) => [
+      2500 + i * 800,
+      () => wc.send('berger:scenario-fichier', { chemin })
+    ])
+    const t = 2500 + fichiers.length * 800 + 1000
+    const notes = fichiers.find((c) => c.endsWith('notes.md'))
+    etapes.push(
+      [t, () => souris('right', `.onglet-fichier[data-chemin="${notes}"]`)],
+      [t + 800, () => capture('01-menu-onglet')],
+      [t + 1200, () => souris('left', '.menu .entree', 'Épingler')],
+      [
+        t + 2000,
+        () => souris('left', `.onglet-fichier[data-chemin="${fichiers[fichiers.length - 1]}"]`)
+      ],
+      [t + 2600, () => souris('left', '#editeur .view-lines')],
+      [t + 3000, () => wc.insertText('// modifié par Berger\n')],
+      [t + 4000, () => capture('02-onglets')]
+    )
+    jouer(etapes)
+    return
+  }
+
   if (scenario === 'workspaces') {
     jouerWorkspaces(w, capture, touche, lireSpace)
     return
@@ -202,6 +232,27 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
 }
 
 type Point = { x: number; y: number }
+
+// Un clic de souris réel au centre d'un élément (sélecteur CSS, ou texte exact
+// d'une entrée de menu ou d'un bouton).
+function pointeur(
+  wc: Electron.WebContents
+): (bouton: 'left' | 'right' | 'middle', selecteur: string, texte?: string) => Promise<void> {
+  return async (bouton, selecteur, texte) => {
+    const p: Point | null = await wc.executeJavaScript(`(() => {
+      const liste = [...document.querySelectorAll(${JSON.stringify(selecteur)})]
+      const texte = ${JSON.stringify(texte ?? null)}
+      const el = texte === null ? liste[0] : liste.find((e) => e.textContent.trim() === texte)
+      if (!el) return null
+      const r = el.getBoundingClientRect()
+      return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
+    })()`)
+    if (!p) return console.error(`[berger] scénario : introuvable ${selecteur} ${texte ?? ''}`)
+    wc.sendInputEvent({ type: 'mouseMove', x: p.x, y: p.y })
+    wc.sendInputEvent({ type: 'mouseDown', x: p.x, y: p.y, button: bouton, clickCount: 1 })
+    wc.sendInputEvent({ type: 'mouseUp', x: p.x, y: p.y, button: bouton, clickCount: 1 })
+  }
+}
 
 // Le scénario des workspaces : les boutons sont retrouvés par leur
 // `aria-label` (ou leur texte), puis on joue de vrais événements souris.
