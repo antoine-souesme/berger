@@ -157,7 +157,7 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
   }
 
   if (scenario === 'reglages') {
-    void jouerReglages(w, capture, touche)
+    void jouerReglages(w, capture, touche, lireSpace)
     return
   }
 
@@ -922,7 +922,8 @@ async function jouerLangage(
 async function jouerReglages(
   w: BrowserWindow,
   capture: (nom: string) => Promise<void>,
-  touche: (keyCode: string, modifiers?: Mod[]) => void
+  touche: (keyCode: string, modifiers?: Mod[]) => void,
+  lireSpace: LireSpace
 ): Promise<void> {
   const donnees = app.getPath('userData')
   if (basename(donnees) !== 'Berger-dev') {
@@ -940,11 +941,19 @@ async function jouerReglages(
   const journal = (nom: string, valeur: unknown): void =>
     console.log(`[berger] scénario : ${nom} ${JSON.stringify(valeur)}`)
   const fichier = join(donnees, 'reglages.json')
-  let avant: string | null = null
+  let avant: string | null
   try {
     avant = readFileSync(fichier, 'utf8')
   } catch {
     avant = null
+  }
+  // Facultatif : un space de test (spbergertest…) pour les terminaux et ⌥⌘D.
+  const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
+  if (space && !space.startsWith('spbergertest')) {
+    console.error(
+      '[berger] scénario reglages refusé : BERGER_SCENARIO_SPACE doit commencer par spbergertest'
+    )
+    return
   }
   const ecrire = (texte: string): void => writeFileSync(fichier, texte)
   const barre = (): Promise<string> =>
@@ -993,7 +1002,18 @@ async function jouerReglages(
       editeur: await fondEditeur()
     })
 
-    await jouerFenetreReglages(wc, capture, touche, pause, journal, ecrire, fichier)
+    await jouerFenetreReglages({
+      wc,
+      capture,
+      touche,
+      pause,
+      journal,
+      ecrire,
+      fichier,
+      space,
+      lireSpace,
+      dossier
+    })
   } finally {
     if (avant === null) {
       try {
@@ -1008,13 +1028,209 @@ async function jouerReglages(
   }
 }
 
-// La fenêtre des réglages (Tâche 6).
-async function jouerFenetreReglages(
-  _wc: Electron.WebContents,
-  _capture: (nom: string) => Promise<void>,
-  _touche: (keyCode: string, modifiers?: Mod[]) => void,
-  _pause: (ms: number) => Promise<void>,
-  _journal: (nom: string, valeur: unknown) => void,
-  _ecrire: (texte: string) => void,
-  _fichier: string
-): Promise<void> {}
+// La fenêtre des réglages : thèmes choisis à la souris, raccourci modifié.
+async function jouerFenetreReglages(o: {
+  wc: Electron.WebContents
+  capture: (nom: string) => Promise<void>
+  touche: (keyCode: string, modifiers?: Mod[]) => void
+  pause: (ms: number) => Promise<void>
+  journal: (nom: string, valeur: unknown) => void
+  ecrire: (texte: string) => void
+  fichier: string
+  space: string
+  lireSpace: LireSpace
+  dossier: string
+}): Promise<void> {
+  const { wc, capture, touche, pause, journal, ecrire, fichier, space, lireSpace, dossier } = o
+  const souris = pointeur(wc)
+  const lire = (): string => {
+    try {
+      return readFileSync(fichier, 'utf8')
+    } catch {
+      return ''
+    }
+  }
+  const panneaux = async (): Promise<number> => {
+    const s = (await lireSpace(space)) as { tabs?: { root?: unknown }[] } | null
+    return (JSON.stringify(s ?? {}).match(/"terminal"/g) ?? []).length
+  }
+  const ouvrir = async (section?: string): Promise<void> => {
+    touche(',', ['meta'])
+    await pause(800)
+    if (section) {
+      await souris('left', `.section-reglages[data-section="${section}"]`)
+      await pause(600)
+    }
+  }
+  const fermer = async (): Promise<void> => {
+    touche('Escape')
+    await pause(500)
+  }
+  const choisir = async (bloc: 1 | 2, id: string): Promise<void> => {
+    await souris('left', `.bloc-themes:nth-child(${bloc}) .choix-theme[data-theme="${id}"]`)
+    await pause(1500)
+  }
+
+  ecrire('{}\n')
+  await pause(1000)
+  await ouvrir()
+  await capture('10-apparence')
+  journal('10-apparence', {
+    ouvert: await wc.executeJavaScript(`!!document.querySelector('.fenetre-reglages')`),
+    themes: await wc.executeJavaScript(
+      `[...document.querySelectorAll('.choix-theme .nom-theme')].map((e) => e.textContent)`
+    )
+  })
+  await fermer()
+
+  // Chaque thème de l'application, fenêtre entière (terminal du space de test).
+  const themesApp = [
+    'antoine-monokai',
+    'monokai',
+    'atom-one-dark',
+    'graphite',
+    'ink',
+    'moss',
+    'paper'
+  ]
+  if (space) {
+    wc.send('berger:scenario-space', { space })
+    await pause(1500)
+    // Le premier onglet (le terminal du space de test), pas le fichier ouvert.
+    touche('1', ['meta'])
+    await pause(1000)
+  }
+  for (const id of themesApp) {
+    await ouvrir()
+    await choisir(1, id)
+    await fermer()
+    await capture(`11-application-${id}`)
+  }
+  await ouvrir()
+  await choisir(1, 'antoine-monokai')
+  await fermer()
+
+  // Chaque thème de l'éditeur, sur a.ts.
+  wc.send('berger:scenario-fichier', { chemin: `${dossier}/src/a.ts` })
+  await pause(1500)
+  for (const id of [...themesApp, 'vscode-dark-modern', 'vscode-light-modern']) {
+    await ouvrir()
+    await choisir(2, id)
+    await capture(`12-editeur-${id}-reglages`)
+
+    await fermer()
+    await capture(`12-editeur-${id}`)
+  }
+  // Thèmes clairs : menu du clic droit de Berger, suggestions et menu de Monaco.
+  await ouvrir()
+  await choisir(1, 'paper')
+  await fermer()
+  await souris('right', '.ligne-space.choisi')
+  await pause(600)
+  await capture('12-clair-menu')
+  touche('Escape')
+  await pause(300)
+  await wc.executeJavaScript(`(() => { const { editeur } = window.bergerEssai
+    editeur.focus(); editeur.setPosition({ lineNumber: 5, column: 9 })
+    editeur.trigger('scenario', 'editor.action.triggerSuggest', {}) })()`)
+  await pause(2000)
+  await capture('12-clair-suggestions')
+  touche('Escape')
+  await pause(300)
+  await souris('right', '.view-line')
+  await pause(800)
+  await capture('12-clair-menu-editeur')
+  touche('Escape')
+  await pause(300)
+  await ouvrir()
+  await choisir(1, 'antoine-monokai')
+  await choisir(2, 'antoine-monokai')
+  await fermer()
+
+  // Raccourcis : « Diviser en bas » en ⌥⌘D, puis ⌘D (conflit).
+  await ouvrir('raccourcis')
+  await capture('13-raccourcis')
+  const ligne = '.ligne-raccourci[data-commande="panneau.diviserBas"] .raccourci'
+  await souris('left', ligne)
+  await pause(500)
+  await capture('14-attente')
+  touche('d', ['meta'])
+  await pause(500)
+  await capture('15-conflit')
+  journal(
+    '15-conflit',
+    await wc.executeJavaScript(`document.querySelector('${ligne}').textContent`)
+  )
+  touche('Enter')
+  await pause(500)
+  journal('15-conflit-pas-garde', lire())
+  touche('d', ['meta', 'alt'])
+  await pause(400)
+  await capture('16-alt-cmd-d')
+  touche('Enter')
+  await pause(1500)
+  await capture('17-garde')
+  journal('17-garde', lire())
+  await fermer()
+
+  if (space) {
+    wc.send('berger:scenario-space', { space })
+    await pause(1500)
+    // Le premier onglet (le terminal du space de test), pas le fichier ouvert.
+    touche('1', ['meta'])
+    await pause(1000)
+    const n0 = await panneaux()
+    touche('d', ['meta', 'shift'])
+    await pause(2000)
+    const n1 = await panneaux()
+    touche('d', ['meta', 'alt'])
+    await pause(2500)
+    const n2 = await panneaux()
+    await capture('18-divise')
+    journal('18-divise', { avant: n0, apresShiftCmdD: n1, apresAltCmdD: n2 })
+  }
+
+  // « Rétablir ».
+  await ouvrir('raccourcis')
+  await souris('left', '.ligne-raccourci[data-commande="panneau.diviserBas"] .retablir')
+  await pause(1500)
+  await capture('19-retabli')
+  journal('19-retabli', lire())
+  await fermer()
+
+  // Un raccourci écrit à la main : « Diviser à droite » en ⌥⌘R.
+  ecrire('{ "raccourcis": { "panneau.diviserDroite": ["cmd-alt-r"] } }\n')
+  await pause(1500)
+  await ouvrir('raccourcis')
+  await capture('20-a-la-main')
+  journal(
+    '20-a-la-main',
+    await wc.executeJavaScript(
+      `document.querySelector('.ligne-raccourci[data-commande="panneau.diviserDroite"] .raccourci').textContent`
+    )
+  )
+  await fermer()
+  if (space) {
+    wc.send('berger:scenario-space', { space })
+    await pause(1500)
+    // Le premier onglet (le terminal du space de test), pas le fichier ouvert.
+    touche('1', ['meta'])
+    await pause(1000)
+    const n0 = await panneaux()
+    touche('r', ['meta', 'alt'])
+    await pause(2500)
+    journal('21-alt-cmd-r', { avant: n0, apres: await panneaux() })
+  }
+
+  // Mal formé, fenêtre des réglages ouverte : message, et rien n'est écrit.
+  await ouvrir()
+  ecrire('{ mal')
+  await pause(1500)
+  await choisir(1, 'ink')
+  await capture('22-mal-forme')
+  journal('22-mal-forme', {
+    alerte: await wc.executeJavaScript(`document.querySelector('.alerte-reglages').textContent`),
+    fichier: lire()
+  })
+  await fermer()
+}

@@ -58,7 +58,11 @@ avec leur `README.md`).
   joue l'explorateur, ⌘P, les onglets de fichiers et la visionneuse (`explorateur` et `onglets` en
   plus court) ; `BERGER_SCENARIO=langage` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
   joue l'aide du langage (F12, erreurs, survol, complétion, schémas JSON et YAML, fichier
-  réécrit par un agent, renommage, ⌥Z ; contenu du dossier décrit en tête du scénario) ; voir
+  réécrit par un agent, renommage, ⌥Z ; contenu du dossier décrit en tête du scénario) ; `BERGER_SCENARIO=reglages` avec
+  `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>` (contenant `src/a.ts`) et
+  `BERGER_SCENARIO_SPACE=<spbergertest…>` joue les réglages (fichier écrit à la main, mal formé,
+  chaque thème de l'application et de l'éditeur, raccourci modifié dans la fenêtre puis à la main ;
+  refuse un dossier de données autre que `Berger-dev`, remet `reglages.json` à la fin) ; voir
   `src/main/scenario.ts`. L'état des fichiers par workspace est dans
   `fichiers.json`, à côté de `workspaces.json`. Les workspaces de Berger sont dans
   `~/Library/Application Support/berger/workspaces.json` : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état, les lancements, arrêts et relances des serveurs de langage,

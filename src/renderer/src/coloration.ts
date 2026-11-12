@@ -326,6 +326,13 @@ function definirTheme(): void {
     colors
   })
   monaco.editor.setTheme('berger-editeur')
+  for (const f of apres) f()
+}
+
+// Appelé après chaque changement du thème de l'éditeur (l'aperçu des réglages).
+const apres: (() => void)[] = []
+export function apresThemeEditeur(f: () => void): void {
+  apres.push(f)
 }
 
 // Un thème de VS Code copié dans public/vscode/ (gardé une fois lu).

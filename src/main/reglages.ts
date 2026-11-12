@@ -1,5 +1,5 @@
 import { app, ipcMain } from 'electron'
-import { mkdirSync, readdirSync, readFileSync, watch, writeFileSync } from 'fs'
+import { existsSync, mkdirSync, readdirSync, readFileSync, watch, writeFileSync } from 'fs'
 import { join } from 'path'
 import { lireReglages, modifierReglage, type EtatReglages, type Reglages } from '../shared/reglages'
 import { affichageDe, lireTheme, type ThemeConnu, type ThemeHerdr } from '../shared/themes'
@@ -127,6 +127,11 @@ export function brancherReglages(envoyer: (e: EtatReglages) => void): {
   }
 
   ipcMain.handle('berger:reglages', () => etatReglages())
+  // « Ouvrir le fichier des réglages » : un fichier vide s'il n'existe pas encore.
+  ipcMain.handle('berger:creer-reglages', () => {
+    if (!existsSync(fichier())) writeFileSync(fichier(), '{}\n')
+    return fichier()
+  })
   ipcMain.handle(
     'berger:modifier-reglage',
     (_e, { chemin, valeur }: { chemin: string[]; valeur: unknown }) => {

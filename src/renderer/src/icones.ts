@@ -38,6 +38,10 @@ import {
   FolderOpen,
   Link,
   Settings,
+  Palette,
+  Keyboard,
+  FileCog,
+  RotateCcw,
   TriangleAlert,
   type IconNode
 } from 'lucide'
@@ -61,6 +65,10 @@ const ICONES: Record<string, IconNode> = {
   'maximize-2': Maximize2,
   monitor: Monitor,
   settings: Settings,
+  palette: Palette,
+  keyboard: Keyboard,
+  'file-cog': FileCog,
+  'rotate-ccw': RotateCcw,
   'triangle-alert': TriangleAlert,
   pencil: Pencil,
   pin: Pin,

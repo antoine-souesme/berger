@@ -28,6 +28,7 @@ import {
 } from './visionneuse'
 import { initBarreEtat } from './barre-etat'
 import { initApparence } from './apparence'
+import { initReglages } from './reglages'
 import { brancherFichiers, dessinerBarre } from './barre-onglets'
 import type { PlaceAgent } from '../../shared/onglets'
 import {
@@ -63,6 +64,7 @@ import { initWorkspaces } from './workspaces'
 import type { EtatWorkspaces } from '../../shared/workspaces'
 
 const apparence = initApparence()
+initReglages()
 initFenetre()
 initBarreEtat()
 initTerminaux({ fin: () => redessiner() })

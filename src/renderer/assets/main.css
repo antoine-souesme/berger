@@ -1212,3 +1212,541 @@ body {
   text-overflow: ellipsis;
   color: var(--rouge);
 }
+
+/* Bas de la colonne des spaces : « Réglages » (maquette reglages.html). */
+.pied-spaces {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 10px;
+  border-top: 1px solid var(--bord);
+}
+.bouton-pied {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 30px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  color: var(--gris-clair);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.bouton-pied:hover {
+  background: var(--survol);
+  color: var(--texte);
+}
+
+/* La fenêtre des réglages (maquette reglages.html). */
+.voile-reglages {
+  z-index: 250;
+}
+.fenetre-reglages {
+  width: 880px;
+  height: 640px;
+  max-width: calc(100vw - 40px);
+  max-height: calc(100vh - 40px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-radius: 12px;
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  box-shadow: 0 24px 60px #000000a0;
+  overflow: hidden;
+  outline: none;
+  font-size: 13px;
+}
+.fenetre-reglages button,
+.fenetre-reglages input,
+.fenetre-reglages select {
+  font: inherit;
+  color: inherit;
+}
+.tete-reglages {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px 0 20px;
+  border-bottom: 1px solid var(--bord);
+}
+.tete-reglages .titre {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--vif);
+}
+.raccourci-titre {
+  margin-right: 10px;
+  font-size: 12px;
+  color: var(--gris);
+}
+.fermer-reglages {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  color: var(--gris-clair);
+  cursor: pointer;
+}
+.fermer-reglages:hover {
+  background: var(--survol);
+}
+.alerte-reglages {
+  flex-shrink: 0;
+  padding: 8px 20px;
+  border-bottom: 1px solid var(--bord);
+  background: color-mix(in srgb, var(--rouge) 12%, var(--fond));
+  color: var(--rouge);
+  font-size: 12px;
+}
+.corps-reglages {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.sections-reglages {
+  width: 190px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 12px 10px;
+  border-right: 1px solid var(--bord);
+}
+.section-reglages {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  color: var(--gris-clair) !important;
+  cursor: pointer;
+}
+.section-reglages:hover {
+  background: var(--survol);
+}
+.section-reglages.choisie {
+  background: var(--actif);
+  color: var(--vif) !important;
+}
+.page-reglages {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  padding: 16px 24px 0;
+  overflow: hidden;
+}
+.titre-page {
+  flex-shrink: 0;
+  margin-bottom: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--vif);
+}
+.contenu-reglages {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding-bottom: 16px;
+}
+.contenu-reglages.raccourcis {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.deux-themes {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+.bloc-themes {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.titre-reglage {
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+.grille-themes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  padding: 4px;
+  border-radius: 8px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+}
+.choix-theme {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 4px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
+}
+.choix-theme:hover {
+  background: var(--survol);
+}
+.choix-theme.choisi {
+  background: var(--actif);
+  box-shadow: inset 0 0 0 1px var(--clavier);
+}
+.texte-theme {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.nom-theme {
+  font-size: 12px;
+  color: var(--texte);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.choix-theme.choisi .nom-theme {
+  color: var(--vif);
+}
+.pastilles {
+  display: flex;
+  gap: 3px;
+  min-height: 10px;
+}
+.pastille-theme {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--texte) 18%, transparent);
+}
+.ligne-reglage {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 10px 0;
+  border-top: 1px solid var(--bord);
+}
+.textes-reglage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.nom-reglage {
+  color: var(--vif);
+}
+.aide-reglage {
+  font-size: 12px;
+  color: var(--gris);
+}
+.liste-reglage,
+.champ-reglage,
+.couleur-reglage,
+.bouton-reglage {
+  height: 30px;
+  box-sizing: border-box;
+  padding: 0 8px 0 10px;
+  border-radius: 6px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  color: var(--texte) !important;
+  outline: none;
+}
+.liste-reglage {
+  width: 170px;
+}
+.liste-reglage.etroite {
+  width: 64px;
+}
+.champ-reglage {
+  width: 240px;
+}
+.champ-reglage:focus,
+.liste-reglage:focus {
+  border-color: var(--clavier);
+}
+.bouton-reglage {
+  cursor: pointer;
+}
+.bouton-reglage:hover {
+  background: var(--survol);
+}
+.couleur-reglage {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px 0 6px;
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 12px;
+}
+.couleur-reglage input {
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  cursor: pointer;
+}
+.couleur-reglage input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.couleur-reglage input::-webkit-color-swatch {
+  border: 0;
+  border-radius: 4px;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--texte) 20%, transparent);
+}
+.bascule {
+  width: 34px;
+  height: 20px;
+  flex-shrink: 0;
+  padding: 2px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--actif);
+  cursor: pointer;
+}
+.bascule.active {
+  background: var(--vert);
+}
+.curseur-bascule {
+  display: block;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--vif);
+  transition: transform 0.12s;
+}
+.bascule.active .curseur-bascule {
+  transform: translateX(14px);
+  background: var(--fond);
+}
+.bloc-apercu {
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.apercu-code {
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--bord);
+  font-size: 12px;
+  line-height: 19px;
+  white-space: pre;
+  overflow: hidden;
+  user-select: text;
+}
+.apercu-code > span {
+  display: block;
+}
+.apercu-code br {
+  display: none;
+}
+.filtre-raccourcis {
+  height: 32px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 10px;
+  border-radius: 6px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  color: var(--gris);
+}
+.filtre-raccourcis:focus-within {
+  border-color: var(--clavier);
+}
+.filtre-raccourcis input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: none;
+  outline: none;
+  color: var(--texte) !important;
+}
+.filtre-raccourcis input::placeholder {
+  color: var(--gris);
+}
+.tete-raccourcis,
+.ligne-raccourci {
+  display: flex;
+  align-items: center;
+  padding: 0 10px;
+}
+.tete-raccourcis {
+  height: 32px;
+  flex-shrink: 0;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--gris-clair);
+}
+.tete-raccourcis .commande,
+.ligne-raccourci .commande {
+  flex: 1;
+  min-width: 0;
+}
+.tete-raccourcis .raccourci {
+  width: 380px;
+}
+.table-raccourcis {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+.ligne-raccourci {
+  height: 38px;
+  border-top: 1px solid color-mix(in srgb, var(--bord) 70%, var(--fond));
+}
+.ligne-raccourci .commande {
+  color: var(--texte);
+}
+.ligne-raccourci.en-attente {
+  border-radius: 6px;
+  border-top-color: transparent;
+  background: var(--actif);
+}
+.ligne-raccourci.en-attente .commande {
+  color: var(--vif);
+}
+.ligne-raccourci .raccourci {
+  width: 300px;
+  height: 26px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 8px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  background: none;
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.ligne-raccourci .raccourci:hover {
+  border-color: var(--bord);
+}
+.ligne-raccourci .raccourci.attente {
+  background: var(--panneau);
+  border-color: var(--clavier);
+  font-size: 12px;
+}
+.raccourci .invite {
+  color: var(--jaune);
+}
+.raccourci .espace {
+  flex: 1;
+}
+.raccourci .avant {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  opacity: 0.55;
+}
+.raccourci .mot-avant {
+  color: var(--gris);
+}
+.raccourci .conflit {
+  color: var(--rouge);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.raccourci .aucun {
+  color: var(--gris);
+  font-size: 12px;
+}
+.touches {
+  display: flex;
+  gap: 3px;
+}
+.touches kbd,
+.aide-raccourcis kbd {
+  min-width: 14px;
+  height: 20px;
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  font-family: ui-monospace, Menlo, monospace;
+  font-size: 11.5px;
+  color: var(--texte);
+}
+.aide-raccourcis kbd {
+  display: inline-grid;
+  height: auto;
+  padding: 1px 5px;
+  background: none;
+  font-size: 11px;
+}
+.retablir {
+  width: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  border: 0;
+  background: none;
+  color: var(--gris-clair) !important;
+  font-size: 12px !important;
+  cursor: pointer;
+}
+.retablir:disabled {
+  visibility: hidden;
+}
+.retablir:hover {
+  color: var(--texte) !important;
+}
+.aide-raccourcis {
+  flex-shrink: 0;
+  margin-top: 12px;
+  font-size: 12px;
+  color: var(--gris);
+}
+.pied-reglages {
+  height: 44px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 20px;
+  border-top: 1px solid var(--bord);
+  font-size: 12px;
+  color: var(--gris);
+}
+.lien-reglages {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--clavier) !important;
+  cursor: pointer;
+}
+.lien-reglages:hover {
+  color: var(--vert) !important;
+}
