@@ -35,6 +35,7 @@ type Options = {
   ouvrirA: (chemin: string, plage?: monaco.IRange) => Promise<void>
   modeleOuvert: (chemin: string) => monaco.editor.ITextModel | null
   annoncerArret: (texte: string) => void
+  annoncer: (texte: string) => void
 }
 
 type Suivi = {
@@ -231,37 +232,56 @@ const suivi = (m: monaco.editor.ITextModel): Suivi | undefined => suivis.get(m.u
 async function renommer(
   m: monaco.editor.ITextModel,
   p: monaco.Position,
-  nom: string
+  nom: string,
+  annulation: monaco.CancellationToken
 ): Promise<monaco.languages.WorkspaceEdit & monaco.languages.Rejection> {
+  const version = m.getVersionId()
   const r = await requete<WorkspaceEdit>(cheminDe(m), 'textDocument/rename', {
     textDocument: docLsp(m),
     position: versLsp(p),
     newName: nom
   })
   if (!r) return { edits: [], rejectReason: 'Ce symbole ne peut pas être renommé.' }
+  // Renommage annulé ou texte changé pendant l'attente : rien n'est écrit.
+  if (annulation.isCancellationRequested || m.isDisposed() || m.getVersionId() !== version)
+    return { edits: [] }
   const edits: monaco.languages.IWorkspaceTextEdit[] = []
+  const fermes: [string, TextEdit[]][] = []
   for (const [chemin, liste] of editionsParFichier(r)) {
     const ouvert = options?.modeleOuvert(chemin) ?? (chemin === cheminDe(m) ? m : null)
-    if (ouvert) {
-      for (const e of liste)
-        edits.push({ resource: ouvert.uri, textEdit: editionMonaco(e), versionId: undefined })
+    if (!ouvert) {
+      fermes.push([chemin, liste])
       continue
     }
-    // Fichier sans onglet : modifié et écrit sur le disque tout de suite.
+    for (const e of liste)
+      edits.push({ resource: ouvert.uri, textEdit: editionMonaco(e), versionId: undefined })
+  }
+  // Fichiers sans onglet : modifiés et écrits sur le disque ; un fichier qui n'a
+  // pas pu l'être (changé entre-temps, refusé) est signalé.
+  const sautes: string[] = []
+  for (const [chemin, liste] of fermes) {
     const lu = await window.berger.demander<{ texte?: string }>('berger:lire', { chemin })
-    if (lu.texte === undefined) continue
+    if (lu.texte === undefined) {
+      sautes.push(chemin)
+      continue
+    }
     const texte = appliquerEditions(lu.texte, liste)
     const ecrit = await window.berger.demander<{ ok?: boolean }>('berger:ecrire', {
       chemin,
       texte,
       texteCharge: lu.texte
     })
+    if (!ecrit.ok) sautes.push(chemin)
     const apercu = monaco.editor.getModel(monaco.Uri.file(chemin))
     if (apercu) {
       if (ecrit.ok) apercu.setValue(texte)
       else apercu.dispose()
     }
   }
+  if (sautes.length)
+    options?.annoncer(
+      `Renommage non appliqué dans ${sautes.map((c) => c.slice(c.lastIndexOf('/') + 1)).join(', ')}`
+    )
   return { edits }
 }
 
@@ -270,13 +290,15 @@ async function renommer(
 export async function organiserImports(m: monaco.editor.ITextModel): Promise<void> {
   if (serveurDe(cheminDe(m)) !== 'typescript') return
   const fin = m.getFullModelRange()
+  const version = m.getVersionId()
   const r = await requete<CodeAction[]>(cheminDe(m), 'textDocument/codeAction', {
     textDocument: docLsp(m),
     range: plageVersLsp(fin),
     context: { diagnostics: [], only: ['source.organizeImports'] }
   })
   const action = r?.find((a) => 'edit' in a && a.edit)
-  if (!action?.edit || m.isDisposed()) return
+  // Texte changé pendant l'attente : les éditions tomberaient au mauvais endroit.
+  if (!action?.edit || m.isDisposed() || m.getVersionId() !== version) return
   const liste = editionsParFichier(action.edit).get(cheminDe(m)) ?? []
   m.pushStackElement()
   m.pushEditOperations(
@@ -406,7 +428,7 @@ async function brancherLangage(langage: string, chemin: string): Promise<void> {
     })
   if (capacites.renameProvider)
     monaco.languages.registerRenameProvider(langage, {
-      provideRenameEdits: (m, p, nom) => renommer(m, p, nom)
+      provideRenameEdits: (m, p, nom, annulation) => renommer(m, p, nom, annulation)
     })
   const legende = capacites.semanticTokensProvider?.legend
   if (legende && capacites.semanticTokensProvider?.full) {
@@ -467,6 +489,7 @@ function apresDisque(chemins: string[]): void {
 
 export function initLangage(o: Options): void {
   options = o
+  window.berger.envoyer('berger:lsp-nouvelle-page')
   window.berger.ecouter('berger:disque', ({ chemins }: { chemins: string[] }) =>
     apresDisque(chemins)
   )

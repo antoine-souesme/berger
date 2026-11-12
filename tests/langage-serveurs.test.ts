@@ -109,3 +109,42 @@ test('serveur muet', async () => {
   expect(Date.now() - debut).toBeLessThan(1000)
   s.arreter()
 })
+
+test('un projet qui plante ne coupe pas les autres projets', async () => {
+  const arrete = vi.fn()
+  const autre = mkdtempSync(join(tmpdir(), 'berger-essai-lsp-autre-'))
+  writeFileSync(join(autre, 'package.json'), '{}')
+  const s = new ServeursLangage({
+    notifier: () => {},
+    redemarre: () => {},
+    arrete,
+    lancer: (_serveur, racine) => ({
+      commande: process.execPath,
+      args: [join(__dirname, 'faux', racine === autre ? 'lsp-muet.mjs' : 'lsp-meurt.mjs')]
+    })
+  })
+  for (let i = 0; i < 3; i++) await s.requete(a(), 'textDocument/hover', {}, 5000)
+  expect(arrete).toHaveBeenCalledTimes(1)
+  const r = await s.requete(join(autre, 'x.ts'), 'textDocument/hover', {}, 200)
+  expect(r).toEqual({ erreur: 'Délai dépassé.' })
+  s.arreter()
+  rmSync(autre, { recursive: true, force: true })
+}, 20_000)
+
+test('reinitialiser oublie les serveurs et les abandons (fenêtre rouverte)', async () => {
+  const lancer = vi.fn(() => ({
+    commande: process.execPath,
+    args: [join(__dirname, 'faux', 'lsp-meurt.mjs')]
+  }))
+  const s = new ServeursLangage({
+    notifier: () => {},
+    redemarre: () => {},
+    arrete: () => {},
+    lancer
+  })
+  for (let i = 0; i < 3; i++) await s.requete(a(), 'textDocument/hover', {}, 5000)
+  s.reinitialiser()
+  await s.requete(a(), 'textDocument/hover', {}, 5000)
+  expect(lancer).toHaveBeenCalledTimes(4)
+  s.arreter()
+}, 20_000)

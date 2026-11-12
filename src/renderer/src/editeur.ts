@@ -92,6 +92,10 @@ function annoncer(texte: string, duree = 0): void {
   if (duree) setTimeout(() => (el('fichier-message').textContent = messageGarde), duree)
 }
 
+export function annoncerFichier(texte: string): void {
+  annoncer(texte, 5000)
+}
+
 export function annoncerArret(texte: string): void {
   messageGarde = texte
   annoncer(texte)

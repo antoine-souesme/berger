@@ -43,6 +43,7 @@ import { initLangage } from './langage'
 import {
   afficherFichier,
   annoncerArret,
+  annoncerFichier,
   attendreAffichage,
   modeleOuvert,
   revelerPlage,
@@ -161,7 +162,8 @@ void (async () => {
       if (plage) revelerPlage(chemin, plage)
     },
     modeleOuvert,
-    annoncerArret
+    annoncerArret,
+    annoncer: annoncerFichier
   })
   initExplorateur(maison)
   initRanger()

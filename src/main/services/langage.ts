@@ -119,8 +119,9 @@ function section(reglages: unknown, nom: string | undefined): unknown {
 
 export class ServeursLangage {
   private procs = new Map<string, Processus>()
-  private arrets = new Map<Serveur, number[]>()
-  private abandonnes = new Set<Serveur>()
+  // Par projet (clé `${serveur}:${racine}`) : un projet qui plante ne coupe pas les autres.
+  private arrets = new Map<string, number[]>()
+  private abandonnes = new Set<string>()
   private deja = new Set<string>() // clés déjà lancées une fois (relance = redémarrage)
   private arretGeneral = false
 
@@ -225,13 +226,13 @@ export class ServeursLangage {
     if (this.procs.get(p.cle) === p) this.procs.delete(p.cle)
     if (this.arretGeneral) return
     const maintenant = Date.now()
-    const liste = (this.arrets.get(p.serveur) ?? []).filter((t) => maintenant - t < FENETRE_ARRETS)
+    const liste = (this.arrets.get(p.cle) ?? []).filter((t) => maintenant - t < FENETRE_ARRETS)
     liste.push(maintenant)
-    this.arrets.set(p.serveur, liste)
+    this.arrets.set(p.cle, liste)
     trace(`langage : arrêt de ${p.cle} (${liste.length} en 5 min)`)
-    if (liste.length >= ARRETS_MAX && !this.abandonnes.has(p.serveur)) {
-      this.abandonnes.add(p.serveur)
-      trace(`langage : ${p.serveur} abandonné`)
+    if (liste.length >= ARRETS_MAX && !this.abandonnes.has(p.cle)) {
+      this.abandonnes.add(p.cle)
+      trace(`langage : ${p.cle} abandonné`)
       this.o.arrete(p.serveur)
     }
   }
@@ -240,9 +241,10 @@ export class ServeursLangage {
   private processus(fichier: string): Processus | Serveur | null {
     const serveur = serveurDe(fichier)
     if (!serveur) return null
-    if (this.abandonnes.has(serveur) || this.arretGeneral) return serveur
+    if (this.arretGeneral) return serveur
     const racine = racineProjet(fichier, existsSync)
     const cle = `${serveur}:${racine}`
+    if (this.abandonnes.has(cle)) return serveur
     const existant = this.procs.get(cle)
     if (existant) return existant
     const p = this.lancer(serveur, racine, cle)
@@ -307,14 +309,28 @@ export class ServeursLangage {
     }
   }
 
-  arreter(): void {
-    this.arretGeneral = true
+  private tuer(): void {
     for (const p of this.procs.values()) {
       p.fini = true
       p.connexion.dispose()
       p.enfant.kill()
     }
     this.procs.clear()
+  }
+
+  arreter(): void {
+    this.arretGeneral = true
+    this.tuer()
+  }
+
+  // La fenêtre est fermée (sur macOS, l'application reste ouverte) : les serveurs
+  // repartent de zéro, sinon ils garderaient le texte de l'ancienne fenêtre et
+  // refuseraient les `didOpen` de la nouvelle.
+  reinitialiser(): void {
+    this.tuer()
+    this.arrets.clear()
+    this.abandonnes.clear()
+    this.deja.clear()
   }
 }
 
@@ -332,6 +348,8 @@ export function brancherLangage(fenetre: () => BrowserWindow | null): ServeursLa
     s.notifier(fichier, methode, params)
   )
   ipcMain.handle('berger:lsp-capacites', (_e, { fichier }) => s.capacites(fichier))
+  // Une nouvelle page (fenêtre rouverte ou rechargée) repart de serveurs neufs.
+  ipcMain.on('berger:lsp-nouvelle-page', () => s.reinitialiser())
   ipcMain.handle('berger:lsp-cle', (_e, { fichier }) => s.cleDe(fichier))
   return s
 }
