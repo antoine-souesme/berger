@@ -877,6 +877,8 @@ body {
 #editeur {
   flex: 1;
   min-height: 0;
+  /* Lissage des lettres par défaut de macOS, comme VS Code (le reste de la fenêtre est plus fin). */
+  -webkit-font-smoothing: auto;
 }
 #fichier-etat {
   height: 26px;

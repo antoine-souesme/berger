@@ -134,11 +134,11 @@ describe('themeEditeur', () => {
     expect(e.colors['editor.background']).toBe('#21252b')
     expect(e.type).toBe('dark')
   })
-  test('antoine-monokai : le Monokai de VS Code, texte #d0d0c8', () => {
+  test('antoine-monokai : le Monokai de VS Code, texte #f8f8f2 comme VS Code', () => {
     const e = themeEditeur(fourni('antoine-monokai'), monokaiVsCode)
     expect(e.tokenColors.slice(1)).toEqual(monokaiVsCode.tokenColors.slice(1))
-    expect(e.colors['editor.foreground']).toBe('#d0d0c8')
-    expect(e.tokenColors.find((r) => !r.scope)?.settings.foreground).toBe('#d0d0c8')
+    expect(e.colors['editor.foreground']).toBe('#f8f8f2')
+    expect(e.tokenColors.find((r) => !r.scope)?.settings.foreground).toBe('#f8f8f2')
   })
   test('Monokai : garde #f8f8f2', () => {
     const e = themeEditeur(fourni('monokai'), monokaiVsCode)

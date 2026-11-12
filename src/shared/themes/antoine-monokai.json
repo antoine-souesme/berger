@@ -44,6 +44,7 @@
     "unknown": "#75715e"
   },
   "editeur": {
-    "vscode": "monokai-color-theme.json"
+    "vscode": "monokai-color-theme.json",
+    "texte": "#f8f8f2"
   }
 }

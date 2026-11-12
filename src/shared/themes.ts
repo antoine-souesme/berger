@@ -17,7 +17,8 @@ export type TypeMot =
   | 'balise'
   | 'attribut'
   | 'operateur'
-export type ChampEditeur = Partial<Record<TypeMot, string>> & { vscode?: string }
+// `texte` : le texte ordinaire du code, quand il diffère de `foreground`.
+export type ChampEditeur = Partial<Record<TypeMot, string>> & { vscode?: string; texte?: string }
 export type ThemeHerdr = {
   background: string
   foreground: string
@@ -101,6 +102,7 @@ export function lireTheme(brut: unknown): ThemeHerdr | null {
     const e: ChampEditeur = {}
     for (const k of Object.keys(PORTEES_MOTS) as TypeMot[]) if (estCouleur(ed[k])) e[k] = ed[k]
     if (typeof ed['vscode'] === 'string') e.vscode = ed['vscode']
+    if (estCouleur(ed['texte'])) e.texte = ed['texte']
     t.editeur = e
   }
   return t
@@ -224,15 +226,16 @@ export function themeEditeur(
   t: ThemeHerdr,
   vscode: ThemeVsCode | null
 ): ThemeVsCode & { type: 'dark' | 'light' } {
+  const texte = t.editeur?.texte ?? t.foreground
   let tokenColors: ReglesTextMate
   if (vscode) {
     tokenColors = vscode.tokenColors.map((r) =>
-      r.scope ? r : { ...r, settings: { ...r.settings, foreground: t.foreground } }
+      r.scope ? r : { ...r, settings: { ...r.settings, foreground: texte } }
     )
     if (!tokenColors.some((r) => !r.scope))
-      tokenColors = [{ settings: { foreground: t.foreground } }, ...tokenColors]
+      tokenColors = [{ settings: { foreground: texte } }, ...tokenColors]
   } else {
-    tokenColors = [{ settings: { foreground: t.foreground } }]
+    tokenColors = [{ settings: { foreground: texte } }]
     for (const [mot, portees] of Object.entries(PORTEES_MOTS) as [TypeMot, string[]][]) {
       const n = ANSI_MOTS[mot]
       const couleur = t.editeur?.[mot] ?? (n === undefined ? undefined : t.ansi[n])
@@ -243,7 +246,7 @@ export function themeEditeur(
   const colors: Record<string, string> = {
     ...(vscode?.colors ?? {}),
     'editor.background': t.background,
-    'editor.foreground': t.foreground,
+    'editor.foreground': texte,
     'editor.selectionBackground': t.selection,
     'editorCursor.foreground': t.cursor ?? t.foreground,
     'editor.lineHighlightBackground': f.survol,
