@@ -15,3 +15,8 @@ décisions prises sont dans les bilans de phase (`docs/notes/`).
   sous un agent de premier niveau (comme le mod `antoine-agents`) ; un Claude
   Code lancé par `hc run` sous un autre agent n'affiche pas les siens. À voir
   si Antoine en a besoin.
+- **Relecture de fin de phase, points laissés.** Dans le dialogue de
+  suppression, le focus est sur « Supprimer » (la barre d'espace confirme) ;
+  `workspaces.json` est écrit en place (un arrêt brutal pendant l'écriture le
+  rendrait illisible, et Berger reprendrait alors depuis Herdr). À reprendre
+  si l'un des deux gêne.

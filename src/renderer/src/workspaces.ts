@@ -13,7 +13,7 @@ import {
   spaceAffiche,
   surChangement
 } from './etat'
-import { rendreGlissable } from './glisser'
+import { glisseEnCours, rendreGlissable } from './glisser'
 import { icone } from './icones'
 import { ouvrirMenu } from './menus'
 
@@ -119,6 +119,7 @@ function menu(w: Workspace, x: number, y: number): void {
 }
 
 function dessiner(): void {
+  if (glisseEnCours()) return
   const e = etat()
   const ws = e.workspaces
   const explorateur = bouton('outil actif', 'Explorateur')

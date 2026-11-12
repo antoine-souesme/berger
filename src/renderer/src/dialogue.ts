@@ -69,6 +69,7 @@ export function ouvrirDialogue(o: {
 
     const finir = (r: { emoji: string; nom: string } | null): void => {
       window.removeEventListener('keydown', touches, true)
+      window.removeEventListener('keypress', arreter, true)
       voile.remove()
       ouvert = null
       rendre(r)
@@ -82,6 +83,7 @@ export function ouvrirDialogue(o: {
     // En capture, avant le terminal et les raccourcis de Berger.
     const touches = (ev: KeyboardEvent): void => {
       ev.stopPropagation()
+      if (!boite.contains(ev.target as Node)) ev.preventDefault()
       if (ev.key === 'Escape') {
         ev.preventDefault()
         finir(null)
@@ -93,7 +95,13 @@ export function ouvrirDialogue(o: {
         ev.preventDefault()
       }
     }
+    // Rien ne passe au terminal, même s'il reprenait le focus sous le dialogue.
+    const arreter = (ev: Event): void => {
+      if (!boite.contains(ev.target as Node)) ev.preventDefault()
+      ev.stopPropagation()
+    }
     window.addEventListener('keydown', touches, true)
+    window.addEventListener('keypress', arreter, true)
     annuler.onclick = () => finir(null)
     valider.onclick = essayer
     voile.addEventListener('mousedown', (ev) => {

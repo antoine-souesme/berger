@@ -3,6 +3,13 @@
 // Un clic sans mouvement reste un clic.
 const SEUIL = 4
 
+// Pendant un glissement, les listes ne se redessinent pas : l'élément tiré
+// et ses voisins doivent rester ceux qu'on mesure au lâcher.
+let enCours = false
+export function glisseEnCours(): boolean {
+  return enCours
+}
+
 export function rendreGlissable(
   el: HTMLElement,
   o: { axe: 'x' | 'y'; liste: () => HTMLElement[]; deposer: (index: number) => void }
@@ -17,6 +24,7 @@ export function rendreGlissable(
       const ecart = position(m) - depart
       if (!glisse && Math.abs(ecart) < SEUIL) return
       glisse = true
+      enCours = true
       el.classList.add('glisse')
       el.style.transform = o.axe === 'y' ? `translateY(${ecart}px)` : `translateX(${ecart}px)`
     }
@@ -24,6 +32,7 @@ export function rendreGlissable(
       window.removeEventListener('mousemove', bouger, true)
       window.removeEventListener('mouseup', lacher, true)
       if (!glisse) return
+      enCours = false
       el.classList.remove('glisse')
       el.style.transform = ''
       // L'index de dépôt : les autres éléments dont le centre est avant le pointeur.

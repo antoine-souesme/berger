@@ -16,7 +16,7 @@ import {
   surChangement,
   workspaceOuvert
 } from './etat'
-import { rendreGlissable } from './glisser'
+import { glisseEnCours, rendreGlissable } from './glisser'
 import { icone } from './icones'
 
 const AFFICHES = 200
@@ -277,7 +277,9 @@ function dessiner(): void {
     }
   } else if (dossier !== dossierListe) void chargerFichiers(dossier)
 
-  if (visibles.length)
+  if (glisseEnCours()) {
+    // Liste des spaces figée pendant un glissement (voir glisser.ts).
+  } else if (visibles.length)
     el('liste-spaces').replaceChildren(
       ...visibles.map((space) => ligneSpace(space, space.id === s?.id))
     )
