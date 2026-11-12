@@ -2,7 +2,7 @@
 // pour la coloration sémantique, résolues comme VS Code le fait. Repris de VS
 // Code (MIT) : `tokenClassificationRegistry.ts` (table de repli des jetons
 // sémantiques) et `colorThemeData.ts` (`resolveScopes`, `nameMatcher`,
-// `getTokenStyle`). Voir docs/COPIES.md.
+// `getTokenStyle`).
 
 export type ReglesTextMate = {
   scope?: string | string[]

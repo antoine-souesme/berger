@@ -1,4 +1,4 @@
-// Icônes de l'interface, tirées du paquet `lucide` (ISC, voir docs/COPIES.md).
+// Icônes de l'interface, tirées du paquet `lucide` (ISC).
 import {
   ArrowUp,
   Bot,

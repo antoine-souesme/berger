@@ -34,8 +34,6 @@ avec leur `README.md`).
   dans un terminal ordinaire.
 - Garde les règles dans des modules purs, testés à part de l'interface.
 - Textes de l'interface en français, avec les accents.
-- Code repris d'ailleurs (Herdr, mod `antoine`, projets libres) : note sa
-  source et sa licence dans `docs/COPIES.md`.
 - Avant de dire qu'une chose marche, lance l'application et regarde-la.
 
 ## Lancer

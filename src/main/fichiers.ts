@@ -19,7 +19,7 @@ import {
 import { envoyerA } from './envoi'
 
 // Presse-papiers de macOS par JavaScript for Automation (des URL de fichiers,
-// comme le Finder) : repris de `explorer.js` du mod `antoine` (voir docs/COPIES.md).
+// comme le Finder) : repris de `explorer.js` du mod `antoine`.
 const CLIP_WRITE =
   'function run(a){ObjC.import("AppKit");const pb=$.NSPasteboard.generalPasteboard;pb.clearContents;const l=$.NSMutableArray.array;a.forEach(p=>l.addObject($.NSURL.fileURLWithPath(p)));return pb.writeObjects(l)?"ok":"";}'
 const CLIP_READ =

@@ -1,7 +1,7 @@
 // Règles pures de la barre d'onglets : terminaux du space puis fichiers,
 // onglet voisin, onglets de fichiers.
 // Les règles des onglets de fichiers s'inspirent de `files.js` du mod
-// `antoine` (voir docs/COPIES.md).
+// `antoine`.
 import type { VueOnglet } from './spaces'
 
 export type RefOnglet = { type: 'terminal'; id: string } | { type: 'fichier'; chemin: string }

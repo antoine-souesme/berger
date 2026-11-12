@@ -1,7 +1,7 @@
 // Règles pures de la liste des agents : les agents des spaces visibles, leurs
 // sous-agents lancés par `hc run`, en arbre,
 // le tri, l'agent voisin et la durée affichée. L'arbre et le tri s'inspirent
-// de `main.js` du mod `antoine-agents` (voir docs/COPIES.md).
+// de `main.js` du mod `antoine-agents`.
 import { feuilles } from './arbre'
 import type { EtatAgent, Icone } from './libelles'
 import type { PlaceAgent } from './onglets'

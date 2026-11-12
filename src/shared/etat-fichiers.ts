@@ -2,7 +2,7 @@
 // et ouverts, fichiers récents, dossiers ajoutés à l'explorateur, ordre des
 // racines, dossiers dépliés ; reprise depuis Herdr ; libellés des onglets.
 // Repris et réécrits de `files.js` et `quickopen.js` (`remember`) du mod
-// `antoine` (voir docs/COPIES.md). Toutes les fonctions rendent un nouvel
+// `antoine`. Toutes les fonctions rendent un nouvel
 // objet quand quelque chose change, et le même sinon.
 
 export type FichiersWorkspace = {

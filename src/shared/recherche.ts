@@ -1,6 +1,5 @@
 // Règles pures de la recherche de fichiers (⌘P), comme celle de VS Code.
-// Reprises et réécrites de `quickopen.js` du mod `antoine` (voir
-// docs/COPIES.md) : même score, même tri ; `correspondance` garde en plus
+// Reprises et réécrites de `quickopen.js` du mod `antoine` : même score, même tri ; `correspondance` garde en plus
 // les lettres trouvées, pour les surligner.
 
 export type FichierRacine = { racine: string; relatif: string } // la racine de l'explorateur et le chemin dedans
