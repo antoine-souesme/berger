@@ -510,7 +510,7 @@ body {
 #barre-onglets {
   /* Onglets centrés sur les en-têtes des colonnes (52 px), 6 px au-dessus du panneau
      comme sur les côtés. */
-  height: 47px;
+  height: 36px; /* + 11 px de marge en haut : 47 px */
   flex-shrink: 0;
   display: flex;
   align-items: flex-start;
