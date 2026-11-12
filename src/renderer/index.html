@@ -10,19 +10,40 @@
     <link href="./assets/main.css" type="text/css" rel="stylesheet" />
   </head>
   <body>
-    <aside id="colonne"></aside>
-    <section id="terminal"></section>
-    <section id="editeur">
-      <div id="editeur-barre">
-        <span id="editeur-chemin">Choisis un space pour ouvrir un fichier</span
-        ><span id="editeur-message" hidden></span>
-      </div>
-      <div id="choix" hidden>
+    <aside id="gauche">
+      <nav id="workspaces"></nav>
+      <section id="explorateur" class="bande">
+        <header class="entete"><span class="titre-bande">Explorateur</span></header>
         <input id="filtre" placeholder="Filtrer les fichiers…" spellcheck="false" />
+        <div id="explorateur-message" hidden></div>
         <div id="liste-fichiers"></div>
+      </section>
+      <div class="separateur" data-largeur="explorateur"></div>
+      <section id="spaces" class="bande">
+        <header class="entete"><span class="nom-app">Berger</span></header>
+        <div class="titre-section">Spaces</div>
+        <div id="liste-spaces"></div>
+        <div class="titre-section">Agents</div>
+        <div id="liste-agents"></div>
+      </section>
+      <div class="separateur" data-largeur="spaces"></div>
+    </aside>
+    <main id="droite">
+      <div id="deconnecte" hidden>Déconnecté de herdr-core</div>
+      <div id="barre-onglets"></div>
+      <div id="contenu">
+        <div id="zone-terminaux"></div>
+        <div id="zone-fichier" class="panneau" hidden>
+          <div class="bandeau" id="fichier-bandeau"></div>
+          <div id="editeur"></div>
+          <div id="fichier-etat">
+            <span id="fichier-position"></span><span id="fichier-message"></span
+            ><span id="fichier-langage"></span>
+          </div>
+        </div>
       </div>
-      <div id="editeur-texte"></div>
-    </section>
+      <footer id="barre-etat"></footer>
+    </main>
     <script type="module" src="./src/main.ts"></script>
   </body>
 </html>

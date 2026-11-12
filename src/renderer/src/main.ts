@@ -1,31 +1,46 @@
 // Point d'entrée de la fenêtre Berger.
+import type { EtatFenetre } from '../../shared/etat-fenetre'
 import type { Vue } from '../../shared/spaces'
-import { afficherColonne, afficherConnexion, initColonne } from './colonne'
-import { initTerminal, ouvrirTerminal } from './terminal'
-import { initEditeur, ouvrirFichier } from './editeur'
-import { initChoixFichier, montrerFichiersDe } from './choix-fichier'
+import { appliquerEtatRetenu, changer, redessiner, surChangement, etat } from './etat'
+import { initFenetre } from './fenetre'
+import { initColonne } from './colonne'
+import { initBarreEtat } from './barre-etat'
 
-initTerminal()
-initEditeur()
-initChoixFichier((chemin) => void ouvrirFichier(chemin))
-
+initFenetre()
+initBarreEtat()
 initColonne({
-  surClicTerminal: (adresse) => ouvrirTerminal(adresse),
-  surClicSpace: (space) => void montrerFichiersDe(space.dossier)
+  ouvrirFichier: () => {},
+  choisirAgent: (a) =>
+    changer((e) => {
+      e.space = a.space
+      e.onglet = { type: 'terminal', id: a.onglet }
+      e.focus[a.onglet] = a.panneau
+    })
+})
+surChangement(() => {
+  document.getElementById('deconnecte')!.hidden = etat().connecte
 })
 
-window.berger.ecouter('berger:connexion', ({ etat }) => afficherConnexion(etat))
-window.berger.ecouter('berger:vue', (vue: Vue) => afficherColonne(vue))
+window.berger.ecouter('berger:connexion', ({ etat: c }) =>
+  changer((e) => (e.connecte = c === 'connecte'))
+)
+window.berger.ecouter('berger:vue', (vue: Vue) => {
+  etat().vue = vue
+  redessiner()
+})
 
-void window.berger
-  .demander<{ connexion: 'connecte' | 'deconnecte'; vue: Vue }>('berger:etat')
-  .then(({ connexion, vue }) => {
-    afficherConnexion(connexion)
-    afficherColonne(vue)
+void (async () => {
+  const retenu = await window.berger.demander<EtatFenetre>('berger:etat-fenetre')
+  appliquerEtatRetenu(retenu)
+  const { connexion, vue } = await window.berger.demander<{
+    connexion: 'connecte' | 'deconnecte'
+    vue: Vue
+  }>('berger:etat')
+  changer((e) => {
+    e.connecte = connexion === 'connecte'
+    e.vue = vue
   })
-
-window.berger.ecouter('berger:ouvrir', ({ adresse }) => ouvrirTerminal(adresse))
-window.berger.ecouter('berger:dossier', ({ dossier }) => void montrerFichiersDe(dossier))
+})()
 
 window.berger.ecouter('berger:non-enregistres', () =>
   window.berger.envoyer('berger:reponse-quitter', { quitter: true })
