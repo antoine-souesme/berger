@@ -41,11 +41,18 @@ avec leur `README.md`).
 ## Lancer
 
 - `npm install`, puis `npm run dev` (fenêtre Berger), `npm test` (règles pures), `npm run typecheck`.
-- Coloration et thème de l'éditeur : `node scripts/copier-grammaires.mjs` recopie de VS Code
-  (`/Applications/Visual Studio Code.app`) les grammaires, le registre des langages et le thème
-  Monokai dans `src/renderer/public/vscode/`. Couleur de sélection : clé
-  `editeur.couleurSelection` de `~/Library/Application Support/berger/reglages.json` (écrit à la
-  main, jamais créé par Berger).
+- `npm run installer` construit `Berger.app` et l'installe dans `/Applications` (il fait quitter
+  la version installée qui tourne, la remplace et la relance) ; `npm run icone` refait l'icône à
+  partir de `build/icone.svg` et `build/icone-petite.svg`.
+- Dossier de données : `~/Library/Application Support/Berger/` pour la version installée,
+  `~/Library/Application Support/Berger-dev/` pour `npm run dev` (jamais l'un dans l'autre).
+  Réglages : fenêtre des réglages (`⌘,`) ou `reglages.json` de ce dossier (que Berger écrit et
+  suit à chaud) ; thèmes personnels au format de Herdr dans `themes/` ; cadre de la fenêtre dans
+  `fenetre.json`.
+- Coloration de l'éditeur : `node scripts/copier-grammaires.mjs` recopie de VS Code
+  (`/Applications/Visual Studio Code.app`) les grammaires, le registre des langages, le thème
+  Monokai et les thèmes Dark Modern et Light Modern dans `src/renderer/public/vscode/`. Les thèmes
+  fournis par Berger sont dans `src/shared/themes/`.
 - Vérifier sans cliquer (développement) : `BERGER_CAPTURE=<fichier.png>` enregistre une image de
   la fenêtre ; `BERGER_OUVRIR=<terminal>` et `BERGER_TAPER=<texte>` ouvrent un terminal et y
   tapent ; `BERGER_SCENARIO=editeur|conflit|supprime` avec `BERGER_SCENARIO_DOSSIER` joue
@@ -62,10 +69,11 @@ avec leur `README.md`).
   `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>` (contenant `src/a.ts`) et
   `BERGER_SCENARIO_SPACE=<spbergertest…>` joue les réglages (fichier écrit à la main, mal formé,
   chaque thème de l'application et de l'éditeur, raccourci modifié dans la fenêtre puis à la main ;
-  refuse un dossier de données autre que `Berger-dev`, remet `reglages.json` à la fin) ; voir
+  refuse un dossier de données autre que `Berger-dev`, remet `reglages.json` à la fin) ; `BERGER_SCENARIO=reprise` (étapes 1 puis 2, avec un space de
+  test et un dossier `berger-essai…`) vérifie ce qui revient au relancement ; voir
   `src/main/scenario.ts`. L'état des fichiers par workspace est dans
   `fichiers.json`, à côté de `workspaces.json`. Les workspaces de Berger sont dans
-  `~/Library/Application Support/berger/workspaces.json` : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état, les lancements, arrêts et relances des serveurs de langage,
+  `workspaces.json` du dossier de données : en garder une copie avant un essai. `BERGER_TRACE=1` journalise les changements d'état, les lancements, arrêts et relances des serveurs de langage,
   les écritures du document, les terminaux lancés et fermés, les `RESIZE` et le premier plan.
 - Space de test : `hc run --bg --keep --no-parent --label herdr.space=spbergertest<hex>
 --label herdr.tab=tbbergertest<hex> -- zsh` (Herdr l'adopte). Jamais les spaces d'Antoine.

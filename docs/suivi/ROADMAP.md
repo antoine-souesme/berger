@@ -13,7 +13,7 @@ commence que quand la précédente marche, vue dans l'application lancée.
 | 4 | Fichiers | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase4-fichiers.md`) |
 | 5 | L'éditeur complet | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase5-editeur.md`) |
 | 6 | Les autres machines | Remise à plus tard |
-| 7 | L'application installée et ses réglages | À faire |
+| 7 | L'application installée et ses réglages | Faite, à vérifier par Antoine (bilan : `docs/notes/bilan-phase7-application.md`) |
 
 ## Phase 0 : preuve de concept
 
