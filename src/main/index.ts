@@ -55,8 +55,13 @@ function createWindow(): void {
   // Avant de fermer : la fenêtre demande quoi faire des fichiers non enregistrés.
   // Une fenêtre dont la page a planté ne répondra pas : on la laisse fermer.
   mainWindow.webContents.on('render-process-gone', () => (fermetureAccordee = true))
+  mainWindow.webContents.on('unresponsive', () => (fermetureAccordee = true))
   mainWindow.on('close', (e) => {
-    if (fermetureAccordee) return
+    // Une page encore en chargement ne peut pas répondre : on ferme.
+    if (fermetureAccordee || mainWindow.webContents.isLoading()) {
+      terminaux.detacherTout()
+      return
+    }
     e.preventDefault()
     envoyerA(mainWindow, 'berger:non-enregistres', {})
   })
@@ -114,8 +119,8 @@ app.whenReady().then(() => {
   brancherActions(coeur, () => fenetre)
   const etat = brancherEtat()
 
-  ipcMain.on('berger:attacher', (_e, { adresse, cols, rows }) =>
-    terminaux.attacher(adresse, cols, rows)
+  ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
+    terminaux.attacher(adresse, cols, rows, actif !== false)
   )
   ipcMain.on('berger:detacher', (_e, { adresse }) => terminaux.detacher(adresse))
   ipcMain.on('berger:touches', (_e, { adresse, octets }) => terminaux.ecrire(adresse, octets))

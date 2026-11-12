@@ -26,7 +26,10 @@ export class TerminalOuvert {
     private adresse: string,
     cols: number,
     rows: number,
-    private rappels: Rappels
+    private rappels: Rappels,
+    // Faux quand Berger est en arrière-plan : `resumed` demande au core de ne
+    // prendre la taille qu'une fois la fenêtre active (FOCUS).
+    actif = true
   ) {
     this.processus = spawn(cheminHc(), ['connect'], { stdio: 'pipe' })
     this.processus.on('error', () => this.terminer('connexion impossible'))
@@ -49,7 +52,12 @@ export class TerminalOuvert {
           this.terminer(erreur)
           return
         }
-        this.envoyerRequete(1, 'terminal.attach', { terminal: this.adresse, cols, rows })
+        this.envoyerRequete(1, 'terminal.attach', {
+          terminal: this.adresse,
+          cols,
+          rows,
+          ...(actif ? {} : { resumed: true })
+        })
         morceau = reste
       }
       for (const trame of decode(new Uint8Array(morceau))) this.recevoir(trame)

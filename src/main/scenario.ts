@@ -82,8 +82,8 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       return
     }
     jouer([
-      [2000, () => wc.send('berger:scenario-space', { space })],
-      [4000, () => touche('w', ['meta'])],
+      [3500, () => wc.send('berger:scenario-space', { space })],
+      [6000, () => touche('w', ['meta'])],
       [
         7000,
         async () =>

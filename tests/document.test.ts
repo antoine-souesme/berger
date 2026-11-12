@@ -1,7 +1,7 @@
 import { expect, test } from 'vitest'
 import doc from './fixtures/herdr-app.json'
 import mods from './fixtures/herdr-app-mods.json'
-import { appliquer, idHerdr, type Action } from '../src/shared/document'
+import { appliquer, idHerdr, placeDe, terminauxRetires, type Action } from '../src/shared/document'
 import { terminauxDeLArbre } from '../src/shared/spaces'
 
 test('onglet.nouveau ajoute un onglet sans nom à la fin du space', () => {
@@ -159,4 +159,22 @@ test('cible introuvable : même document', () => {
 test('idHerdr', () => {
   expect(idHerdr('p')).toMatch(/^p[0-9a-f]{32}$/)
   expect(idHerdr('tb')).toMatch(/^tb[0-9a-f]{32}$/)
+})
+
+test('terminauxRetires : seulement ceux que l’action a vraiment retirés', () => {
+  const apres = appliquer(doc, {
+    type: 'panneau.fermer',
+    space: 'sp1',
+    onglet: 'tb1',
+    panneau: 'p1'
+  })
+  expect(terminauxRetires(doc, apres)).toEqual(['t2b'])
+  expect(terminauxRetires(doc, doc)).toEqual([])
+  const sansOnglet = appliquer(doc, { type: 'onglet.fermer', space: 'sp2', onglet: 'tb3' })
+  expect(terminauxRetires(doc, sansOnglet)).toEqual(['t3'])
+})
+
+test('placeDe : onglet et panneau qui contiennent un terminal', () => {
+  expect(placeDe(doc, 't2c')).toEqual({ space: 'sp1', onglet: 'tb1', panneau: 'p2' })
+  expect(placeDe(doc, 'tZ')).toBeNull()
 })

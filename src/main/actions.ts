@@ -1,7 +1,7 @@
 import { dialog, ipcMain, type BrowserWindow } from 'electron'
 import type { Coeur } from './coeur'
 import { ecrireDoc } from './ecriture'
-import { idHerdr, type Action } from '../shared/document'
+import { appliquer, idHerdr, placeDe, terminauxRetires, type Action } from '../shared/document'
 import type { Sens } from '../shared/arbre'
 
 export type DemandeStructure =
@@ -59,59 +59,74 @@ export function brancherActions(coeur: Coeur, fenetre: () => BrowserWindow | nul
     }
   }
 
-  // Écrit le document ; si l'écriture échoue pour de bon, le terminal créé
-  // pour l'occasion est fermé, pour ne pas laisser un terminal sans place.
-  const ecrireAvecTerminal = async (action: Action, adresse: string): Promise<void> => {
+  const lireDoc = async (): Promise<unknown> =>
+    ((await requete('doc.get', { name: 'herdr-app' })) as { value: unknown }).value
+
+  // Écrit le document puis rend la place réelle du terminal créé (Herdr a pu
+  // le ranger lui-même avant nous). Sans place, ou si l'écriture échoue pour
+  // de bon, le terminal est fermé : jamais de terminal sans place.
+  const ecrireEtPlacer = async (
+    action: Action,
+    adresse: string
+  ): Promise<{ onglet: string; panneau: string }> => {
     try {
       await ecrireDoc(requete, action)
+      const place = placeDe(await lireDoc(), adresse)
+      if (!place) throw new Error("le terminal n'a pas trouvé sa place (onglet ou panneau disparu)")
+      return { onglet: place.onglet, panneau: place.panneau }
     } catch (e) {
       await tuer(adresse)
       throw e
     }
   }
 
+  // Fermer : on tue d'abord les terminaux que l'action retire vraiment du
+  // document tel qu'il est maintenant (pas ceux que Herdr aurait déplacés),
+  // pour que Herdr ne les réadopte pas entre l'écriture et la fin ; puis on
+  // écrit (Herdr a pu fermer leurs panneaux entre-temps : rien à écrire alors).
+  const fermer = async (action: Action, demandes: string[]): Promise<void> => {
+    const doc = await lireDoc()
+    const retires = new Set(terminauxRetires(doc, appliquer(doc, action)))
+    for (const adresse of demandes) if (retires.has(adresse)) await tuer(adresse)
+    await ecrireDoc(requete, action)
+  }
+
   const traiter = async (d: DemandeStructure): Promise<ReponseStructure> => {
     switch (d.type) {
       case 'onglet.nouveau': {
         const onglet = idHerdr('tb')
-        const panneau = idHerdr('p')
         const adresse = await lancer(d.space, onglet, d.dossier)
-        await ecrireAvecTerminal(
-          { type: 'onglet.nouveau', space: d.space, onglet, panneau, adresse },
+        const place = await ecrireEtPlacer(
+          { type: 'onglet.nouveau', space: d.space, onglet, panneau: idHerdr('p'), adresse },
           adresse
         )
-        return { ok: true, onglet, panneau }
+        return { ok: true, ...place }
       }
       case 'panneau.diviser': {
-        const nouveau = idHerdr('p')
         const adresse = await lancer(d.space, d.onglet, d.dossier)
-        await ecrireAvecTerminal(
+        const place = await ecrireEtPlacer(
           {
             type: 'panneau.diviser',
             space: d.space,
             onglet: d.onglet,
             panneau: d.panneau,
             sens: d.sens,
-            nouveau,
+            nouveau: idHerdr('p'),
             conteneur: idHerdr('s'),
             adresse
           },
           adresse
         )
-        return { ok: true, onglet: d.onglet, panneau: nouveau }
+        return { ok: true, ...place }
       }
       case 'onglet.fermer':
-        await ecrireDoc(requete, { type: 'onglet.fermer', space: d.space, onglet: d.onglet })
-        for (const adresse of d.terminaux) await tuer(adresse)
+        await fermer({ type: 'onglet.fermer', space: d.space, onglet: d.onglet }, d.terminaux)
         return { ok: true }
       case 'panneau.fermer':
-        await ecrireDoc(requete, {
-          type: 'panneau.fermer',
-          space: d.space,
-          onglet: d.onglet,
-          panneau: d.panneau
-        })
-        if (d.terminal) await tuer(d.terminal)
+        await fermer(
+          { type: 'panneau.fermer', space: d.space, onglet: d.onglet, panneau: d.panneau },
+          d.terminal ? [d.terminal] : []
+        )
         return { ok: true }
       default:
         await ecrireDoc(requete, d)

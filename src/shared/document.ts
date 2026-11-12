@@ -204,3 +204,29 @@ export function appliquer(docBrut: unknown, action: Action): unknown {
       })
   }
 }
+
+function tousLesTerminaux(docBrut: unknown): string[] {
+  const doc = (docBrut ?? {}) as Doc
+  return (doc.spaces ?? []).flatMap((s) => (s.tabs ?? []).flatMap((o) => terminauxDe(o.root)))
+}
+
+// Les terminaux présents avant et plus après : ceux qu'une fermeture retire
+// vraiment (les seuls qu'on a le droit de tuer).
+export function terminauxRetires(avant: unknown, apres: unknown): string[] {
+  const restent = new Set(tousLesTerminaux(apres))
+  return tousLesTerminaux(avant).filter((a) => !restent.has(a))
+}
+
+// Où est rangé un terminal (pour retrouver la place que Herdr lui a donnée).
+export function placeDe(
+  docBrut: unknown,
+  adresse: string
+): { space: string; onglet: string; panneau: string } | null {
+  const doc = (docBrut ?? {}) as Doc
+  for (const s of doc.spaces ?? [])
+    for (const o of s.tabs ?? []) {
+      const bloc = o.root ? blocDe(o.root, adresse) : undefined
+      if (bloc) return { space: s.id, onglet: o.id, panneau: bloc.id }
+    }
+  return null
+}

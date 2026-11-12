@@ -31,7 +31,13 @@ function ajuster(adresse: string, o: Ouvert): void {
   o.ajustement.fit()
   if (!o.attache) {
     o.attache = true
-    window.berger.envoyer('berger:attacher', { adresse, cols: o.xterm.cols, rows: o.xterm.rows })
+    // En arrière-plan, l'attache n'impose pas sa taille (le focus la donnera).
+    window.berger.envoyer('berger:attacher', {
+      adresse,
+      cols: o.xterm.cols,
+      rows: o.xterm.rows,
+      actif: document.hasFocus()
+    })
     return
   }
   // Un terminal n'a qu'une taille : Berger n'impose la sienne que s'il a le focus.

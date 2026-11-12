@@ -12,15 +12,21 @@ export class Terminaux {
 
   constructor(private rappels: Rappels) {}
 
-  attacher(adresse: string, cols: number, rows: number): void {
+  attacher(adresse: string, cols: number, rows: number, actif = true): void {
     if (this.ouverts.has(adresse)) return
-    const t: TerminalOuvert = new TerminalOuvert(adresse, cols, rows, {
-      sortie: (octets) => this.rappels.sortie(adresse, octets),
-      fin: (raison) => {
-        if (this.ouverts.get(adresse) === t) this.ouverts.delete(adresse)
-        this.rappels.fin(adresse, raison)
-      }
-    })
+    const t: TerminalOuvert = new TerminalOuvert(
+      adresse,
+      cols,
+      rows,
+      {
+        sortie: (octets) => this.rappels.sortie(adresse, octets),
+        fin: (raison) => {
+          if (this.ouverts.get(adresse) === t) this.ouverts.delete(adresse)
+          this.rappels.fin(adresse, raison)
+        }
+      },
+      actif
+    )
     this.ouverts.set(adresse, t)
   }
 
