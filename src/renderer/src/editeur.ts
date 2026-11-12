@@ -212,10 +212,7 @@ export function initEditeur(m: string): void {
     // Le menu du clic droit hors du shadow DOM, pour qu'il reçoive les couleurs du thème.
     useShadowDOM: false
   })
-  // ⌘S : enregistrer. ⌘F est la recherche intégrée de Monaco.
-  editeur.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-    if (affiche) void enregistrer(affiche)
-  })
+  // ⌘S passe par la table des raccourcis ; ⌘F est la recherche intégrée de Monaco.
   // « Organiser les imports » (⇧⌥O et menu du clic droit), fichiers TypeScript et JavaScript.
   const estTs = editeur.createContextKey<boolean>('bergerTypeScript', false)
   editeur.onDidChangeModel(() => {

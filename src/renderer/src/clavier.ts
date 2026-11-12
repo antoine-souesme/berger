@@ -34,6 +34,7 @@ import {
   renommerChoisi
 } from './ranger'
 import { actionPanneau, oublierClavier, panneauClavier } from './panneaux'
+import { tableActuelle } from './table-raccourcis'
 
 // Afficher le space, l'onglet et le panneau d'un terminal, et lui donner le clavier.
 export function choisirPlace(p: PlaceAgent): void {
@@ -60,6 +61,12 @@ function terminalActuel(): string | null {
   if (!s || a?.type !== 'terminal') return null
   const onglet = s.onglets.find((o) => o.id === a.id)
   return (onglet && panneauClavier(onglet)?.content?.terminal) ?? null
+}
+
+// L'ouverture des réglages (branchée par la fenêtre des réglages).
+let surOuvrirReglages: () => void = () => {}
+export function brancherOuvrirReglages(f: () => void): void {
+  surOuvrirReglages = f
 }
 
 function executer(a: ActionClavier): void {
@@ -151,6 +158,9 @@ function executer(a: ActionClavier): void {
     case 'editeur.retourLigne':
       basculerRetourLigne()
       return
+    case 'reglages.ouvrir':
+      surOuvrirReglages()
+      return
     case 'rien':
       return
   }
@@ -162,7 +172,7 @@ export function brancherClavier(): void {
     (ev) => {
       // Un dialogue ouvert garde le clavier pour lui (voir dialogue.ts).
       if (dialogueOuvert() || rechercheOuverte() || menuOuvert()) return
-      const action = actionDe(ev, cibleDe(document.activeElement))
+      const action = actionDe(ev, cibleDe(document.activeElement), tableActuelle())
       if (!action) return
       ev.preventDefault()
       ev.stopPropagation()
