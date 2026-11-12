@@ -1,6 +1,8 @@
 // Règles pures des réglages de Berger (`reglages.json` du dossier de données,
 // écrit par la fenêtre des réglages et modifiable à la main). Une valeur
 // absente ou invalide prend sa valeur par défaut ; les autres sont gardées.
+import type { ThemeConnu } from './themes'
+
 export type Reglages = {
   apparence: {
     themeApplication: string
@@ -18,6 +20,16 @@ export type Reglages = {
   }
   terminal: { police: string; taille: number }
   raccourcis: Record<string, string[]> // id de commande → touches ('cmd-shift-d'), [] = aucun
+}
+
+// Ce que la partie Node pousse à la fenêtre : réglages valides, thèmes connus,
+// erreur du fichier (null s'il est bien formé), chemins.
+export type EtatReglages = {
+  reglages: Reglages
+  themes: ThemeConnu[]
+  erreur: string | null
+  chemin: string
+  dossierThemes: string
 }
 
 export const REGLAGES_PAR_DEFAUT: Reglages = {

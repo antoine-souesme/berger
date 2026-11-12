@@ -6,7 +6,7 @@ import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
 import { tableActuelle } from './table-raccourcis'
-import { couleursTerminal } from '../../shared/themes'
+import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
 
 type Ouvert = {
@@ -18,9 +18,9 @@ type Ouvert = {
 }
 
 // Couleurs, police et taille courantes (thème de l'application, réglages).
-const THEME: ITheme = couleursTerminal(THEMES_FOURNIS[0].theme)
-const POLICE = "'IBM Plex Mono', Menlo, monospace"
-const TAILLE = 12
+let THEME: ITheme = couleursTerminal(THEMES_FOURNIS[0].theme)
+let POLICE = "'IBM Plex Mono', Menlo, monospace"
+let TAILLE = 12
 
 // Le rendu graphique de xterm donne au canevas une police qui commence par une
 // espace quand le texte n'est pas en italique (« ␣normal 12px … ») ; le Chromium
@@ -137,6 +137,30 @@ export function initTerminaux(rappels: { fin: (adresse: string) => void }): void
     for (const [adresse, o] of ouverts) envoyerTaille(adresse, o)
   })
   window.addEventListener('blur', () => window.berger.envoyer('berger:focus', { actif: false }))
+}
+
+// Couleurs (thème de l'application), police et taille : appliquées aux
+// terminaux ouverts, qui sont remesurés, et prises par les suivants.
+export function appliquerTerminal(
+  couleurs: CouleursTerminal,
+  police: string,
+  taille: number
+): void {
+  const policeChange = police !== POLICE || taille !== TAILLE
+  THEME = couleurs
+  POLICE = police
+  TAILLE = taille
+  for (const [adresse, o] of ouverts) {
+    o.xterm.options.theme = couleurs
+    if (!policeChange) continue
+    o.xterm.options.fontFamily = police
+    o.xterm.options.fontSize = taille
+    // Remesurer une fois la police chargée (sinon les cases sont mal mesurées).
+    void document.fonts
+      .load(`${taille}px ${police}`)
+      .catch(() => [])
+      .then(() => ajuster(adresse, o))
+  }
 }
 
 export function raisonArret(adresse: string): string | undefined {

@@ -1,4 +1,5 @@
-/* Couleurs du thème `antoine-monokai` de Herdr (voir docs/maquettes/README.md). */
+/* Couleurs du thème de l'application, posées par apparence.ts (valeurs par
+   défaut : thème `antoine-monokai` de Herdr, voir docs/maquettes/README.md). */
 :root {
   --fond: #1e1f1c;
   --panneau: #272822;
@@ -8,7 +9,14 @@
   --gris: #75715e;
   --gris-clair: #a59f85;
   --actif: #414339;
+  --survol: #3e3d32;
+  --popover: #1e1f1c;
   --clavier: #66d9ef;
+  --vert: #a6e22e;
+  --rouge: #f92672;
+  --jaune: #e6db74;
+  --police-interface: -apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif;
+  --taille-interface: 13px;
 }
 
 html,
@@ -17,11 +25,8 @@ body {
   height: 100%;
   background: var(--fond);
   color: var(--texte);
-  font:
-    13px -apple-system,
-    BlinkMacSystemFont,
-    'Helvetica Neue',
-    sans-serif;
+  font-family: var(--police-interface);
+  font-size: var(--taille-interface);
   -webkit-font-smoothing: antialiased;
 }
 body {
@@ -103,7 +108,7 @@ body {
   gap: 8px;
 }
 #explorateur {
-  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif;
+  font-family: var(--police-interface);
 }
 .entete-explorateur {
   gap: 2px;
@@ -153,7 +158,7 @@ body {
   color: var(--vif);
 }
 .ligne-arbre:hover {
-  background: #2a2b26;
+  background: color-mix(in srgb, var(--fond), var(--texte) 7%);
 }
 .ligne-arbre.choisie {
   background: var(--actif);
@@ -393,7 +398,7 @@ body {
   align-items: center;
   gap: 2px;
   font-size: 12px;
-  color: #a6e22e;
+  color: var(--vert);
   flex-shrink: 0;
 }
 .etat-agent {
@@ -407,7 +412,7 @@ body {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #f92672;
+  background: var(--rouge);
 }
 .anneau-repos {
   width: 7px;
@@ -519,7 +524,7 @@ body {
 }
 #deconnecte {
   padding: 6px 12px;
-  background: #5c2b2b;
+  background: color-mix(in srgb, var(--rouge) 35%, var(--fond));
   color: var(--vif);
 }
 #barre-onglets {
@@ -719,12 +724,28 @@ body {
   place-items: center;
   padding: 24px;
   overflow: hidden;
-  background-color: #272822;
+  background-color: var(--panneau);
   background-image:
-    linear-gradient(45deg, #2d2e28 25%, transparent 25%),
-    linear-gradient(-45deg, #2d2e28 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #2d2e28 75%),
-    linear-gradient(-45deg, transparent 75%, #2d2e28 75%);
+    linear-gradient(
+      45deg,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      -45deg,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 25%,
+      transparent 25%
+    ),
+    linear-gradient(
+      45deg,
+      transparent 75%,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 75%
+    ),
+    linear-gradient(
+      -45deg,
+      transparent 75%,
+      color-mix(in srgb, var(--panneau), var(--texte) 5%) 75%
+    );
   background-size: 20px 20px;
   background-position:
     0 0,
@@ -814,7 +835,7 @@ body {
   color: var(--vif);
 }
 .palette-nom b {
-  color: #e6db74;
+  color: var(--jaune);
   font-weight: 600;
 }
 .palette-ou {
@@ -865,7 +886,7 @@ body {
 }
 #fichier-message {
   flex: 1;
-  color: #a6e22e;
+  color: var(--vert);
 }
 
 /* Barre d'état */
@@ -884,6 +905,7 @@ body {
   display: flex;
   align-items: center;
   gap: 6px;
+  white-space: nowrap;
 }
 #barre-etat .droite {
   margin-left: auto;
@@ -979,7 +1001,7 @@ body {
 }
 #workspaces .outil.nouveau {
   background: var(--actif);
-  color: #a6e22e;
+  color: var(--vert);
 }
 .trait-workspaces {
   width: 28px;
@@ -1000,7 +1022,7 @@ body {
 #workspaces .workspace.ouvert {
   opacity: 1;
   background: var(--actif);
-  box-shadow: inset 0 0 0 1.5px #a6e22e;
+  box-shadow: inset 0 0 0 1.5px var(--vert);
 }
 #workspaces .workspace.glisse {
   z-index: 3;
@@ -1022,10 +1044,10 @@ body {
 
 /* Menus : entrée rose, entrée grisée */
 .menu .entree.danger {
-  color: #f92672;
+  color: var(--rouge);
 }
 .menu .entree.danger.designee {
-  color: #f92672;
+  color: var(--rouge);
 }
 .menu .entree.inactif {
   opacity: 0.4;
@@ -1135,13 +1157,13 @@ body {
 .bouton-dialogue.principal {
   border-color: transparent;
   background: var(--actif);
-  color: #a6e22e;
+  color: var(--vert);
   font-weight: 600;
 }
 .bouton-dialogue.principal.danger {
-  background: #f9267224;
-  border: 1px solid #f9267266;
-  color: #f92672;
+  background: color-mix(in srgb, var(--rouge) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--rouge) 40%, transparent);
+  color: var(--rouge);
 }
 
 .menu[aria-label='Actions du workspace'] {
@@ -1182,4 +1204,11 @@ body {
 .fermer-panneau:hover {
   background: var(--actif);
   color: var(--vif);
+}
+
+#barre-etat .erreur-reglages {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--rouge);
 }

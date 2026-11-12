@@ -6,8 +6,17 @@ import JsonWorker from 'monaco-editor/language/json/json.worker?worker'
 import CssWorker from 'monaco-editor/language/css/css.worker?worker'
 import HtmlWorker from 'monaco-editor/language/html/html.worker?worker'
 import { serveurDe } from '../../shared/langage'
-import { definirTheme, initColoration, langageDuFichier } from './coloration'
-import type { Reglages } from '../../shared/reglages'
+import {
+  appliquerThemeEditeur,
+  initColoration,
+  langageDuFichier,
+  lireThemeVsCode
+} from './coloration'
+import type { EtatReglages } from '../../shared/reglages'
+import { themeEditeur, type ThemeHerdr } from '../../shared/themes'
+import { THEMES_EDITEUR_VSCODE } from '../../shared/themes-fournis'
+import type { ThemeVsCode } from '../../shared/theme'
+import { reglagesActuels, surReglages, themeConnu } from './apparence'
 import { quoiFaire } from '../../shared/fichiers'
 import { replisMarkdown } from '../../shared/replis-markdown'
 import { initJson, suivreJson } from './json'
@@ -108,7 +117,7 @@ function nomDuLangage(id: string): string {
 
 function dessinerBandeau(chemin: string): void {
   const morceaux = dossierAffiche(chemin, maison).split('/').filter(Boolean)
-  const enfants: Node[] = [icone('file', '#a59f85')]
+  const enfants: Node[] = [icone('file', 'var(--gris-clair)')]
   morceaux.forEach((m, i) => {
     const s = document.createElement('span')
     const dernier = i === morceaux.length - 1
@@ -143,9 +152,56 @@ function suivreModifies(chemin: string): void {
   redessiner()
 }
 
+// Le retour à la ligne : celui de ⌥Z (retenu d'une session à l'autre), sinon
+// le réglage « Retour à la ligne par défaut ».
+function retourLigne(): boolean {
+  return etat().retourLigne ?? reglagesActuels()?.reglages.editeur.retourLigne ?? false
+}
+
 // ⌥Z : retour à la ligne, retenu d'une session à l'autre.
 export function basculerRetourLigne(): void {
-  changer((e) => (e.retourLigne = !e.retourLigne))
+  const avant = retourLigne()
+  changer((e) => (e.retourLigne = !avant))
+}
+
+// Le thème de l'éditeur choisi : un thème de VS Code tel quel, sinon un thème
+// connu (inconnu : antoine-monokai) avec le thème de VS Code de son champ `editeur`.
+async function themeEditeurDe(e: EtatReglages): Promise<ThemeVsCode & { type: 'dark' | 'light' }> {
+  const id = e.reglages.apparence.themeEditeur
+  const vscode = THEMES_EDITEUR_VSCODE.find((t) => t.id === id)
+  if (vscode) {
+    const t = await lireThemeVsCode(vscode.fichier)
+    return {
+      colors: t.colors,
+      tokenColors: t.tokenColors,
+      type: t.type === 'light' ? 'light' : 'dark'
+    }
+  }
+  const connu: ThemeHerdr = themeConnu(e, id).theme
+  const fichier = connu.editeur?.vscode
+  const base = fichier ? await lireThemeVsCode(fichier).catch(() => null) : null
+  return themeEditeur(connu, base)
+}
+
+// Thème, police, minicarte, tabulations, retour à la ligne : à chaque
+// changement des réglages (le dernier demandé gagne).
+let tour = 0
+let tabulations = 2
+async function appliquerReglages(e: EtatReglages): Promise<void> {
+  const ce = ++tour
+  const theme = await themeEditeurDe(e)
+  await colorationPrete
+  if (ce !== tour) return
+  const r = e.reglages.editeur
+  appliquerThemeEditeur(theme, r.couleurSelection)
+  editeur?.updateOptions({
+    fontFamily: r.police,
+    fontSize: r.taille,
+    minimap: { enabled: r.minicarte },
+    wordWrap: retourLigne() ? 'on' : 'off'
+  })
+  tabulations = r.tabulations
+  for (const m of monaco.editor.getModels()) m.updateOptions({ tabSize: tabulations })
 }
 
 // Un fichier ouvert a changé sur le disque : rechargé s'il n'est pas modifié
@@ -181,7 +237,7 @@ export function initEditeur(m: string): void {
   maison = m
   // Le retour à la ligne suit l'état (relu au démarrage, basculé par ⌥Z).
   surChangement((e) => {
-    const voulu = e.retourLigne ? 'on' : 'off'
+    const voulu = (e.retourLigne ?? reglagesActuels()?.reglages.editeur.retourLigne) ? 'on' : 'off'
     if (editeur && editeur.getRawOptions().wordWrap !== voulu)
       editeur.updateOptions({ wordWrap: voulu })
   })
@@ -189,22 +245,18 @@ export function initEditeur(m: string): void {
     'berger:disque',
     ({ chemins }: { chemins: string[] }) => void apresDisque(chemins)
   )
-  void colorationPrete.then(async () =>
-    definirTheme(
-      (await window.berger.demander<{ reglages: Reglages }>('berger:reglages')).reglages.editeur
-        .couleurSelection ?? '#49483e'
-    )
-  )
+  monaco.editor.onDidCreateModel((m) => m.updateOptions({ tabSize: tabulations }))
+  const r = reglagesActuels()?.reglages.editeur
   editeur = monaco.editor.create(el('editeur'), {
-    theme: 'vscode-monokai',
+    theme: 'berger-editeur',
     'semanticHighlighting.enabled': true,
     bracketPairColorization: { enabled: true },
     guides: { bracketPairs: true },
     automaticLayout: true,
-    fontFamily: 'Menlo, monospace',
-    fontSize: 13,
-    minimap: { enabled: true },
-    wordWrap: etat().retourLigne ? 'on' : 'off',
+    fontFamily: r?.police ?? 'Menlo, monospace',
+    fontSize: r?.taille ?? 13,
+    minimap: { enabled: r?.minicarte ?? true },
+    wordWrap: retourLigne() ? 'on' : 'off',
     multiCursorModifier: 'alt',
     folding: true,
     scrollBeyondLastLine: false,
@@ -212,6 +264,7 @@ export function initEditeur(m: string): void {
     // Le menu du clic droit hors du shadow DOM, pour qu'il reçoive les couleurs du thème.
     useShadowDOM: false
   })
+  surReglages((e) => void appliquerReglages(e))
   // ⌘S passe par la table des raccourcis ; ⌘F est la recherche intégrée de Monaco.
   // « Organiser les imports » (⇧⌥O et menu du clic droit), fichiers TypeScript et JavaScript.
   const estTs = editeur.createContextKey<boolean>('bergerTypeScript', false)

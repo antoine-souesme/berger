@@ -445,7 +445,7 @@ export function initRanger(): void {
       vide.className = 'sans-chevron'
       ligne.append(
         e.estDossier ? icone('chevron-right', 'currentColor', 16, 1.75) : vide,
-        icone(e.estDossier ? 'folder' : 'file', '#a59f85', 16, 1.75),
+        icone(e.estDossier ? 'folder' : 'file', 'var(--gris-clair)', 16, 1.75),
         champ('', (v) => void creerIci(e.dossier, v, e.estDossier), false)
       )
       return [ligne]

@@ -32,8 +32,8 @@ export type Ligne = { chemin: string; dossier: boolean; racine: string; profonde
 const el = (id: string): HTMLElement => document.getElementById(id)!
 const arbre = (): HTMLElement => el('arbre')
 
-const GRIS_IGNORE = '#8c8c8c'
-const TEXTE = '#cccccc'
+const GRIS_IGNORE = 'var(--gris)'
+const TEXTE = 'var(--texte)'
 
 let maison = ''
 // Le contenu des dossiers déjà lus, gardé tant que le disque ne le change pas.
@@ -233,7 +233,7 @@ function ligneRacine(l: Ligne): HTMLElement {
   chemin.className = 'chemin-racine'
   chemin.textContent = cheminAffiche(l.chemin)
   ligne.append(
-    icone(ouvert ? 'chevron-down' : 'chevron-right', '#a59f85', 16, 1.75),
+    icone(ouvert ? 'chevron-down' : 'chevron-right', 'var(--gris-clair)', 16, 1.75),
     iconeMaterial(iconeFichier(nomDe(l.chemin), true, ouvert))
   )
   const remplace = rappels.remplacerNom(l)

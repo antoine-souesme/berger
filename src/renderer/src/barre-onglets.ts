@@ -48,7 +48,7 @@ function ongletTerminal(space: VueSpace, onglet: VueOnglet, actif: boolean): HTM
   el.append(
     onglet.agent
       ? icone('bot', COULEUR_ETAT[onglet.agent])
-      : icone('terminal', actif ? '#a59f85' : '#75715e')
+      : icone('terminal', actif ? 'var(--gris-clair)' : 'var(--gris)')
   )
   if (enRenommage === onglet.id) {
     const champ = document.createElement('input')

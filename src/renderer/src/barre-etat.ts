@@ -2,6 +2,7 @@
 import { COULEUR_ETAT, plusPressant } from '../../shared/libelles'
 import { spaceAffiche, spacesVisiblesUi, surChangement } from './etat'
 import { icone } from './icones'
+import { reglagesActuels, surReglages } from './apparence'
 
 function morceau(...enfants: (Node | string)[]): HTMLElement {
   const m = document.createElement('span')
@@ -20,20 +21,26 @@ function dessiner(): void {
   const etatAgents = plusPressant(vivants.map((t) => t.agent))
   const point = document.createElement('span')
   point.className = 'point'
-  point.style.background = etatAgents ? COULEUR_ETAT[etatAgents] : '#75715e'
+  point.style.background = etatAgents ? COULEUR_ETAT[etatAgents] : 'var(--gris)'
   const droite = document.createElement('span')
   droite.className = 'morceau droite'
   droite.textContent = '⇧⌘P Commandes'
+  // Un reglages.json mal formé : le message reste jusqu'à ce qu'il soit corrigé.
+  const erreur = reglagesActuels()?.erreur
+  const message = erreur ? [morceau(icone('triangle-alert', 'currentColor', 13), erreur)] : []
+  message[0]?.classList.add('erreur-reglages')
   barre.replaceChildren(
     morceau(icone('monitor', 'currentColor', 13), 'Cet ordinateur'),
     ...(branche ? [morceau(icone('git-branch', 'currentColor', 13), branche)] : []),
     vivants.length
       ? morceau(point, vivants.length === 1 ? '1 agent' : `${vivants.length} agents`)
       : morceau('Aucun agent'),
+    ...message,
     droite
   )
 }
 
 export function initBarreEtat(): void {
   surChangement(dessiner)
+  surReglages(dessiner)
 }

@@ -37,6 +37,8 @@ import {
   FolderMinus,
   FolderOpen,
   Link,
+  Settings,
+  TriangleAlert,
   type IconNode
 } from 'lucide'
 
@@ -58,6 +60,8 @@ const ICONES: Record<string, IconNode> = {
   'loader-circle': LoaderCircle,
   'maximize-2': Maximize2,
   monitor: Monitor,
+  settings: Settings,
+  'triangle-alert': TriangleAlert,
   pencil: Pencil,
   pin: Pin,
   'pin-off': PinOff,
@@ -94,13 +98,15 @@ export function icone(
     height: String(taille),
     viewBox: '0 0 24 24',
     fill: 'none',
-    stroke: couleur,
+    // Une variable CSS ne se lit pas dans un attribut SVG : elle passe par `color`.
+    stroke: couleur.startsWith('var(') ? 'currentColor' : couleur,
     'stroke-width': String(epaisseur),
     'stroke-linecap': 'round',
     'stroke-linejoin': 'round',
     class: 'icone'
   }
   for (const [k, v] of Object.entries(attributs)) svg.setAttribute(k, v)
+  if (couleur.startsWith('var(')) svg.style.color = couleur
   for (const [balise, attrs] of ICONES[nom] ?? ICONES['square-terminal']) {
     const el = document.createElementNS(SVG, balise)
     for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, String(v))

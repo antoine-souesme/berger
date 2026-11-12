@@ -1,19 +1,13 @@
 import { app, ipcMain } from 'electron'
 import { mkdirSync, readdirSync, readFileSync, watch, writeFileSync } from 'fs'
 import { join } from 'path'
-import { lireReglages, modifierReglage, type Reglages } from '../shared/reglages'
+import { lireReglages, modifierReglage, type EtatReglages, type Reglages } from '../shared/reglages'
 import { affichageDe, lireTheme, type ThemeConnu, type ThemeHerdr } from '../shared/themes'
 import { THEME_PAR_DEFAUT, THEMES_FOURNIS } from '../shared/themes-fournis'
 
 // Les réglages (`reglages.json`) et les thèmes personnels (`themes/*.json`) du
 // dossier de données : lus au démarrage, suivis à chaud, poussés à la fenêtre.
-export type EtatReglages = {
-  reglages: Reglages
-  themes: ThemeConnu[]
-  erreur: string | null
-  chemin: string
-  dossierThemes: string
-}
+export type { EtatReglages }
 
 export const MESSAGE_MAL_FORME = 'reglages.json est mal formé : derniers réglages valides gardés.'
 

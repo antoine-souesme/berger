@@ -1,5 +1,5 @@
 import { appendFileSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { basename, join } from 'path'
 import { app, Menu, type BrowserWindow } from 'electron'
 import { execFile } from 'child_process'
 
@@ -49,6 +49,13 @@ import { execFile } from 'child_process'
 //   menu du clic droit, réécrit b.ts sur le disque, ouvre les deux fichiers mal formés,
 //   renomme b.ts en c.ts par l'explorateur (a.ts modifié), ⌥Z deux fois sur long.txt.
 //   Une capture et une ligne de journal par étape.
+// BERGER_SCENARIO=reglages BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> BERGER_SCENARIO_SORTIE=<préfixe>
+//   Le dossier contient src/a.ts. Refuse un dossier de données autre que `Berger-dev`.
+//   Écrit reglages.json à la main (Paper et Dark Modern, puis mal formé, puis corrigé),
+//   ouvre les réglages (⌘,), choisit chaque thème de l'application puis de l'éditeur,
+//   change « Diviser en bas » en ⌥⌘D (attente, conflit avec ⌘D), vérifie que ⌥⌘D divise
+//   et ce qui est écrit, « Rétablir », puis un raccourci écrit à la main. Remet le
+//   reglages.json d'avant. Une capture et une ligne de journal par étape.
 // BERGER_SCENARIO=raccourcis : ⌃1, ⌃2, ⌥⌘], ⌥⌘[, ⌘], ⌘[ et le tri des agents, avec le
 //   space et l'agent choisis après chaque touche dans le journal.
 type Mod = 'meta' | 'shift' | 'alt' | 'control'
@@ -146,6 +153,11 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
 
   if (scenario === 'langage') {
     void jouerLangage(w, capture, touche)
+    return
+  }
+
+  if (scenario === 'reglages') {
+    void jouerReglages(w, capture, touche)
     return
   }
 
@@ -906,3 +918,103 @@ async function jouerLangage(
   )
   console.log('[berger] scénario : fin')
 }
+
+async function jouerReglages(
+  w: BrowserWindow,
+  capture: (nom: string) => Promise<void>,
+  touche: (keyCode: string, modifiers?: Mod[]) => void
+): Promise<void> {
+  const donnees = app.getPath('userData')
+  if (basename(donnees) !== 'Berger-dev') {
+    console.error(`[berger] scénario reglages refusé : dossier de données ${donnees}`)
+    return
+  }
+  const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+  if (!dossier.includes('berger-essai')) {
+    console.error('[berger] scénario reglages refusé : le dossier doit contenir berger-essai')
+    return
+  }
+  const wc = w.webContents
+  const lent = Number(process.env['BERGER_SCENARIO_LENTEUR'] ?? 1)
+  const pause = (ms: number): Promise<void> => new Promise((ok) => setTimeout(ok, ms * lent))
+  const journal = (nom: string, valeur: unknown): void =>
+    console.log(`[berger] scénario : ${nom} ${JSON.stringify(valeur)}`)
+  const fichier = join(donnees, 'reglages.json')
+  let avant: string | null = null
+  try {
+    avant = readFileSync(fichier, 'utf8')
+  } catch {
+    avant = null
+  }
+  const ecrire = (texte: string): void => writeFileSync(fichier, texte)
+  const barre = (): Promise<string> =>
+    wc.executeJavaScript(`document.getElementById('barre-etat').textContent`)
+  const variable = (nom: string): Promise<string> =>
+    wc.executeJavaScript(
+      `getComputedStyle(document.documentElement).getPropertyValue(${JSON.stringify(nom)}).trim()`
+    )
+  const fondEditeur = (): Promise<string> =>
+    wc.executeJavaScript(
+      `getComputedStyle(document.querySelector('.monaco-editor')).getPropertyValue('--vscode-editor-background')`
+    )
+
+  try {
+    await pause(2500)
+    wc.send('berger:scenario-oublier', { prefixe: dossier })
+    await pause(300)
+    wc.send('berger:scenario-dossier', { chemin: dossier })
+    await pause(1500)
+    wc.send('berger:scenario-fichier', { chemin: `${dossier}/src/a.ts` })
+    await pause(3000)
+    await capture('00-depart')
+
+    // Le fichier écrit à la main s'applique tout de suite.
+    ecrire(
+      '{ "apparence": { "themeApplication": "paper", "themeEditeur": "vscode-dark-modern" } }\n'
+    )
+    await pause(1500)
+    await capture('01-paper-dark-modern')
+    journal('01-paper-dark-modern', {
+      fond: await variable('--fond'),
+      editeur: await fondEditeur()
+    })
+
+    ecrire('{ mal')
+    await pause(1500)
+    await capture('02-mal-forme')
+    journal('02-mal-forme', { barre: await barre(), fond: await variable('--fond') })
+
+    ecrire('{ "apparence": { "themeApplication": "ink", "themeEditeur": "paper" } }\n')
+    await pause(1500)
+    await capture('03-corrige')
+    journal('03-corrige', {
+      barre: await barre(),
+      fond: await variable('--fond'),
+      editeur: await fondEditeur()
+    })
+
+    await jouerFenetreReglages(wc, capture, touche, pause, journal, ecrire, fichier)
+  } finally {
+    if (avant === null) {
+      try {
+        unlinkSync(fichier)
+      } catch {
+        // déjà absent
+      }
+    } else ecrire(avant)
+    await pause(1500)
+    await capture('99-fin')
+    journal('fin', 'reglages.json remis')
+  }
+}
+
+// La fenêtre des réglages (Tâche 6).
+async function jouerFenetreReglages(
+  _wc: Electron.WebContents,
+  _capture: (nom: string) => Promise<void>,
+  _touche: (keyCode: string, modifiers?: Mod[]) => void,
+  _pause: (ms: number) => Promise<void>,
+  _journal: (nom: string, valeur: unknown) => void,
+  _ecrire: (texte: string) => void,
+  _fichier: string
+): Promise<void> {}

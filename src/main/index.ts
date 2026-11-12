@@ -17,7 +17,8 @@ import { brancherWorkspaces } from './workspaces'
 import { brancherEtatFichiers } from './etat-fichiers'
 import { brancherLangage } from './services/langage'
 import { brancherSchemas } from './services/schemas'
-import { brancherReglages } from './reglages'
+import { brancherReglages, themeApplication } from './reglages'
+import { couleursFenetre } from '../shared/themes'
 import { completerPath } from './chemin'
 
 // Dossier de données : `Berger` pour la version installée, `Berger-dev` pour le
@@ -43,7 +44,7 @@ function createWindow(): void {
     width: 1440,
     height: 900,
     title: 'Berger',
-    backgroundColor: '#1e1f1c',
+    backgroundColor: couleursFenetre(themeApplication().theme).fond,
     titleBarStyle: 'hiddenInset',
     trafficLightPosition: { x: 14, y: 16 },
     show: false,
@@ -108,7 +109,11 @@ function createWindow(): void {
 app.whenReady().then(() => {
   electronApp.setAppUserModelId('fr.antoine.berger')
   poserMenu(() => fenetre)
-  brancherReglages((e) => envoyerA(fenetre, 'berger:reglages', e))
+  brancherReglages((e) => {
+    envoyerA(fenetre, 'berger:reglages', e)
+    if (fenetre && !fenetre.isDestroyed())
+      fenetre.setBackgroundColor(couleursFenetre(themeApplication().theme).fond)
+  })
 
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
