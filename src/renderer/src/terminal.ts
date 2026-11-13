@@ -187,6 +187,9 @@ export function vueTerminal(adresse: string): HTMLElement {
     ...optionsPolice(POLICE),
     cursorBlink: true,
     allowProposedApi: true,
+    // Lettres dessinées sur un fond transparent : macOS ne les épaissit pas
+    // (sur un fond plein, il les grossit et les rend floues). Plus proche de Herdr.
+    allowTransparency: true,
     theme: THEME
   })
   const o: Ouvert = { el, xterm, attache: false, cree: Date.now(), ouvert: false }
