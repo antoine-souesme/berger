@@ -21,6 +21,7 @@ import {
 export type EtatUi = EtatFenetre & {
   vue: Vue
   connecte: boolean
+  accueil: boolean // l'écran d'accueil, jusqu'à la première connexion
   focus: Record<string, string> // onglet → panneau qui a le clavier
   agrandi: Record<string, string> // onglet → panneau agrandi
   modifies: Set<string> // fichiers non enregistrés
@@ -33,6 +34,7 @@ const e: EtatUi = {
   ...structuredClone(ETAT_PAR_DEFAUT),
   vue: VUE_VIDE,
   connecte: false,
+  accueil: true,
   focus: {},
   agrandi: {},
   modifies: new Set(),

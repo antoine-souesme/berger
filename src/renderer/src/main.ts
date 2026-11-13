@@ -91,7 +91,9 @@ initColonne({ choisirAgent: choisirPlace })
 
 // Le contenu de la colonne de droite : l'onglet de terminal ou le fichier.
 surChangement((e) => {
-  document.getElementById('deconnecte')!.hidden = e.connecte
+  if (e.connecte) e.accueil = false
+  document.getElementById('accueil')!.classList.toggle('parti', !e.accueil)
+  document.getElementById('deconnecte')!.hidden = e.connecte || e.accueil
   dessinerBarre()
   const space = spaceAffiche()
   const a = ongletAffiche()
@@ -139,6 +141,9 @@ surChangement((e) => {
   if (regardes.length) window.berger.envoyer('berger:vu', { adresses: regardes })
 })
 window.addEventListener('focus', () => redessiner())
+
+// Le core ne répond pas au bout de 5 s : l'accueil laisse la place au bandeau.
+setTimeout(() => changer((e) => (e.accueil = false)), 5000)
 
 window.berger.ecouter('berger:connexion', ({ etat: c }) =>
   changer((e) => (e.connecte = c === 'connecte'))

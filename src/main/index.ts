@@ -140,7 +140,7 @@ app.whenReady().then(() => {
   })
 
   coeur.surEtat((etat) => {
-    console.log(`[berger] herdr-core: ${etat}`)
+    console.log(`[berger] herdr-core: ${etat === 'connecte' ? 'connected' : 'disconnected'}`)
     etatConnexion = etat
     envoyerA(fenetre, 'berger:connexion', { etat })
   })
