@@ -18,7 +18,16 @@ export type Reglages = {
     minicarte: boolean
     tabulations: number
   }
-  terminal: { police: string; taille: number }
+  // Graisses de 100 à 900 (400 : normal) ; interligne en multiple de la
+  // taille ; espacement des lettres en pixels.
+  terminal: {
+    police: string
+    taille: number
+    graisse: number
+    graisseGras: number
+    interligne: number
+    espacement: number
+  }
   // Sons des agents ; `fini` et `attente` : un fichier son à la place de celui
   // de macOS (null : celui de macOS).
   sons: { actifs: boolean; fini: string | null; attente: string | null }
@@ -50,7 +59,16 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
     minicarte: true,
     tabulations: 2
   },
-  terminal: { police: "'IBM Plex Mono', Menlo, monospace", taille: 12 },
+  // Le rendu natif de Herdr (Ghostty) est plus épais et ses lignes plus hautes :
+  // graisse « SemiBold » et lignes un peu plus hautes s'en approchent.
+  terminal: {
+    police: "'IBM Plex Mono', Menlo, monospace",
+    taille: 12,
+    graisse: 600,
+    graisseGras: 700,
+    interligne: 1.1,
+    espacement: 0
+  },
   sons: { actifs: true, fini: null, attente: null },
   raccourcis: {}
 }
@@ -64,6 +82,10 @@ const texte = (x: unknown, d: string): string => (typeof x === 'string' && x.tri
 const booleen = (x: unknown, d: boolean): boolean => (typeof x === 'boolean' ? x : d)
 const entier = (x: unknown, min: number, max: number, d: number): number =>
   typeof x === 'number' && Number.isInteger(x) && x >= min && x <= max ? x : d
+const nombre = (x: unknown, min: number, max: number, d: number): number =>
+  typeof x === 'number' && Number.isFinite(x) && x >= min && x <= max ? x : d
+const graisse = (x: unknown, d: number): number =>
+  typeof x === 'number' && Number.isInteger(x) && x % 100 === 0 && x >= 100 && x <= 900 ? x : d
 
 function raccourcis(x: unknown): Record<string, string[]> {
   const r: Record<string, string[]> = {}
@@ -105,7 +127,11 @@ export function lireReglages(brut: unknown): Reglages {
     },
     terminal: {
       police: texte(t['police'], d.terminal.police),
-      taille: entier(t['taille'], 8, 32, d.terminal.taille)
+      taille: entier(t['taille'], 8, 32, d.terminal.taille),
+      graisse: graisse(t['graisse'], d.terminal.graisse),
+      graisseGras: graisse(t['graisseGras'], d.terminal.graisseGras),
+      interligne: nombre(t['interligne'], 1, 2, d.terminal.interligne),
+      espacement: entier(t['espacement'], -2, 10, d.terminal.espacement)
     },
     sons: {
       actifs: booleen(s['actifs'], d.sons.actifs),

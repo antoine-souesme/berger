@@ -1,6 +1,7 @@
 import { appendFileSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
 import { basename, join } from 'path'
 import { app, Menu, type BrowserWindow } from 'electron'
+import { tmpdir } from 'os'
 import { execFile, spawnSync } from 'child_process'
 
 // Vérification sans clic (développement seulement), avec des captures.
@@ -69,7 +70,8 @@ type LireSpace = (id: string) => Promise<unknown>
 export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
   const scenario = process.env['BERGER_SCENARIO']
   if (!scenario) return
-  const sortie = process.env['BERGER_SCENARIO_SORTIE'] ?? 'capture'
+  // Jamais dans le dépôt : dans le dossier temporaire du système par défaut.
+  const sortie = process.env['BERGER_SCENARIO_SORTIE'] ?? join(tmpdir(), 'berger-capture')
   const wc = w.webContents
   const touche = (keyCode: string, modifiers: Mod[] = []): void => {
     wc.sendInputEvent({ type: 'keyDown', keyCode, modifiers })
@@ -1274,6 +1276,23 @@ async function jouerFenetreReglages(o: {
     touche('r', ['meta', 'alt'])
     await pause(2500)
     journal('21-alt-cmd-r', { avant: n0, apres: await panneaux() })
+
+    // La police du terminal écrite à la main : fine, lignes hautes, lettres
+    // espacées ; la page Terminal la montre et le terminal la prend.
+    ecrire(
+      '{ "terminal": { "graisse": 300, "graisseGras": 800, "interligne": 1.6, "espacement": 2 } }\n'
+    )
+    await pause(2000)
+    await capture('21-terminal-police')
+    await ouvrir('terminal')
+    await capture('21-terminal-reglages')
+    journal(
+      '21-terminal-reglages',
+      await wc.executeJavaScript(
+        `[...document.querySelectorAll('.fenetre-reglages select')].map((s) => s.value)`
+      )
+    )
+    await fermer()
   }
 
   // Mal formé, fenêtre des réglages ouverte : message, et rien n'est écrit.
