@@ -124,3 +124,13 @@ test('nomDeCopie sans tenir compte des majuscules (disque de macOS)', () => {
   expect(nomDeCopie('Readme.md', false, new Set(['readme.md']), true)).toBe('Readme copie.md')
   expect(nomDeCopie('Readme.md', false, new Set(['readme.md']))).toBe('Readme.md')
 })
+
+test('plage : de l’ancre à la ligne cliquée, dans les deux sens', async () => {
+  const { plage } = await import('../src/shared/explorateur')
+  const c = ['/r', '/r/a', '/r/b', '/r/c', '/r/d']
+  expect(plage(c, '/r/a', '/r/c')).toEqual(['/r/a', '/r/b', '/r/c'])
+  expect(plage(c, '/r/d', '/r/b')).toEqual(['/r/b', '/r/c', '/r/d'])
+  expect(plage(c, '/r/b', '/r/b')).toEqual(['/r/b'])
+  expect(plage(c, '/ailleurs', '/r/b')).toEqual(['/r/b'])
+  expect(plage(c, null, '/r/b')).toEqual(['/r/b'])
+})

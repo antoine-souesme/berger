@@ -2,6 +2,7 @@
 // flexibles, un bandeau par panneau, le panneau qui a le clavier, les
 // séparateurs qu'on tire, le menu du clic droit et les actions de panneau.
 import {
+  egaliserCoupure,
   feuilles,
   poidsDe,
   voisin,
@@ -179,6 +180,17 @@ function brancherCoupure(
   space: VueSpace,
   onglet: VueOnglet
 ): void {
+  // Le double clic remet les deux panneaux de part et d'autre à égalité.
+  coupure.addEventListener('dblclick', (ev) => {
+    ev.preventDefault()
+    void window.berger.demander('berger:structure', {
+      type: 'panneau.poids',
+      space: space.id,
+      onglet: onglet.id,
+      conteneur: conteneur.id,
+      poids: egaliserCoupure(conteneur, i)
+    })
+  })
   coupure.addEventListener('mousedown', (ev) => {
     ev.preventDefault()
     const horizontal = conteneur.type === 'row'
@@ -192,7 +204,9 @@ function brancherCoupure(
     const depart = horizontal ? ev.clientX : ev.clientY
     const somme = tailles[i] + tailles[i + 1]
     let actuelles = [...tailles]
+    let bouge = false
     const bouger = (m: MouseEvent): void => {
+      bouge = true
       const d = (horizontal ? m.clientX : m.clientY) - depart
       const a = Math.min(somme - 40, Math.max(40, tailles[i] + d))
       actuelles = [...tailles]
@@ -203,6 +217,8 @@ function brancherCoupure(
     const lacher = (): void => {
       window.removeEventListener('mousemove', bouger)
       window.removeEventListener('mouseup', lacher)
+      // Un simple clic (ou le début d'un double clic) ne change rien.
+      if (!bouge) return
       const px = actuelles.reduce((s, x) => s + x, 0) || 1
       const poids = actuelles.map((x) => Number(((x / px) * total).toFixed(4)))
       void window.berger.demander('berger:structure', {

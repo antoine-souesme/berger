@@ -3,6 +3,7 @@ import {
   changerPoids,
   diviser,
   echanger,
+  egaliserCoupure,
   feuilles,
   fermerPanneau,
   rectangles,
@@ -123,3 +124,18 @@ test('changerPoids', () =>
   expect((changerPoids(trois, 'tb', [0.7, 0.3]) as Conteneur).children[1].size).toEqual({
     weight: 0.3
   }))
+
+test('egaliserCoupure : les deux voisins de la coupure prennent la même taille', () => {
+  const r = changerPoids(trois, 'tb', [0.7, 0.3]) as Conteneur
+  expect(egaliserCoupure(r, 0)).toEqual([0.5, 0.5])
+  const quatre = {
+    type: 'row',
+    id: 'q',
+    children: [b('a', 't1'), b('b', 't2'), b('c', 't3')].map((x, i) => ({
+      ...x,
+      size: { weight: [2, 5, 1][i] }
+    }))
+  } as Conteneur
+  expect(egaliserCoupure(quatre, 1)).toEqual([2, 3, 3])
+  expect(egaliserCoupure(quatre, 5)).toEqual([2, 5, 1])
+})

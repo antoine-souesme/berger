@@ -251,24 +251,30 @@ body {
   flex-shrink: 0;
   box-sizing: border-box;
   height: 48px;
+  padding: 0 10px;
   border-top: 1px solid var(--bord);
+  border-left: 1px solid var(--bord);
 }
+/* Même allure et même survol que « Réglages » (.bouton-pied). */
 .ajouter-dossier {
   display: flex;
   align-items: center;
   gap: 6px;
   width: 100%;
-  height: 26px;
-  padding: 0 14px;
+  height: 30px;
+  padding: 0 8px;
   border: 0;
+  border-radius: 8px;
   background: none;
   font: inherit;
   font-size: 13px;
   color: var(--gris);
+  text-align: left;
   cursor: pointer;
 }
 .ajouter-dossier:hover {
-  color: var(--vif);
+  background: var(--survol);
+  color: var(--texte);
 }
 .bouton-vide {
   margin-top: 4px;

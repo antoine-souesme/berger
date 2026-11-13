@@ -5,6 +5,7 @@ import { Terminal, type FontWeight, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
+import { sequenceMac } from '../../shared/touches-mac'
 import { CHEMINS_GLISSES, cheminsDesUrl, texteDepot } from '../../shared/depot'
 import { dispositionActuelle, tableActuelle } from './table-raccourcis'
 import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
@@ -210,10 +211,18 @@ export function vueTerminal(adresse: string): HTMLElement {
       octets: Uint8Array.from(texte, (c) => c.charCodeAt(0))
     })
   )
-  // Les raccourcis de Berger ne partent pas au terminal.
-  xterm.attachCustomKeyEventHandler(
-    (e) => actionDe(e, 'terminal', tableActuelle(), dispositionActuelle()) === null
-  )
+  // Les raccourcis de Berger ne partent pas au terminal ; quelques touches du
+  // Mac partent avec la suite d'octets qu'attendent les programmes (⇧↵, ⌘←…).
+  xterm.attachCustomKeyEventHandler((e) => {
+    if (actionDe(e, 'terminal', tableActuelle(), dispositionActuelle()) !== null) return false
+    const sequence = sequenceMac(e)
+    if (sequence === null) return true
+    if (e.type === 'keydown') {
+      e.preventDefault()
+      window.berger.envoyer('berger:touches', { adresse, octets: encodeur.encode(sequence) })
+    }
+    return false
+  })
   brancherDepot(el, xterm)
   new ResizeObserver(() => {
     clearTimeout(o.attente)

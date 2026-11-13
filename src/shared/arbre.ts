@@ -154,6 +154,17 @@ export function changerPoids(racine: Noeud, conteneur: string, poids: number[]):
   return parcourir(racine)
 }
 
+// Le double clic sur la coupure entre les enfants i et i+1 d'un conteneur leur
+// rend la même taille, en gardant la place qu'ils occupent à eux deux.
+export function egaliserCoupure(conteneur: Conteneur, i: number): number[] {
+  const poids = (conteneur.children ?? []).map(poidsDe)
+  if (i < 0 || i + 1 >= poids.length) return poids
+  const moitie = (poids[i] + poids[i + 1]) / 2
+  poids[i] = moitie
+  poids[i + 1] = moitie
+  return poids
+}
+
 export function rectangles(racine: Noeud): Map<string, Rect> {
   const r = new Map<string, Rect>()
   const placer = (n: Noeud, rect: Rect): void => {

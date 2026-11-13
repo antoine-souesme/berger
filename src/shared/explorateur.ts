@@ -136,3 +136,13 @@ export function dossiersAPerimer(changes: string[], affiches: string[]): string[
   }
   return [...r]
 }
+
+// ⇧-clic dans l'arbre : les lignes affichées de l'ancre jusqu'à la ligne
+// cliquée, dans un sens ou dans l'autre (la ligne seule si l'ancre a disparu).
+export function plage(chemins: string[], ancre: string | null, cible: string): string[] {
+  const j = chemins.indexOf(cible)
+  if (j < 0) return []
+  const i = ancre === null ? -1 : chemins.indexOf(ancre)
+  if (i < 0) return [cible]
+  return chemins.slice(Math.min(i, j), Math.max(i, j) + 1)
+}

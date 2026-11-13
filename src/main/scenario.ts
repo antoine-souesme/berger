@@ -209,6 +209,114 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  // BERGER_SCENARIO=selection BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> (avec a, b, c, d
+  //   à la racine) : ⌘-clic et ⇧-clic dans l'explorateur, puis dans un space créé pour
+  //   l'essai (et fermé à la fin) le double clic sur la séparation de deux panneaux et
+  //   ⇧↵, ⌘←, ⌘→ dans `cat -v`.
+  if (scenario === 'selection') {
+    const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+    let space = ''
+    if (!dossier.includes('berger-essai')) {
+      console.error(
+        '[berger] selection scenario refused: berger-essai folder and spbergertest space'
+      )
+      return
+    }
+    const ligne = (nom: string): string => `#arbre .ligne-arbre[data-chemin="${dossier}/${nom}"]`
+    const clic = async (sel: string, modifiers: Mod[], clickCount = 1): Promise<void> => {
+      const p: Point | null = await wc.executeJavaScript(`(() => {
+        const el = document.querySelector(${JSON.stringify(sel)})
+        if (!el) return null
+        el.scrollIntoView({ block: 'nearest' })
+        const r = el.getBoundingClientRect()
+        return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
+      })()`)
+      if (!p) return console.error(`[berger] scenario: not found ${sel}`)
+      wc.sendInputEvent({ type: 'mouseMove', x: p.x, y: p.y, modifiers })
+      for (let n = 1; n <= clickCount; n++) {
+        wc.sendInputEvent({
+          type: 'mouseDown',
+          x: p.x,
+          y: p.y,
+          button: 'left',
+          clickCount: n,
+          modifiers
+        })
+        wc.sendInputEvent({
+          type: 'mouseUp',
+          x: p.x,
+          y: p.y,
+          button: 'left',
+          clickCount: n,
+          modifiers
+        })
+      }
+    }
+    const choisis = async (nom: string): Promise<void> => {
+      const l: string[] = await wc.executeJavaScript(
+        `[...document.querySelectorAll('#arbre .ligne-arbre.choisie')].map((e) => e.dataset.chemin.split('/').pop())`
+      )
+      console.log(`[berger] scenario: ${nom} choisies=${l.join(',')}`)
+    }
+    const etape = (nom: string) => async (): Promise<void> => {
+      await capture(nom)
+      console.log(`[berger] scenario: ${nom} ${JSON.stringify(await lireSpace(space))}`)
+    }
+    const liste: (() => void | Promise<void>)[] = [
+      () => wc.send('berger:scenario-dossier', { chemin: dossier }),
+      () => clic(ligne('a'), []),
+      () => clic(ligne('c'), ['meta']),
+      () => choisis('01-cmd-clic'),
+      () => clic(ligne('d'), ['shift']),
+      () => choisis('02-shift-clic'),
+      () => clic(ligne('b'), ['meta']),
+      () => choisis('03-cmd-clic-retire'),
+      () => capture('03-explorateur'),
+      async () => {
+        const r: { space?: string } = await wc.executeJavaScript(
+          `window.berger.demander('berger:structure', { type: 'space.nouveau' })`
+        )
+        space = r.space ?? ''
+        console.log(`[berger] scenario: space d'essai ${space}`)
+        wc.send('berger:scenario-space', { space })
+      },
+      () => touche('d', ['meta']),
+      () => {
+        const glisser = (x1: number, x2: number, y: number): void => {
+          wc.sendInputEvent({ type: 'mouseDown', x: x1, y, button: 'left', clickCount: 1 })
+          for (let i = 1; i <= 5; i++)
+            wc.sendInputEvent({ type: 'mouseMove', x: x1 + ((x2 - x1) * i) / 5, y, button: 'left' })
+          wc.sendInputEvent({ type: 'mouseUp', x: x2, y, button: 'left', clickCount: 1 })
+        }
+        void wc
+          .executeJavaScript(
+            `(() => { const r = document.querySelector('#zone-terminaux .coupure').getBoundingClientRect(); return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) } })()`
+          )
+          .then((p: Point) => glisser(p.x, p.x + 250, p.y))
+      },
+      etape('04-tire'),
+      () => clic('#zone-terminaux .coupure', [], 2),
+      etape('05-double-clic'),
+      () => clic('#zone-terminaux .panneau.clavier .corps', []),
+      () => wc.insertText('cat -v'),
+      () => touche('Enter'),
+      () => wc.insertText('un'),
+      () => touche('Enter', ['shift']),
+      () => wc.insertText('deux'),
+      () => touche('Left', ['meta']),
+      () => touche('Right', ['meta']),
+      () => touche('Enter'),
+      () => capture('06-touches'),
+      () => touche('c', ['control']),
+      () =>
+        void wc.executeJavaScript(
+          `window.berger.demander('berger:structure', { type: 'space.fermer', space: ${JSON.stringify(space)} })`
+        )
+    ]
+    jouer(liste.map((f, i) => [3000 + i * 1200, f]))
+    return
+  }
+
   if (scenario === 'onglets') {
     const fichiers = (process.env['BERGER_SCENARIO_FICHIERS'] ?? '')
       .split(':')

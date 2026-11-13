@@ -11,7 +11,13 @@ import {
   racines,
   toutReplier
 } from '../../shared/etat-fichiers'
-import { decoration, dossiersAPerimer, type Entree, type GenreGit } from '../../shared/explorateur'
+import {
+  decoration,
+  dossiersAPerimer,
+  plage,
+  type Entree,
+  type GenreGit
+} from '../../shared/explorateur'
 import { iconeFichier } from '../../shared/icones-fichiers'
 import {
   changer,
@@ -41,9 +47,11 @@ const cache = new Map<string, Liste>()
 const enLecture = new Set<string>()
 const gits = new Map<string, Git>()
 const gitPrevu = new Map<string, NodeJS.Timeout>()
-// Ce qui est choisi dans l'arbre (plusieurs avec ⌘-clic), et le dernier choisi.
+// Ce qui est choisi dans l'arbre (plusieurs avec ⌘-clic et ⇧-clic), le dernier
+// choisi, et la ligne d'où part une plage choisie au ⇧-clic.
 export const selection = new Set<string>()
 export let choisi: Ligne | null = null
+let ancre: string | null = null
 // Les lignes dessinées, dans l'ordre (pour retrouver une ligne par son chemin).
 export let lignes: Ligne[] = []
 let version = 0
@@ -179,11 +187,27 @@ export function choisir(l: Ligne, ajouter = false): void {
     selection.add(l.chemin)
   }
   choisi = l
+  ancre = l.chemin
+  aRedessiner()
+}
+
+// ⇧-clic : la plage de l'ancre à cette ligne (ajoutée à la sélection avec ⌘).
+function choisirPlage(l: Ligne, ajouter: boolean): void {
+  if (!ajouter) selection.clear()
+  for (const c of plage(
+    lignes.map((x) => x.chemin),
+    ancre,
+    l.chemin
+  ))
+    selection.add(c)
+  if (!ancre || !selection.size) ancre = l.chemin
+  choisi = l
   aRedessiner()
 }
 
 function cliquer(l: Ligne, ev: MouseEvent): void {
   arbre().focus()
+  if (ev.shiftKey) return choisirPlage(l, ev.metaKey)
   if (ev.metaKey) return choisir(l, true)
   choisir(l)
   if (!l.dossier) {
