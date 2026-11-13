@@ -22,12 +22,7 @@ import { icone } from './icones'
 import { dispositionActuelle } from './table-raccourcis'
 
 export type Section =
-  | 'apparence'
-  | 'editeur'
-  | 'terminal'
-  | 'alertes'
-  | 'raccourcis'
-  | 'mises-a-jour'
+  'apparence' | 'editeur' | 'terminal' | 'alertes' | 'raccourcis' | 'mises-a-jour'
 
 const SECTIONS: [Section, string, string][] = [
   ['apparence', 'Apparence', 'palette'],
@@ -469,7 +464,17 @@ function surMajCore(): void {
   document
     .getElementById('ouvrir-reglages')
     ?.classList.toggle('avec-rond', Boolean(majCore?.disponible))
-  ouvert?.dessiner()
+  // Ailleurs, redessiner perdrait un texte en cours de saisie : seul le rond change.
+  if (!ouvert) return
+  if (ouvert.section === 'mises-a-jour') ouvert.dessiner()
+  else
+    document
+      .querySelector('.section-reglages[data-section="mises-a-jour"]')
+      ?.replaceChildren(
+        icone('refresh-cw', 'currentColor', 15, 1.75),
+        'Mises à jour',
+        ...(majCore?.disponible ? [creer('span', 'rond-maj')] : [])
+      )
 }
 
 // --- Raccourcis ---
