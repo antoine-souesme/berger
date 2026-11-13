@@ -19,6 +19,7 @@ import { brancherLangage } from './services/langage'
 import { brancherSchemas } from './services/schemas'
 import { brancherReglages, themeApplication } from './reglages'
 import { brancherSons } from './sons'
+import { brancherMajCore } from './maj-core'
 import { couleursFenetre } from '../shared/themes'
 import { completerPath } from './chemin'
 import { cadreRetenu, suivreCadre } from './cadre'
@@ -168,6 +169,7 @@ app.whenReady().then(() => {
   const langage = brancherLangage(() => fenetre)
   brancherSchemas()
   brancherSons()
+  brancherMajCore((e) => envoyerA(fenetre, 'berger:maj-core', e))
   app.on('will-quit', () => langage.arreter())
 
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
