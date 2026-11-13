@@ -39,7 +39,7 @@ import {
   ajouterDossier,
   basculerDeplie,
   deWorkspace,
-  estImage,
+  pourVisionneuse,
   fermerFichierWs,
   retirerDossier,
   type EtatFichiers
@@ -101,7 +101,7 @@ surChangement((e) => {
   const a = ongletAffiche()
   const onglet = a?.type === 'terminal' ? space?.onglets.find((o) => o.id === a.id) : undefined
   document.getElementById('zone-terminaux')!.hidden = !onglet
-  const image = a?.type === 'fichier' && estImage(a.chemin)
+  const image = a?.type === 'fichier' && pourVisionneuse(a.chemin)
   document.getElementById('zone-fichier')!.hidden = a?.type !== 'fichier' || image
   document.getElementById('zone-image')!.hidden = !image
   oublierTerminauxSauf(adressesDeLOngletAffiche())

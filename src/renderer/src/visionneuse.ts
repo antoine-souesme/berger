@@ -1,5 +1,7 @@
-// La visionneuse d'images (maquette explorateur.html e) : l'image centrée sur
-// un damier discret, le chemin en bandeau, dimensions et poids en bas.
+// La visionneuse d'images et de vidéos (maquette explorateur.html e) : l'image
+// ou la vidéo centrée sur un damier discret, le chemin en bandeau, dimensions
+// (et durée) et poids en bas.
+import { estVideo } from '../../shared/media'
 import { iconeFichier } from '../../shared/icones-fichiers'
 import { dossierAffiche } from '../../shared/libelles'
 import { iconeMaterial } from './icones'
@@ -25,6 +27,23 @@ export function raisonEchecImage(): string {
 export function cacherImage(): void {
   affichee = null
   ;(el('image') as HTMLImageElement).removeAttribute('src')
+  arreterVideo()
+}
+
+function arreterVideo(): void {
+  const v = el('video') as HTMLVideoElement
+  v.pause()
+  v.removeAttribute('src')
+  v.load()
+}
+
+// Durée lisible : « 0:42 », « 12:05 », « 1:02:03 ».
+export function dureeLisible(secondes: number): string {
+  const s = Math.round(secondes)
+  const h = Math.floor(s / 3600)
+  const m = Math.floor((s % 3600) / 60)
+  const deux = (n: number): string => String(n).padStart(2, '0')
+  return h ? `${h}:${deux(m)}:${deux(s % 60)}` : `${m}:${deux(s % 60)}`
 }
 
 // Poids lisible : « 48 Ko », « 1,1 Ko », « 2,4 Mo » (virgule française).
@@ -42,7 +61,9 @@ const TYPES: Record<string, string> = {
   jpeg: 'JPEG',
   tif: 'TIFF',
   tiff: 'TIFF',
-  ico: 'ICO'
+  ico: 'ICO',
+  mov: 'QuickTime',
+  ogv: 'Ogg'
 }
 
 function bandeau(chemin: string): void {
@@ -64,11 +85,47 @@ function bandeau(chemin: string): void {
   el('image-bandeau').replaceChildren(...enfants)
 }
 
-// Montre une image ; rend faux si elle est illisible.
+// Montre une vidéo ; rend faux si elle est illisible.
+async function afficherVideo(chemin: string): Promise<boolean> {
+  const r = await window.berger.demander<{ url?: string; poids?: number; erreur?: string }>(
+    'berger:video',
+    { chemin }
+  )
+  if (affichee !== chemin) return true
+  if (r.erreur !== undefined || !r.url) {
+    affichee = null
+    dernierEchec = r.erreur ?? 'vidéo illisible'
+    return false
+  }
+  const img = el('image') as HTMLImageElement
+  img.removeAttribute('src')
+  img.hidden = true
+  const v = el('video') as HTMLVideoElement
+  v.hidden = false
+  const ext = chemin.slice(chemin.lastIndexOf('.') + 1).toLowerCase()
+  el('image-type').textContent = `Vidéo ${TYPES[ext] ?? ext.toUpperCase()}`
+  v.onloadedmetadata = () => {
+    if (affichee !== chemin) return
+    el('image-dimensions').textContent =
+      `${v.videoWidth} × ${v.videoHeight} px · ${dureeLisible(v.duration)} · ${poidsLisible(r.poids ?? 0)}`
+  }
+  v.onerror = () => {
+    if (affichee !== chemin) return
+    el('image-dimensions').textContent = 'Format de vidéo non pris en charge'
+  }
+  v.src = r.url
+  return true
+}
+
+// Montre une image ou une vidéo ; rend faux si elle est illisible.
 export async function afficherImage(chemin: string): Promise<boolean> {
   affichee = chemin
   bandeau(chemin)
   el('image-dimensions').textContent = ''
+  if (estVideo(chemin)) return afficherVideo(chemin)
+  arreterVideo()
+  ;(el('video') as HTMLVideoElement).hidden = true
+  ;(el('image') as HTMLImageElement).hidden = false
   const r = await window.berger.demander<{ url?: string; poids?: number; erreur?: string }>(
     'berger:image',
     { chemin }

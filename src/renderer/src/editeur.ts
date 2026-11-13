@@ -26,6 +26,7 @@ import { fermerFichierWs } from '../../shared/etat-fichiers'
 import { changer, changerFichiers, etat, redessiner, surChangement } from './etat'
 import { retourLigneApresReglage } from '../../shared/etat-fenetre'
 import { icone } from './icones'
+import { boutonApercu, initApercu, suivreApercu } from './apercu-markdown'
 
 self.MonacoEnvironment = {
   getWorker(_id, label) {
@@ -271,6 +272,7 @@ export function initEditeur(m: string): void {
     useShadowDOM: false
   })
   surReglages((e) => void appliquerReglages(e))
+  initApercu()
   // ⌘S passe par la table des raccourcis ; ⌘F est la recherche intégrée de Monaco.
   // « Organiser les imports » (⇧⌥O et menu du clic droit), fichiers TypeScript et JavaScript.
   const estTs = editeur.createContextKey<boolean>('bergerTypeScript', false)
@@ -369,6 +371,9 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   editeur.setModel(o.modele)
   if (o.vue) editeur.restoreViewState(o.vue)
   dessinerBandeau(chemin)
+  const bouton = boutonApercu(o.modele)
+  if (bouton) el('fichier-bandeau').append(bouton)
+  suivreApercu(o.modele)
   el('fichier-langage').textContent = nomDuLangage(o.modele.getLanguageId())
   dessinerPosition()
   annoncer('')
@@ -386,6 +391,7 @@ export function cacherEditeur(): void {
     if (o) o.vue = editeur.saveViewState()
   }
   affiche = null
+  suivreApercu(null)
 }
 
 export function fichierAffiche(): string | null {
@@ -419,6 +425,7 @@ export function oublierFichier(chemin: string): void {
   if (affiche === chemin) {
     editeur?.setModel(null)
     affiche = null
+    suivreApercu(null)
   }
   o.modele.dispose()
   ouverts.delete(chemin)

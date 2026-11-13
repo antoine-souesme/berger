@@ -4,6 +4,7 @@
 // Repris et réécrits de `files.js` et `quickopen.js` (`remember`) du mod
 // `antoine`. Toutes les fonctions rendent un nouvel
 // objet quand quelque chose change, et le même sinon.
+import { estVideo } from './media'
 
 export type FichiersWorkspace = {
   epingles: string[]
@@ -287,7 +288,11 @@ export function libellesOnglets(chemins: string[]): Map<string, { nom: string; d
   return r
 }
 
-// Les fichiers montrés par la visionneuse au lieu de l'éditeur.
 export function estImage(chemin: string): boolean {
   return /\.(png|jpe?g|gif|webp|bmp|ico|tiff?|svg)$/i.test(chemin)
+}
+
+// Les fichiers montrés par la visionneuse au lieu de l'éditeur : images et vidéos.
+export function pourVisionneuse(chemin: string): boolean {
+  return estImage(chemin) || estVideo(chemin)
 }

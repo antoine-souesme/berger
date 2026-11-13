@@ -3,6 +3,7 @@
 // tués) et rattachés au retour.
 import { Terminal, type FontWeight, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
+import { WebLinksAddon } from '@xterm/addon-web-links'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
 import { sequenceMac } from '../../shared/touches-mac'
@@ -198,8 +199,12 @@ export function vueTerminal(adresse: string): HTMLElement {
     // Lettres dessinées sur un fond transparent : macOS ne les épaissit pas
     // (sur un fond plein, il les grossit et les rend floues). Plus proche de Herdr.
     allowTransparency: true,
-    theme: THEME
+    theme: THEME,
+    // Liens posés par le programme (OSC 8, comme ceux de Claude Code).
+    linkHandler: { activate: ouvrirLien, allowNonHttpProtocols: false }
   })
+  // Adresses web écrites en clair dans le terminal.
+  xterm.loadAddon(new WebLinksAddon(ouvrirLien))
   const o: Ouvert = { el, xterm, attache: false, cree: Date.now(), ouvert: false }
   ouverts.set(adresse, o)
   xterm.onData((texte) =>
@@ -230,6 +235,14 @@ export function vueTerminal(adresse: string): HTMLElement {
     o.attente = setTimeout(() => ajuster(adresse, o), PAUSE_REDIMENSION)
   }).observe(el)
   return el
+}
+
+// ⌘-clic sur un lien : il s'ouvre dans le navigateur. Un clic seul reste au
+// terminal (sélection, programmes qui suivent la souris).
+function ouvrirLien(ev: MouseEvent, url: string): void {
+  if (!ev.metaKey) return
+  ev.preventDefault()
+  window.berger.envoyer('berger:ouvrir-lien', { url })
 }
 
 // Des fichiers déposés (du Finder ou de l'explorateur) : leurs chemins
@@ -287,6 +300,28 @@ async function cheminsDeposes(dt: DataTransfer): Promise<string[]> {
     )
   )
 }
+
+// Scénarios de vérification : la position dans la fenêtre du centre de la
+// première case où le terminal affiche ce texte.
+if (window.berger.scenario)
+  Object.assign(window, {
+    bergerPositionTexte(adresse: string, texte: string): { x: number; y: number } | null {
+      const o = ouverts.get(adresse)
+      const ecran = o?.el.querySelector('.xterm-screen')
+      if (!o || !ecran) return null
+      const tampon = o.xterm.buffer.active
+      for (let i = 0; i < o.xterm.rows; i++) {
+        const ligne = tampon.getLine(tampon.viewportY + i)?.translateToString() ?? ''
+        const col = ligne.indexOf(texte)
+        if (col < 0) continue
+        const r = ecran.getBoundingClientRect()
+        const l = r.width / o.xterm.cols
+        const h = r.height / o.xterm.rows
+        return { x: r.x + (col + 4.5) * l, y: r.y + (i + 0.5) * h }
+      }
+      return null
+    }
+  })
 
 export function oublierTerminauxSauf(adresses: Set<string>): void {
   for (const [adresse, o] of ouverts) {

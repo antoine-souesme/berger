@@ -7,7 +7,7 @@ import {
   basculerDeplie,
   basculerRacine,
   deWorkspace,
-  estImage,
+  pourVisionneuse,
   racines,
   toutReplier
 } from '../../shared/etat-fichiers'
@@ -211,7 +211,7 @@ function cliquer(l: Ligne, ev: MouseEvent): void {
   if (ev.metaKey) return choisir(l, true)
   choisir(l)
   if (!l.dossier) {
-    if (fichierAffiche() !== l.chemin && !estImage(l.chemin)) laisserLeClavier()
+    if (fichierAffiche() !== l.chemin && !pourVisionneuse(l.chemin)) laisserLeClavier()
     ouvrirChemins([l.chemin])
   } else if (l.chemin === l.racine) changerFichiers((x, ws) => basculerRacine(x, ws, l.chemin))
   else changerFichiers((x, ws) => basculerDeplie(x, ws, l.chemin))

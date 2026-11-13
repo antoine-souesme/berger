@@ -6,7 +6,7 @@ import {
   deplacerOnglet,
   desepingler,
   epingler,
-  estImage,
+  pourVisionneuse,
   fermerFichierWs,
   libellesOnglets,
   type OngletFichier
@@ -187,7 +187,7 @@ function ongletFichier(
           libelle: 'Enregistrer',
           raccourci: '⌘S',
           icone: 'save',
-          inactif: estImage(chemin),
+          inactif: pourVisionneuse(chemin),
           faire: () => void enregistrer(chemin)
         },
         'separateur',

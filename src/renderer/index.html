@@ -5,7 +5,7 @@
     <title>Berger</title>
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:"
+      content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src berger-media:; font-src 'self' data:; worker-src 'self' blob:"
     />
     <link href="./assets/main.css" type="text/css" rel="stylesheet" />
   </head>
@@ -132,7 +132,10 @@
         </div>
         <div id="zone-image" class="panneau" hidden>
           <div class="bandeau" id="image-bandeau"></div>
-          <div id="image-fond"><img id="image" alt="" draggable="false" /></div>
+          <div id="image-fond">
+            <img id="image" alt="" draggable="false" />
+            <video id="video" controls hidden></video>
+          </div>
           <div id="image-etat">
             <span id="image-dimensions"></span><span class="espace"></span
             ><span id="image-type"></span>
@@ -140,7 +143,10 @@
         </div>
         <div id="zone-fichier" class="panneau" hidden>
           <div class="bandeau" id="fichier-bandeau"></div>
-          <div id="editeur"></div>
+          <div id="fichier-corps">
+            <div id="editeur"></div>
+            <div id="fichier-apercu" class="apercu-markdown" hidden></div>
+          </div>
           <div id="fichier-etat">
             <span id="fichier-position"></span><span id="fichier-message"></span
             ><span id="fichier-langage"></span>

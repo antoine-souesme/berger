@@ -13,6 +13,8 @@ import { brancherActions } from './actions'
 import { brancherEtat } from './etat'
 import { poserMenu } from './menu'
 import { jouerScenario } from './scenario'
+import { lienWeb } from '../shared/liens'
+import { brancherMedia, declarerSchemaMedia } from './media'
 import { brancherWorkspaces } from './workspaces'
 import { brancherEtatFichiers } from './etat-fichiers'
 import { brancherLangage } from './services/langage'
@@ -26,7 +28,13 @@ import { cadreRetenu, suivreCadre } from './cadre'
 
 // Dossier de données : `Berger` pour la version installée, `Berger-dev` pour le
 // développement (jamais l'un dans l'autre). Avant tout `getPath('userData')`.
-app.setPath('userData', join(app.getPath('appData'), app.isPackaged ? 'Berger' : 'Berger-dev'))
+// En développement, BERGER_DONNEES=<dossier> en donne un autre (captures d'écran
+// de démonstration, sans les workspaces d'Antoine).
+const donneesEssai = !app.isPackaged ? process.env['BERGER_DONNEES'] : undefined
+app.setPath(
+  'userData',
+  donneesEssai ?? join(app.getPath('appData'), app.isPackaged ? 'Berger' : 'Berger-dev')
+)
 completerPath()
 
 const coeur = new Coeur()
@@ -114,7 +122,8 @@ function createWindow(): void {
   }
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
+    const lien = lienWeb(details.url)
+    if (lien) void shell.openExternal(lien)
     return { action: 'deny' }
   })
 
@@ -125,7 +134,10 @@ function createWindow(): void {
   }
 }
 
+declarerSchemaMedia()
+
 app.whenReady().then(() => {
+  brancherMedia()
   electronApp.setAppUserModelId('fr.antoine.berger')
   // En développement, le Dock montre l'icône de Electron : on y met celle de Berger.
   if (process.platform === 'darwin' && !app.isPackaged) app.dock?.setIcon(icon)
@@ -175,6 +187,14 @@ app.whenReady().then(() => {
   ipcMain.on('berger:attacher', (_e, { adresse, cols, rows, actif }) =>
     terminaux.attacher(adresse, cols, rows, actif !== false)
   )
+  ipcMain.on('berger:ouvrir-lien', (_e, { url }: { url: string }) => {
+    const lien = lienWeb(url)
+    if (!lien) return
+    // Un scénario de vérification journalise le lien sans ouvrir le navigateur.
+    if (process.env['BERGER_SCENARIO'])
+      return console.log(`[berger] lien ouvert : ${lien} ${Date.now() % 100000}`)
+    void shell.openExternal(lien)
+  })
   ipcMain.on('berger:detacher', (_e, { adresse }) => terminaux.detacher(adresse))
   ipcMain.on('berger:touches', (_e, { adresse, octets }) => terminaux.ecrire(adresse, octets))
   ipcMain.on('berger:taille', (_e, { adresse, cols, rows }) =>

@@ -9,6 +9,7 @@ import {
   deWorkspace,
   epingler,
   estImage,
+  pourVisionneuse,
   fermerFichierWs,
   libellesOnglets,
   lireEtatFichiers,
@@ -132,6 +133,12 @@ test('estImage', () => {
   expect(estImage('/a/x.tif')).toBe(true)
   expect(estImage('/a/x.jpeg')).toBe(true)
   expect(estImage('/a/x.ts')).toBe(false)
+})
+
+test('pourVisionneuse : images et vidéos', () => {
+  expect(pourVisionneuse('/a/B.png')).toBe(true)
+  expect(pourVisionneuse('/a/film.mp4')).toBe(true)
+  expect(pourVisionneuse('/a/x.md')).toBe(false)
 })
 
 test('basculerDeplie, toutReplier, oublierWorkspace, ajouter et retirer un dossier', () => {

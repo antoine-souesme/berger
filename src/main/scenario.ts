@@ -547,6 +547,220 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  if (scenario === 'demo') {
+    // Captures du README, sans rien d'Antoine : dossier de données à part
+    // (BERGER_DONNEES, dont le workspace ouvert au départ range tous les spaces
+    // existants, et un workspace « Potager »), projet BERGER_SCENARIO_DOSSIER
+    // (dossier berger-essai… contenant README.md et src/semis.ts). Crée deux
+    // spaces, prend les captures `demo-terminaux` et `demo-editeur`, puis les ferme.
+    const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+    if (!dossier.includes('berger-essai') || !process.env['BERGER_DONNEES']) {
+      console.error(
+        '[berger] demo scenario refused: BERGER_DONNEES and a berger-essai… folder needed'
+      )
+      return
+    }
+    const js = <T>(code: string): Promise<T> => wc.executeJavaScript(code)
+    const structure = (d: Record<string, unknown>): Promise<Record<string, string>> =>
+      js(`window.berger.demander('berger:structure', ${JSON.stringify(d)})`)
+    const cliquer = async (selecteur: string, rang = 0): Promise<void> => {
+      const p = await js<Point | null>(`(() => {
+        const e = document.querySelectorAll(${JSON.stringify(selecteur)})[${rang}]
+        if (!e) return null
+        const r = e.getBoundingClientRect()
+        return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) }
+      })()`)
+      if (!p) return console.log(`[berger] scenario: demo introuvable ${selecteur}`)
+      wc.sendInputEvent({ type: 'mouseDown', x: p.x, y: p.y, button: 'left', clickCount: 1 })
+      wc.sendInputEvent({ type: 'mouseUp', x: p.x, y: p.y, button: 'left', clickCount: 1 })
+    }
+    const taper = (texte: string): void => {
+      wc.insertText(texte)
+      touche('Enter')
+    }
+    const crees: string[] = []
+    let premier: Record<string, string> = {}
+    const liste: (() => void | Promise<void>)[] = [
+      () => cliquer('#workspaces [aria-label="Workspace Potager"]'),
+      async () => {
+        const r = await structure({ type: 'space.nouveau' })
+        premier = r
+        crees.push(r['space'])
+        wc.send('berger:scenario-space', { space: r['space'] })
+      },
+      () => cliquer('#zone-terminaux .panneau .corps'),
+      () => taper(`cd ${dossier} && clear && git --no-pager log --oneline --graph`),
+      async () => {
+        const r = await structure({ type: 'space.nouveau' })
+        crees.push(r['space'])
+        wc.send('berger:scenario-space', { space: r['space'] })
+      },
+      () => cliquer('#zone-terminaux .panneau .corps'),
+      () => taper(`cd ${dossier} && clear`),
+      () => structure({ type: 'space.renommer', space: crees[1], nom: 'site-vitrine' }),
+      () => structure({ type: 'space.renommer', space: crees[0], nom: 'potager' }),
+      () => wc.send('berger:scenario-space', { space: crees[0] }),
+      async () => {
+        console.log(`[berger] scenario: demo panneau ${JSON.stringify(premier)}`)
+        await structure({
+          type: 'panneau.diviser',
+          space: crees[0],
+          onglet: premier['onglet'],
+          panneau: premier['panneau'],
+          sens: 'right',
+          dossier
+        })
+      },
+      () => cliquer('#zone-terminaux .panneau .corps', 1),
+      () => taper('clear && git status && ls src tests'),
+      () => wc.send('berger:scenario-dossier', { chemin: dossier }),
+      () => capture('demo-terminaux'),
+      () => wc.send('berger:scenario-fichier', { chemin: `${dossier}/src/semis.ts` }),
+      () => wc.send('berger:scenario-fichier', { chemin: `${dossier}/README.md` }),
+      () => js(`document.querySelector('#fichier-bandeau .bouton-bandeau')?.click()`),
+      () => capture('demo-editeur'),
+      () => js(`document.querySelector('#fichier-bandeau .bouton-bandeau')?.click()`),
+      async () => {
+        for (const space of crees) await structure({ type: 'space.fermer', space })
+        console.log(`[berger] scenario: demo spaces fermés ${crees.join(',')}`)
+      }
+    ]
+    jouer(liste.map((f, i) => [3000 + i * 1500, f]))
+    return
+  }
+
+  if (scenario === 'video') {
+    // Ouvre BERGER_SCENARIO_FICHIER (une vidéo d'un dossier berger-essai…) dans la
+    // visionneuse, la lit, saute au milieu (lecture par morceaux), puis la ferme.
+    const fichier = process.env['BERGER_SCENARIO_FICHIER'] ?? ''
+    if (!fichier.includes('berger-essai')) {
+      console.error(
+        '[berger] video scenario refused: BERGER_SCENARIO_FICHIER must be in a berger-essai… folder'
+      )
+      return
+    }
+    const lire = async (nom: string): Promise<void> => {
+      const r = await wc.executeJavaScript(`(() => {
+        const v = document.getElementById('video')
+        return { visible: !v.hidden, pret: v.readyState, temps: Math.round(v.currentTime * 10) / 10, enPause: v.paused,
+          erreur: v.error?.message ?? null, bas: document.getElementById('image-etat').textContent }
+      })()`)
+      console.log(`[berger] scenario: video ${nom} ${JSON.stringify(r)}`)
+    }
+    jouer([
+      [2500, () => wc.send('berger:scenario-fichier', { chemin: fichier })],
+      [4500, () => lire('ouverte')],
+      [5000, () => void wc.executeJavaScript(`document.getElementById('video').play()`)],
+      [6500, () => lire('lecture')],
+      [
+        7000,
+        () =>
+          void wc.executeJavaScript(
+            `(() => { const v = document.getElementById('video'); v.pause(); v.currentTime = v.duration / 2 })()`
+          )
+      ],
+      [8000, () => lire('milieu')],
+      [8200, () => capture('video')]
+    ])
+    return
+  }
+
+  if (scenario === 'apercu') {
+    // Ouvre BERGER_SCENARIO_FICHIER (un .md d'un dossier berger-essai…), ouvre
+    // l'aperçu par le bouton du bandeau, tape une ligne (l'aperçu suit), défait la
+    // frappe et referme l'aperçu.
+    const fichier = process.env['BERGER_SCENARIO_FICHIER'] ?? ''
+    if (!fichier.includes('berger-essai') || !fichier.endsWith('.md')) {
+      console.error(
+        '[berger] apercu scenario refused: BERGER_SCENARIO_FICHIER must be a berger-essai….md file'
+      )
+      return
+    }
+    const bouton = `document.querySelector('#fichier-bandeau .bouton-bandeau')`
+    const lire = async (nom: string): Promise<void> => {
+      const r = await wc.executeJavaScript(`(() => {
+        const z = document.getElementById('fichier-apercu')
+        return { visible: !z.hidden, titres: [...z.querySelectorAll('h1,h2')].map((h) => h.textContent) }
+      })()`)
+      console.log(`[berger] scenario: apercu ${nom} ${JSON.stringify(r)}`)
+    }
+    jouer([
+      [2500, () => wc.send('berger:scenario-fichier', { chemin: fichier })],
+      [4500, () => void wc.executeJavaScript(`${bouton}?.click()`)],
+      [5500, () => lire('ouvert')],
+      [6000, () => capture('apercu-ouvert')],
+      [
+        6500,
+        () =>
+          void wc.executeJavaScript(
+            `(() => { const e = window.bergerEssai.editeur; e.executeEdits('essai', [{ range: new window.bergerEssai.monaco.Range(1, 1, 1, 1), text: '# Ajouté en tapant\\n\\n' }]) })()`
+          )
+      ],
+      [7500, () => lire('apres-frappe')],
+      [8000, () => capture('apercu-frappe')],
+      [
+        8500,
+        () => void wc.executeJavaScript(`window.bergerEssai.editeur.trigger('essai', 'undo')`)
+      ],
+      [9000, () => void wc.executeJavaScript(`${bouton}?.click()`)],
+      [9500, () => lire('ferme')]
+    ])
+    return
+  }
+
+  if (scenario === 'liens') {
+    // Dans un space qu'il crée puis ferme, un terminal affiche une adresse web :
+    // un clic seul ne l'ouvre pas, un ⌘-clic la donne au navigateur (journalisée
+    // « lien ouvert », sans ouvrir le navigateur).
+    let space = ''
+    const adresse = (): Promise<string> =>
+      wc.executeJavaScript(
+        `document.querySelector('#zone-terminaux .panneau.clavier .xterm-hote')?.dataset.adresse ?? ''`
+      )
+    const clic = async (modifiers: Mod[]): Promise<void> => {
+      const p = (await wc.executeJavaScript(
+        `window.bergerPositionTexte?.(${JSON.stringify(await adresse())}, 'https://')`
+      )) as null | { x: number; y: number }
+      if (!p) return console.log('[berger] scenario: liens adresse introuvable')
+      const { x, y } = { x: Math.round(p.x), y: Math.round(p.y) }
+      wc.sendInputEvent({ type: 'mouseMove', x, y, modifiers })
+      await new Promise((f) => setTimeout(f, 300))
+      wc.sendInputEvent({ type: 'mouseDown', x, y, button: 'left', clickCount: 1, modifiers })
+      wc.sendInputEvent({ type: 'mouseUp', x, y, button: 'left', clickCount: 1, modifiers })
+      console.log(
+        `[berger] scenario: liens clic ${modifiers.join('+') || 'seul'} ${Date.now() % 100000}`
+      )
+    }
+    const liste: (() => void | Promise<void>)[] = [
+      async () => {
+        const r: { space?: string } = await wc.executeJavaScript(
+          `window.berger.demander('berger:structure', { type: 'space.nouveau' })`
+        )
+        space = r.space ?? ''
+        console.log(`[berger] scenario: space d'essai ${space}`)
+        wc.send('berger:scenario-space', { space })
+      },
+      async () => {
+        const p = (await wc.executeJavaScript(
+          `(() => { const r = document.querySelector('#zone-terminaux .panneau.clavier .corps').getBoundingClientRect(); return { x: Math.round(r.x + r.width / 2), y: Math.round(r.y + r.height / 2) } })()`
+        )) as { x: number; y: number }
+        wc.sendInputEvent({ type: 'mouseDown', x: p.x, y: p.y, button: 'left', clickCount: 1 })
+        wc.sendInputEvent({ type: 'mouseUp', x: p.x, y: p.y, button: 'left', clickCount: 1 })
+      },
+      () => wc.insertText('clear; echo "Voir https://example.com/berger-essai pour le détail"'),
+      () => touche('Enter'),
+      () => clic([]),
+      () => clic(['meta']),
+      () => capture('liens'),
+      () =>
+        void wc.executeJavaScript(
+          `window.berger.demander('berger:structure', { type: 'space.fermer', space: ${JSON.stringify(space)} })`
+        )
+    ]
+    jouer(liste.map((f, i) => [3000 + i * 1500, f]))
+    return
+  }
+
   if (scenario === 'depot') {
     // Dépose deux chemins (dont un avec une espace) sur un terminal de test
     // (BERGER_SCENARIO_TERMINAL, étiqueté herdr.space=spbergertest…), comme
