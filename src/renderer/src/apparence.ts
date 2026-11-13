@@ -42,7 +42,7 @@ function appliquer(e: EtatReglages): void {
   racine.style.setProperty('--taille-interface', `${r.apparence.taillePoliceInterface}px`)
   // Barres de défilement et contrôles du système dans le bon sens.
   racine.style.colorScheme = estClair(app.background) ? 'light' : 'dark'
-  appliquerTerminal(couleursTerminal(app), r.terminal.police, r.terminal.taille)
+  appliquerTerminal(couleursTerminal(app), r.terminal)
   changerTable(r.raccourcis)
   for (const f of ecouteurs) f(e)
 }

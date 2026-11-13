@@ -340,9 +340,55 @@ function pageTerminal(e: EtatReglages): HTMLElement[] {
         (v) => void changerReglage(['terminal', 'taille'], Number(v)),
         'etroite'
       )
+    ),
+    ligne(
+      'Graisse',
+      'L’épaisseur du texte (400 : normal)',
+      liste(
+        graisses(),
+        String(r.graisse),
+        (v) => void changerReglage(['terminal', 'graisse'], Number(v)),
+        'etroite'
+      )
+    ),
+    ligne(
+      'Graisse du gras',
+      'L’épaisseur du texte en gras',
+      liste(
+        graisses(),
+        String(r.graisseGras),
+        (v) => void changerReglage(['terminal', 'graisseGras'], Number(v)),
+        'etroite'
+      )
+    ),
+    ligne(
+      'Interligne',
+      'Hauteur d’une ligne, en multiple de la taille',
+      liste(
+        Array.from({ length: 21 }, (_, i) => {
+          const v = String(Math.round((1 + i * 0.05) * 100) / 100)
+          return [v.replace('.', ','), v] as [string, string]
+        }),
+        String(r.interligne),
+        (v) => void changerReglage(['terminal', 'interligne'], Number(v)),
+        'etroite'
+      )
+    ),
+    ligne(
+      'Espacement des lettres',
+      'En pixels, ajouté entre deux caractères',
+      liste(
+        tailles(-2, 10),
+        String(r.espacement),
+        (v) => void changerReglage(['terminal', 'espacement'], Number(v)),
+        'etroite'
+      )
     )
   ]
 }
+
+const graisses = (): [string, string][] =>
+  Array.from({ length: 9 }, (_, i) => String((i + 1) * 100)).map((v) => [v, v])
 
 function pageAlertes(e: EtatReglages): HTMLElement[] {
   const r = e.reglages.sons

@@ -1,7 +1,7 @@
 // Un xterm par terminal affiché, branché sur le processus principal. Il est
 // gardé tant que son onglet est affiché ; les autres sont détachés (jamais
 // tués) et rattachés au retour.
-import { Terminal, type ITheme } from '@xterm/xterm'
+import { Terminal, type FontWeight, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
@@ -9,6 +9,7 @@ import { CHEMINS_GLISSES, texteDepot } from '../../shared/depot'
 import { dispositionActuelle, tableActuelle } from './table-raccourcis'
 import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
+import { REGLAGES_PAR_DEFAUT, type Reglages } from '../../shared/reglages'
 
 type Ouvert = {
   el: HTMLElement
@@ -18,10 +19,18 @@ type Ouvert = {
   ouvert: boolean
 }
 
-// Couleurs, police et taille courantes (thème de l'application, réglages).
+// Couleurs et police courantes (thème de l'application, réglages).
 let THEME: ITheme = couleursTerminal(THEMES_FOURNIS[0].theme)
-let POLICE = "'IBM Plex Mono', Menlo, monospace"
-let TAILLE = 12
+let POLICE: Reglages['terminal'] = REGLAGES_PAR_DEFAUT.terminal
+
+const optionsPolice = (p: Reglages['terminal']) => ({
+  fontFamily: p.police,
+  fontSize: p.taille,
+  fontWeight: p.graisse as FontWeight,
+  fontWeightBold: p.graisseGras as FontWeight,
+  lineHeight: p.interligne,
+  letterSpacing: p.espacement
+})
 
 // Le rendu graphique de xterm donne au canevas une police qui commence par une
 // espace quand le texte n'est pas en italique (« ␣normal 12px … ») ; le Chromium
@@ -143,25 +152,19 @@ export function initTerminaux(rappels: { fin: (adresse: string) => void }): void
   window.addEventListener('blur', () => window.berger.envoyer('berger:focus', { actif: false }))
 }
 
-// Couleurs (thème de l'application), police et taille : appliquées aux
+// Couleurs (thème de l'application) et police (réglages) : appliquées aux
 // terminaux ouverts, qui sont remesurés, et prises par les suivants.
-export function appliquerTerminal(
-  couleurs: CouleursTerminal,
-  police: string,
-  taille: number
-): void {
-  const policeChange = police !== POLICE || taille !== TAILLE
+export function appliquerTerminal(couleurs: CouleursTerminal, police: Reglages['terminal']): void {
+  const policeChange = JSON.stringify(police) !== JSON.stringify(POLICE)
   THEME = couleurs
   POLICE = police
-  TAILLE = taille
   for (const [adresse, o] of ouverts) {
     o.xterm.options.theme = couleurs
     if (!policeChange) continue
-    o.xterm.options.fontFamily = police
-    o.xterm.options.fontSize = taille
+    Object.assign(o.xterm.options, optionsPolice(police))
     // Remesurer une fois la police chargée (sinon les cases sont mal mesurées).
     void document.fonts
-      .load(`${taille}px ${police}`)
+      .load(`${police.graisse} ${police.taille}px ${police.police}`)
       .catch(() => [])
       .then(() => ajuster(adresse, o))
   }
@@ -181,13 +184,7 @@ export function vueTerminal(adresse: string): HTMLElement {
   el.style.width = '100%'
   el.style.height = '100%'
   const xterm = new Terminal({
-    fontFamily: POLICE,
-    fontSize: TAILLE,
-    // Le rendu natif de Herdr (Ghostty) est plus épais et ses lignes plus hautes :
-    // graisse « SemiBold » et lignes de 16 px s'en approchent.
-    fontWeight: '600',
-    fontWeightBold: '700',
-    lineHeight: 1.1,
+    ...optionsPolice(POLICE),
     cursorBlink: true,
     allowProposedApi: true,
     theme: THEME

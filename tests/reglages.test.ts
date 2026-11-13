@@ -17,7 +17,14 @@ test('défauts', () => {
       minicarte: true,
       tabulations: 2
     },
-    terminal: { police: "'IBM Plex Mono', Menlo, monospace", taille: 12 },
+    terminal: {
+      police: "'IBM Plex Mono', Menlo, monospace",
+      taille: 12,
+      graisse: 600,
+      graisseGras: 700,
+      interligne: 1.1,
+      espacement: 0
+    },
     sons: { actifs: true, fini: null, attente: null },
     raccourcis: {}
   })
@@ -45,7 +52,7 @@ test('tailles et tabulations bornées, valeur invalide = défaut, autres clés g
     taille: 32,
     minicarte: false
   })
-  expect(lireReglages({ terminal: { taille: 99, police: 'Fira Code' } }).terminal).toEqual({
+  expect(lireReglages({ terminal: { taille: 99, police: 'Fira Code' } }).terminal).toMatchObject({
     taille: 12,
     police: 'Fira Code'
   })
@@ -59,6 +66,20 @@ test('tailles et tabulations bornées, valeur invalide = défaut, autres clés g
   expect(lireReglages({ apparence: { policeInterface: '' } }).apparence.policeInterface).toBe(
     REGLAGES_PAR_DEFAUT.apparence.policeInterface
   )
+})
+
+test('graisses, interligne et espacement du terminal bornés', () => {
+  const t = (terminal: unknown) => lireReglages({ terminal }).terminal
+  expect(t({ graisse: 400, graisseGras: 900, interligne: 1.5, espacement: 1 })).toMatchObject({
+    graisse: 400,
+    graisseGras: 900,
+    interligne: 1.5,
+    espacement: 1
+  })
+  for (const graisse of [450, 0, 1000, '600', 50])
+    expect(t({ graisse, graisseGras: graisse })).toMatchObject({ graisse: 600, graisseGras: 700 })
+  for (const interligne of [0.9, 2.1, '1.2', NaN]) expect(t({ interligne }).interligne).toBe(1.1)
+  for (const espacement of [-3, 11, 0.5]) expect(t({ espacement }).espacement).toBe(0)
 })
 
 test('raccourcis', () => {
