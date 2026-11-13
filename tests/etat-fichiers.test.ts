@@ -3,6 +3,7 @@ import {
   ajouterDossier,
   basculerDeplie,
   basculerRacine,
+  deplacerOnglet,
   deplacerRacine,
   desepingler,
   deWorkspace,
@@ -149,4 +150,29 @@ test('rien ne change : même référence', () => {
   expect(ajouterDossier(ajouterDossier(e, ws, '/d'), ws, '/d')).toEqual(ajouterDossier(e, ws, '/d'))
   expect(retirerAbsents(e, () => true)).toBe(e)
   expect(suivreDeplacement(e, [['/q', '/r']])).toBe(e)
+})
+
+test('déplacer un onglet de fichier le met à sa nouvelle place', () => {
+  const e = ouvrirFichiers({}, ws, ['/p/a', '/p/b', '/p/c'])
+  expect(deWorkspace(deplacerOnglet(e, ws, '/p/a', 2), ws).ouverts).toEqual([
+    '/p/b',
+    '/p/c',
+    '/p/a'
+  ])
+  expect(deWorkspace(deplacerOnglet(e, ws, '/p/c', 0), ws).ouverts).toEqual([
+    '/p/c',
+    '/p/a',
+    '/p/b'
+  ])
+})
+
+test('un onglet déplacé reste dans son groupe (épinglés devant, ouverts derrière)', () => {
+  let e = ouvrirFichiers({}, ws, ['/p/a', '/p/b', '/p/c', '/p/d'])
+  e = epingler(epingler(e, ws, '/p/a'), ws, '/p/b')
+  // Un ouvert tiré parmi les épinglés va en tête des ouverts.
+  expect(deWorkspace(deplacerOnglet(e, ws, '/p/d', 0), ws).ouverts).toEqual(['/p/d', '/p/c'])
+  // Un épinglé tiré parmi les ouverts va à la fin des épinglés.
+  const f = deplacerOnglet(e, ws, '/p/a', 3)
+  expect(deWorkspace(f, ws).epingles).toEqual(['/p/b', '/p/a'])
+  expect(deWorkspace(f, ws).ouverts).toEqual(['/p/c', '/p/d'])
 })

@@ -23,7 +23,8 @@ import { execFile, spawnSync } from 'child_process'
 //   et journal de workspaces.json à chaque étape. Ne ferme que le space créé.
 // BERGER_SCENARIO=onglets BERGER_SCENARIO_FICHIERS=<chemin>:<chemin>:… BERGER_SCENARIO_SORTIE=<préfixe>
 //   Ouvre ces fichiers (chemins contenant `berger-essai`), épingle celui qui finit par
-//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture. Vérifie aussi
+//   `notes.md` par le menu de son onglet, tape dans le dernier ouvert, capture, puis tire le
+//   dernier onglet ouvert tout à gauche et journalise l'ordre. Vérifie aussi
 //   que le menu de l'onglet se ferme au clic dans l'éditeur, se pilote au clavier et rend le
 //   clavier à l'éditeur (journal), que la molette fait défiler les onglets de fichiers seuls,
 //   puis replie tout le premier fichier (un Markdown : repli par titres).
@@ -279,7 +280,34 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         () =>
           void wc.executeJavaScript("window.bergerEssai?.editeur.getAction('editor.foldAll').run()")
       ],
-      [t + 6200, () => capture('04-replis')]
+      [t + 6200, () => capture('04-replis')],
+      // Le dernier onglet ouvert tiré à la souris tout à gauche des ouverts.
+      [
+        t + 6400,
+        async () => {
+          const r = (await wc.executeJavaScript(`(() => {
+            const o = [...document.querySelectorAll('.onglet-fichier:not(.epingle)')]
+            const a = o[o.length - 1].getBoundingClientRect(), b = o[0].getBoundingClientRect()
+            return [a.left + a.width / 2, b.left + 4, a.top + a.height / 2]
+          })()`)) as number[]
+          const [x1, x2, y] = r.map(Math.round)
+          wc.sendInputEvent({ type: 'mouseDown', x: x1, y, button: 'left', clickCount: 1 })
+          for (let i = 1; i <= 6; i++)
+            wc.sendInputEvent({ type: 'mouseMove', x: x1 + ((x2 - x1) * i) / 6, y, button: 'left' })
+          wc.sendInputEvent({ type: 'mouseUp', x: x2, y, button: 'left', clickCount: 1 })
+        }
+      ],
+      [
+        t + 7200,
+        async () =>
+          console.log(
+            '[berger] scenario: ordre des onglets ' +
+              (await wc.executeJavaScript(
+                "[...document.querySelectorAll('.onglet-fichier')].map(o => (o.classList.contains('epingle') ? '📌' : '') + o.dataset.chemin.split('/').pop()).join(' ')"
+              ))
+          )
+      ],
+      [t + 7300, () => capture('05-glisse')]
     )
     jouer(etapes)
     return

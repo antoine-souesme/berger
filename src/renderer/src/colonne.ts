@@ -1,6 +1,6 @@
 // La colonne de gauche : les spaces et les agents du workspace ouvert
 // (l'explorateur est dans explorateur.ts). La barre des workspaces est dans workspaces.ts.
-import { COULEUR_ETAT } from '../../shared/libelles'
+import { COULEUR_AGENT, COULEUR_ETAT } from '../../shared/libelles'
 import { duree, listeAgents, type LigneAgent } from '../../shared/agents'
 import type { PlaceAgent } from '../../shared/onglets'
 import type { VueSpace } from '../../shared/spaces'
@@ -183,7 +183,7 @@ function iconeEtat(agent: LigneAgent['agent']): HTMLElement {
 }
 
 function iconeProgramme(l: LigneAgent): SVGElement {
-  if (l.programme.icone === 'bot') return icone('bot', '#d98a6a', 15)
+  if (l.programme.icone === 'bot') return icone('bot', COULEUR_AGENT, 15)
   return icone(l.programme.icone, 'var(--gris-clair)', 15)
 }
 

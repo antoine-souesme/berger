@@ -1,8 +1,9 @@
 // La barre d'onglets : les onglets de terminaux du space affiché, un trait,
 // puis les onglets de fichiers. Rien d'autre.
 import { apresFermeture, memeOnglet, type RefOnglet } from '../../shared/onglets'
-import { COULEUR_ETAT } from '../../shared/libelles'
+import { COULEUR_AGENT } from '../../shared/libelles'
 import {
+  deplacerOnglet,
   desepingler,
   epingler,
   estImage,
@@ -22,6 +23,7 @@ import {
   spaceAffiche
 } from './etat'
 import { enregistrer } from './editeur'
+import { glisseEnCours, rendreGlissable } from './glisser'
 import { icone, iconeMaterial } from './icones'
 import { ouvrirMenu } from './menus'
 import { dossierDuClavier, oublierClavier } from './panneaux'
@@ -47,7 +49,7 @@ function ongletTerminal(space: VueSpace, onglet: VueOnglet, actif: boolean): HTM
   const ref: RefOnglet = { type: 'terminal', id: onglet.id }
   el.append(
     onglet.agent
-      ? icone('bot', COULEUR_ETAT[onglet.agent])
+      ? icone('bot', COULEUR_AGENT)
       : icone('terminal', actif ? 'var(--gris-clair)' : 'var(--gris)')
   )
   if (enRenommage === onglet.id) {
@@ -194,6 +196,12 @@ function ongletFichier(
       "Actions de l'onglet"
     )
   })
+  // Tiré à la souris, il change de place (dans son groupe : épinglés, ouverts).
+  rendreGlissable(el, {
+    axe: 'x',
+    liste: () => [...lesConteneurs().fichiers.querySelectorAll<HTMLElement>('.onglet-fichier')],
+    deposer: (index) => changerFichiers((x, ws) => deplacerOnglet(x, ws, chemin, index))
+  })
   return el
 }
 
@@ -240,6 +248,8 @@ function montrerActif(liste: HTMLElement): void {
 export function dessinerBarre(): void {
   const space = spaceAffiche()
   const actif = ongletAffiche()
+  // Barre figée pendant un glissement (voir glisser.ts).
+  if (glisseEnCours()) return
   const c = lesConteneurs()
   c.terminaux.replaceChildren(
     ...(space?.onglets ?? []).map((o) =>

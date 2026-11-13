@@ -143,6 +143,28 @@ export function desepingler(e: EtatFichiers, ws: string, chemin: string): EtatFi
   )
 }
 
+// Un onglet de fichier tiré à la place `index` de la barre (comptée sans lui) :
+// il reste dans son groupe, les épinglés devant, les ouverts derrière.
+export function deplacerOnglet(
+  e: EtatFichiers,
+  ws: string,
+  chemin: string,
+  index: number
+): EtatFichiers {
+  const placer = (liste: string[], i: number): string[] => {
+    const reste = sans(liste, chemin)
+    const j = Math.max(0, Math.min(i, reste.length))
+    return [...reste.slice(0, j), chemin, ...reste.slice(j)]
+  }
+  return modifier(e, ws, (w) =>
+    w.epingles.includes(chemin)
+      ? { epingles: placer(w.epingles, index) }
+      : w.ouverts.includes(chemin)
+        ? { ouverts: placer(w.ouverts, index - w.epingles.length) }
+        : {}
+  )
+}
+
 export function fermerFichierWs(e: EtatFichiers, ws: string, chemin: string): EtatFichiers {
   return modifier(e, ws, (w) => ({
     epingles: sans(w.epingles, chemin),

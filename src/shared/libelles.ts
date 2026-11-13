@@ -63,6 +63,10 @@ export function etatAgent(t: TerminalCore, vu = false): EtatAgent {
   }
 }
 
+// La couleur de l'icône d'un agent (onglet, bandeau, liste des agents) ; son
+// état a sa propre marque.
+export const COULEUR_AGENT = '#d98a6a'
+
 export const COULEUR_ETAT: Record<'travail' | 'attente' | 'fini', string> = {
   travail: '#e6db74',
   attente: '#f92672',

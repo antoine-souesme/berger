@@ -9,7 +9,7 @@ import {
   type Conteneur,
   type Noeud
 } from '../../shared/arbre'
-import { COULEUR_ETAT } from '../../shared/libelles'
+import { COULEUR_AGENT } from '../../shared/libelles'
 import type { ActionClavier } from '../../shared/raccourcis'
 import type { VueOnglet, VueSpace } from '../../shared/spaces'
 import { changer, etat, ongletAffiche, spaceAffiche } from './etat'
@@ -71,7 +71,7 @@ function remplirBandeau(bandeau: HTMLElement, bloc: Bloc): void {
     return
   }
   const t = etat().vue.terminaux[adresse]
-  const couleur = t?.agent ? COULEUR_ETAT[t.agent] : 'var(--gris-clair)'
+  const couleur = t?.agent ? COULEUR_AGENT : 'var(--gris-clair)'
   const nom = document.createElement('span')
   nom.className = 'programme'
   nom.textContent = t?.programme.nom ?? adresse

@@ -349,6 +349,10 @@ body {
   gap: 8px;
   height: 32px;
 }
+.onglet-fichier.glisse {
+  position: relative;
+  z-index: 3;
+}
 .ligne-space.glisse {
   z-index: 3;
   background: var(--actif);
@@ -1332,7 +1336,8 @@ body {
   flex-shrink: 0;
   display: flex;
   align-items: center;
-  padding: 0 12px 0 20px;
+  /* La croix (16 px dans un bouton de 24) à 20 px du bord, comme le titre. */
+  padding: 0 16px 0 20px;
   border-bottom: 1px solid var(--bord);
 }
 .tete-reglages .titre {
@@ -1349,6 +1354,7 @@ body {
 .fermer-reglages {
   width: 24px;
   height: 24px;
+  padding: 0;
   display: grid;
   place-items: center;
   border: 0;
