@@ -78,3 +78,7 @@ avec leur `README.md`).
 - Space de test : `hc run --bg --keep --no-parent --label herdr.space=spbergertest<hex>
 --label herdr.tab=tbbergertest<hex> -- zsh` (Herdr l'adopte). Jamais les spaces d'Antoine.
 - Le format des échanges avec un terminal du core : `docs/notes/trames-herdr-core.md`.
+- Mises à jour de herdr-core : Berger les annonce (Réglages → Mises à jour) ; `BERGER_VERSION_CORE=<x.y.z>`
+  lui fait croire qu'il a cette version (« Mettre à jour » est alors simulé), `BERGER_REGLAGES=<rubrique>`
+  ouvre les réglages sur une rubrique. Après une montée de version : skill `maj-herdr-core`
+  (compare `hc schema` avec `docs/notes/hc-schema.json` par `node scripts/diff-schema-hc.mjs`).
