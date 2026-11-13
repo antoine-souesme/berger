@@ -349,7 +349,10 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   }
   affiche = chemin
   let o = ouverts.get(chemin)
-  if (!o) {
+  // Déjà ouvert : il a pu changer sur le disque pendant qu'on était ailleurs
+  // (un autre workspace n'a pas ses dossiers surveillés).
+  if (o) void apresDisque([chemin])
+  else {
     const r = await window.berger.demander<{ texte?: string; erreur?: string }>('berger:lire', {
       chemin
     })

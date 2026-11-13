@@ -65,7 +65,10 @@ avec leur `README.md`).
   joue l'explorateur, ⌘P, les onglets de fichiers et la visionneuse (`explorateur` et `onglets` en
   plus court) ; `BERGER_SCENARIO=selection` avec `BERGER_SCENARIO_DOSSIER=<dossier
   berger-essai…>` (contenant `a`, `b`, `c`, `d`) joue ⌘-clic et ⇧-clic dans l'explorateur, puis, dans
-  un space qu'il crée et ferme, le double clic sur une séparation et ⇧↵, ⌘←, ⌘→ dans `cat -v` ; `BERGER_SCENARIO=langage` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
+  un space qu'il crée et ferme, le double clic sur une séparation et ⇧↵, ⌘←, ⌘→ dans `cat -v` ; `BERGER_SCENARIO=choix` avec
+  `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>` choisit une police installée et un son dans les
+  réglages (remis à la fin), puis vérifie qu'un fichier changé sur le disque pendant qu'un autre
+  onglet est affiché se montre à jour au retour ; `BERGER_SCENARIO=langage` avec `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>`
   joue l'aide du langage (F12, erreurs, survol, complétion, schémas JSON et YAML, fichier
   réécrit par un agent, renommage, ⌥Z ; contenu du dossier décrit en tête du scénario) ; `BERGER_SCENARIO=reglages` avec
   `BERGER_SCENARIO_DOSSIER=<dossier berger-essai…>` (contenant `src/a.ts`) et

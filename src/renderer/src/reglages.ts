@@ -20,6 +20,7 @@ import { apresThemeEditeur, lireThemeVsCode } from './coloration'
 import { changer, ouvrirChemins } from './etat'
 import { icone } from './icones'
 import { dispositionActuelle } from './table-raccourcis'
+import { optionsPolices, optionsSons } from '../../shared/choix-reglages'
 
 export type Section =
   'apparence' | 'editeur' | 'terminal' | 'alertes' | 'raccourcis' | 'mises-a-jour'
@@ -39,13 +40,23 @@ async function enregistrer(): Promise<void> {
   await window.berger.enregistrer(chemin, texte, 0, 'utf8')
 }`
 
-const POLICES_INTERFACE: [string, string][] = [
-  ['Système', "-apple-system, BlinkMacSystemFont, 'Helvetica Neue', sans-serif"],
-  ['IBM Plex Sans', "'IBM Plex Sans', -apple-system, sans-serif"],
-  ['Helvetica Neue', "'Helvetica Neue', sans-serif"],
-  ['Avenir Next', "'Avenir Next', sans-serif"],
-  ['Menlo', 'Menlo, monospace']
-]
+// Les polices installées et les sons de macOS, demandés à la partie Node à la
+// première page qui les montre (la page est redessinée à leur arrivée).
+let familles: string[] | null = null
+let sons: { sons: string[]; parDefaut: Record<'fini' | 'attente', string> } | null = null
+let demandes = false
+function demanderChoix(): void {
+  if (demandes) return
+  demandes = true
+  void window.berger.demander<string[]>('berger:polices').then((f) => {
+    familles = f
+    ouvert?.dessiner()
+  })
+  void window.berger.demander<typeof sons>('berger:sons-macos').then((s) => {
+    sons = s
+    ouvert?.dessiner()
+  })
+}
 
 let ouvert: { section: Section; fermer: () => void; dessiner: () => void } | null = null
 // La ligne de raccourci en attente de touches, et les touches appuyées.
@@ -215,6 +226,7 @@ function apercu(e: EtatReglages): HTMLElement {
 }
 
 function pageApparence(e: EtatReglages): HTMLElement[] {
+  demanderChoix()
   const r = e.reglages
   const connus: Choix[] = e.themes.map((t) => ({
     id: t.id,
@@ -261,7 +273,7 @@ function pageApparence(e: EtatReglages): HTMLElement[] {
       "Police de l'interface",
       "Textes des menus, de l'explorateur et des listes",
       liste(
-        POLICES_INTERFACE,
+        optionsPolices(familles ?? [], r.apparence.policeInterface),
         r.apparence.policeInterface,
         (v) => void changerReglage(['apparence', 'policeInterface'], v)
       ),
@@ -393,23 +405,45 @@ function pageTerminal(e: EtatReglages): HTMLElement[] {
 const graisses = (): [string, string][] =>
   Array.from({ length: 9 }, (_, i) => String((i + 1) * 100)).map((v) => [v, v])
 
+const AUTRE_FICHIER = '\u0000autre'
+
 function pageAlertes(e: EtatReglages): HTMLElement[] {
+  demanderChoix()
   const r = e.reglages.sons
   const ecouter = (son: 'fini' | 'attente'): HTMLElement => {
     const b = creer('button', 'bouton-reglage', 'Écouter')
     b.onclick = () => window.berger.envoyer('berger:son', { son, essai: true })
     return b
   }
-  const aide = (perso: string | null): string =>
-    perso ? `Fichier : ${perso}` : 'Son de macOS (un autre fichier : reglages.json)'
+  // Le son choisi dans la liste sonne tout de suite ; « Autre fichier… »
+  // ouvre la fenêtre de choix de macOS.
+  const choisirSon = async (son: 'fini' | 'attente', valeur: string | null): Promise<void> => {
+    if (await changerReglage(['sons', son], valeur || null))
+      window.berger.envoyer('berger:son', { son, essai: true })
+  }
+  const choix = (son: 'fini' | 'attente'): HTMLElement => {
+    const options = sons ? optionsSons(sons.sons, sons.parDefaut[son], r[son]) : []
+    const s = liste([...options, ['Autre fichier…', AUTRE_FICHIER]], r[son] ?? '', (v) => {
+      if (v !== AUTRE_FICHIER) return void choisirSon(son, v)
+      void window.berger.demander<string | null>('berger:choisir-son').then((f) => {
+        if (f) void choisirSon(son, f)
+        else ouvert?.dessiner()
+      })
+    })
+    s.setAttribute(
+      'aria-label',
+      son === 'fini' ? 'Son : agent qui a fini' : 'Son : agent qui attend'
+    )
+    return s
+  }
   return [
     ligne(
       'Sons des agents',
       'Quand un agent attend une réponse, ou finit sans être sous les yeux',
       bascule(r.actifs, (v) => void changerReglage(['sons', 'actifs'], v))
     ),
-    ligne('Agent qui attend', aide(r.attente), ecouter('attente')),
-    ligne('Agent qui a fini', aide(r.fini), ecouter('fini'))
+    ligne('Agent qui attend', 'Son de macOS ou un fichier', choix('attente'), ecouter('attente')),
+    ligne('Agent qui a fini', 'Son de macOS ou un fichier', choix('fini'), ecouter('fini'))
   ]
 }
 

@@ -1,4 +1,11 @@
-import { appendFileSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'fs'
+import {
+  appendFileSync,
+  existsSync,
+  readdirSync,
+  readFileSync,
+  unlinkSync,
+  writeFileSync
+} from 'fs'
 import { basename, join } from 'path'
 import { app, Menu, type BrowserWindow } from 'electron'
 import { tmpdir } from 'os'
@@ -205,6 +212,98 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       [9500, () => touche('e', ['meta', 'shift'])],
       [10500, () => capture('04-affiche')],
       [11000, () => wc.send('berger:scenario-retirer-dossier', { chemin: dossier })]
+    ])
+    return
+  }
+
+  // BERGER_SCENARIO=choix BERGER_SCENARIO_DOSSIER=<dossier berger-essai…> (contenant `a`) :
+  //   choisit une police installée et un son de macOS dans les réglages (reglages.json remis
+  //   à la fin, Berger-dev seulement), puis ouvre `a` (hors des dossiers surveillés), le
+  //   change sur le disque pendant qu'un autre onglet est affiché et journalise ce que
+  //   l'éditeur montre au retour.
+  if (scenario === 'choix') {
+    const dossier = process.env['BERGER_SCENARIO_DOSSIER'] ?? ''
+    if (!dossier.includes('berger-essai') || !app.getPath('userData').endsWith('Berger-dev')) {
+      console.error('[berger] choix scenario refused: berger-essai folder and Berger-dev only')
+      return
+    }
+    const fichierReglages = join(app.getPath('userData'), 'reglages.json')
+    const avant = existsSync(fichierReglages) ? readFileSync(fichierReglages, 'utf8') : null
+    const js = <T>(code: string): Promise<T> => wc.executeJavaScript(code)
+    const choisirDans = (selecteur: string, valeur: string): Promise<unknown> =>
+      js(`(() => {
+        const s = document.querySelector(${JSON.stringify(selecteur)})
+        s.value = ${JSON.stringify(valeur)}
+        s.dispatchEvent(new Event('change'))
+      })()`)
+    const fichier = `${dossier}/a`
+    jouer([
+      [2500, () => touche(',', ['meta'])],
+      [
+        4500,
+        async () => {
+          const n = await js<string[]>(
+            `[...document.querySelector('.page-reglages select.liste-reglage').options].map((o) => o.textContent)`
+          )
+          console.log(`[berger] scenario: polices ${n.length} (${n.slice(0, 4).join(', ')}…)`)
+          await choisirDans(
+            '.page-reglages select.liste-reglage',
+            "'Geist Variable', -apple-system, sans-serif"
+          )
+        }
+      ],
+      [
+        5500,
+        async () => {
+          const p = await js<string>(
+            `getComputedStyle(document.documentElement).getPropertyValue('--police-interface')`
+          )
+          const chargee = await js<boolean>(
+            `document.fonts.ready.then(() => document.fonts.check('13px "Geist Variable"'))`
+          )
+          console.log(`[berger] scenario: police de l'interface ${p} (Geist chargée : ${chargee})`)
+          await capture('01-police')
+        }
+      ],
+      [6000, () => js(`document.querySelectorAll('.section-reglages')[3].click()`)],
+      [
+        7000,
+        () =>
+          choisirDans(
+            'select[aria-label="Son : agent qui a fini"]',
+            '/System/Library/Sounds/Ping.aiff'
+          )
+      ],
+      [
+        8000,
+        async () => {
+          console.log(
+            `[berger] scenario: reglages.json ${readFileSync(fichierReglages, 'utf8').replace(/\s+/g, ' ')}`
+          )
+          await capture('02-son')
+          if (avant === null) unlinkSync(fichierReglages)
+          else writeFileSync(fichierReglages, avant)
+        }
+      ],
+      [8500, () => touche('Escape')],
+      [9000, () => writeFileSync(fichier, 'avant\n')],
+      [9500, () => wc.send('berger:scenario-fichier', { chemin: fichier })],
+      [11000, () => wc.send('berger:scenario-fichier', { chemin: `${dossier}/b` })],
+      [12000, () => writeFileSync(fichier, 'après\n')],
+      [13000, () => wc.send('berger:scenario-fichier', { chemin: fichier })],
+      [
+        14500,
+        async () => {
+          const t = await js<string>(
+            `document.querySelector('#editeur .view-lines')?.textContent ?? ''`
+          )
+          console.log(`[berger] scenario: au retour, l'éditeur montre « ${t.trim()} »`)
+          await capture('03-retour')
+          touche('w', ['meta'])
+        }
+      ],
+      [15500, () => wc.send('berger:scenario-fichier', { chemin: `${dossier}/b` })],
+      [16500, () => touche('w', ['meta'])]
     ])
     return
   }

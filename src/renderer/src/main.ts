@@ -1,4 +1,6 @@
 // Point d'entrée de la fenêtre Berger.
+// Geist, la police de l'interface de Herdr, fournie avec Berger (licence OFL).
+import '@fontsource-variable/geist/wght.css'
 import type { EtatFenetre } from '../../shared/etat-fenetre'
 import type { Vue } from '../../shared/spaces'
 import { sonAJouer } from '../../shared/sons'
