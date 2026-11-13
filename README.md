@@ -1,115 +1,113 @@
 # Berger
 
-Berger est un multiplexeur d'agents pour macOS : une seule fenêtre pour suivre
-ses terminaux et ses agents de code (Claude Code et les autres), rangés par projets,
-avec à côté un vrai éditeur de code, celui de VS Code (Monaco).
+Berger is an agent multiplexer for macOS: one window to keep an eye on your
+terminals and coding agents (Claude Code and others), organized by project,
+with a real code editor right next to them — the one from VS Code (Monaco).
 
-C'est une application Electron branchée sur
-[herdr-core](#prérequis) : les terminaux tournent dans le core, pas dans
-Berger. On peut quitter ou relancer Berger, les agents continuent leur travail.
+It is an Electron app built on top of [herdr-core](#requirements): terminals
+run inside the core, not inside Berger. You can quit or restart Berger and your
+agents keep working.
 
-![Deux terminaux côte à côte dans un space, l'explorateur à gauche](docs/captures/terminaux.png)
+The interface is in French.
 
-![Un fichier Markdown ouvert dans l'éditeur, avec son aperçu à côté](docs/captures/editeur.png)
+![Two terminals side by side in a space, with the file explorer on the left](docs/captures/terminaux.png)
 
-## Fonctionnalités
+![A Markdown file open in the editor, with its preview next to it](docs/captures/editeur.png)
 
-### Workspaces, spaces et agents
+## Features
 
-- **Workspaces** : des groupes de projets, un emoji chacun dans la barre de
-  gauche. Une pastille signale le workspace où un agent attend ou a fini.
-- **Spaces** : un space par projet, avec sa branche git (ou `↑n` quand des
-  commits restent à pousser). On les crée (`⌘N`), les renomme, les réordonne à
-  la souris et on passe de l'un à l'autre (`⌃1`, `⌃2`…).
-- **Agents** : la liste des agents du workspace, avec leur état (au travail,
-  t'attend, fini), leur durée et le nom de leur space. Un clic ramène à leur
-  terminal.
-- **Sons** quand un agent attend ou finit pendant qu'on regarde ailleurs. On
-  choisit le son de chaque alerte.
+### Workspaces, spaces and agents
 
-### Terminaux
+- **Workspaces**: groups of projects, each with its own emoji in the left bar.
+  A badge shows which workspace has an agent waiting for you or done.
+- **Spaces**: one space per project, showing its git branch (or `↑n` when
+  commits are waiting to be pushed). Create them (`⌘N`), rename them, reorder
+  them by dragging, and switch between them (`⌃1`, `⌃2`…).
+- **Agents**: the list of agents in the workspace, with their state (working,
+  waiting for you, done), how long they have been running and their space. One
+  click takes you to their terminal.
+- **Sounds** when an agent is waiting or done while you are looking elsewhere,
+  with a choice of sound for each alert.
 
-- **Onglets et découpages** : nouvel onglet (`⌘T`), diviser à droite (`⌘D`) ou
-  en bas (`⇧⌘D`), agrandir un panneau (`⇧⌘↵`), aller au panneau voisin
-  (`⌥⌘←`), échanger deux panneaux. Un double clic sur une séparation égalise
-  les panneaux.
-- **Rendu par la carte graphique**, net et sans clignotement pendant qu'on
-  redimensionne.
-- **Liens cliquables** : `⌘`-clic sur une adresse web l'ouvre dans le
-  navigateur.
-- **Glisser-déposer** : un fichier déposé sur un terminal, depuis
-  l'explorateur, le Finder ou une capture d'écran, y écrit son chemin.
-- **Touches du Mac** : `⇧↵` pour un retour à la ligne, `⌘←` et `⌘→` pour aller
-  au début ou à la fin de la ligne.
+### Terminals
 
-### Fichiers
+- **Tabs and splits**: new tab (`⌘T`), split right (`⌘D`) or down (`⇧⌘D`),
+  zoom a pane (`⇧⌘↵`), move to the next pane (`⌥⌘←`), swap two panes.
+  Double-click a divider to make the panes equal.
+- **GPU rendering**, sharp and flicker-free while resizing.
+- **Clickable links**: `⌘`-click a web address to open it in your browser.
+- **Drag and drop**: drop a file on a terminal, from the explorer, the Finder
+  or a screenshot thumbnail, and its path is typed in.
+- **Mac keys**: `⇧↵` for a new line, `⌘←` and `⌘→` to jump to the start or end
+  of the line.
 
-- **Explorateur** : un dossier par space, plus les dossiers qu'on ajoute,
-  avec les couleurs de git et les icônes Material. Les fichiers ignorés par git
-  sont en grisé. On peut créer, renommer, copier, coller, déplacer (à la souris),
-  sélectionner plusieurs fichiers (`⌘`-clic, `⇧`-clic) et mettre à la corbeille
-  (avec confirmation).
-- **Recherche rapide** (`⌘P`) avec les fichiers récents.
-- **Onglets de fichiers** épinglables, réordonnés à la souris ; le dossier
-  s'affiche quand deux fichiers portent le même nom.
-- **Visionneuse** d'images et de vidéos.
+### Files
 
-### Éditeur
+- **Explorer**: one folder per space, plus any folders you add, with git colors
+  and Material icons. Files ignored by git are dimmed. Create, rename, copy,
+  paste, move (by dragging), select several files (`⌘`-click, `⇧`-click) and
+  move to the Trash (after confirming).
+- **Quick open** (`⌘P`) with recent files.
+- **File tabs** that can be pinned and reordered by dragging; the folder is
+  shown when two files have the same name.
+- **Viewer** for images and videos.
 
-- **L'éditeur de VS Code**, avec ses grammaires et le thème Monokai identique à
-  celui de VS Code.
-- **Aide du langage** pour TypeScript, JavaScript, JSON (schémas de
-  SchemaStore), YAML et Markdown : complétion, aller à la définition (`F12`,
-  `⌘`-clic), références, survol, renommage, erreurs soulignées en tapant,
-  « Organiser les imports ».
-- **Différences git dans la marge** : barre verte pour une ligne ajoutée, bleue
-  pour une ligne modifiée, triangle rose là où des lignes ont été supprimées,
-  par rapport au dernier commit. Mis à jour en tapant et après un commit.
-- **Aperçu Markdown** à côté du texte, mis à jour pendant la frappe.
-- **Fichiers modifiés par un agent** : un fichier ouvert et non modifié se
-  recharge tout seul ; modifié des deux côtés, Berger demande avant d'écraser.
-- Retour à la ligne (`⌥Z`), minicarte, plusieurs curseurs, repli du code.
+### Editor
 
-### Réglages
+- **The VS Code editor**, with its grammars and a Monokai theme identical to
+  VS Code's.
+- **Language support** for TypeScript, JavaScript, JSON (SchemaStore schemas),
+  YAML and Markdown: completion, go to definition (`F12`, `⌘`-click),
+  references, hover, rename, errors underlined as you type, "Organize imports".
+- **Git changes in the gutter**: green bar for added lines, blue for modified
+  lines, pink triangle where lines were deleted, compared with the last commit.
+  Updated as you type and after each commit.
+- **Markdown preview** next to the text, updated as you type.
+- **Files changed by an agent**: an open file with no unsaved changes reloads
+  by itself; if it was changed on both sides, Berger asks before overwriting.
+- Word wrap (`⌥Z`), minimap, multiple cursors, code folding.
 
-- **Fenêtre des réglages** (`⌘,`) ou fichier `reglages.json`, suivi à chaud.
-- **Thèmes séparés** pour l'application (7 fournis, plus ceux au format de
-  Herdr) et pour l'éditeur (9 fournis, dont ceux de VS Code).
-- **Polices** de l'interface, de l'éditeur et du terminal, parmi celles du Mac.
-- **Raccourcis** modifiables, avec détection des conflits.
-- **Mises à jour de herdr-core** annoncées dans les réglages.
+### Settings
 
-## Prérequis
+- **Settings window** (`⌘,`) or a `reglages.json` file, applied live.
+- **Separate themes** for the app (7 built in, plus themes in Herdr's format)
+  and for the editor (9 built in, including VS Code's).
+- **Fonts** for the interface, the editor and the terminal, picked from the
+  ones installed on your Mac.
+- **Keyboard shortcuts** you can change, with conflict detection.
+- **herdr-core updates** announced in the settings.
+
+## Requirements
 
 - macOS.
-- [Node.js](https://nodejs.org/) 22 ou plus récent.
-- **herdr-core**, avec sa commande `hc` dans le `PATH`. Berger s'y connecte au
-  lancement ; sans lui, la fenêtre l'indique et attend.
+- [Node.js](https://nodejs.org/) 22 or later.
+- **herdr-core**, with its `hc` command on your `PATH`. Berger connects to it at
+  launch; without it, the window says so and waits.
 
-## Installer
+## Install
 
 ```sh
 npm install
 npm run install-app
 ```
 
-`npm run install-app` construit `Berger.app` et l'installe dans
-`/Applications` (en remplaçant la version déjà installée).
+`npm run install-app` builds `Berger.app` and installs it in `/Applications`
+(replacing the version already installed).
 
-## Développer
+## Development
 
 ```sh
-npm run dev        # lance Berger en développement
-npm test           # tests des règles
-npm run typecheck  # vérification des types
+npm run dev        # run Berger in development mode
+npm test           # unit tests
+npm run typecheck  # type checking
 ```
 
-La version de développement range ses données dans
-`~/Library/Application Support/Berger-dev/`, la version installée dans
+The development build stores its data in
+`~/Library/Application Support/Berger-dev/`, the installed app in
 `~/Library/Application Support/Berger/`.
 
-Le code est rangé en trois parties : `src/main` (le processus principal :
-connexion au core, fichiers, serveurs de langage), `src/renderer` (la fenêtre)
-et `src/shared` (les règles pures, testées dans `tests/`). La feuille de route
-est dans [`docs/suivi/ROADMAP.md`](docs/suivi/ROADMAP.md), les specs de chaque
-phase dans `docs/superpowers/specs/` et les maquettes dans `docs/maquettes/`.
+The code has three parts: `src/main` (the main process: connection to the core,
+files, language servers), `src/renderer` (the window) and `src/shared` (pure
+logic, tested in `tests/`). The roadmap is in
+[`docs/suivi/ROADMAP.md`](docs/suivi/ROADMAP.md), the spec of each phase in
+`docs/superpowers/specs/` and the mockups in `docs/maquettes/` (all in French).
