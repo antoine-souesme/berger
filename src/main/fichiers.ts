@@ -20,6 +20,7 @@ import {
   transferer
 } from './disque'
 import { envoyerA } from './envoi'
+import { texteAuCommit } from './git'
 
 // Presse-papiers de macOS par JavaScript for Automation (des URL de fichiers,
 // comme le Finder) : repris de `explorer.js` du mod `antoine`.
@@ -63,6 +64,7 @@ function brancherDisque(fenetre: () => BrowserWindow | null): void {
   )
   ipcMain.handle('berger:dossier', (_e, { dossier }) => listerDossier(dossier))
   ipcMain.handle('berger:git', (_e, { racine }) => statutGit(racine))
+  ipcMain.handle('berger:texte-commit', (_e, { chemin }) => texteAuCommit(chemin))
   ipcMain.handle('berger:tous-fichiers', async (_e, { racines }: { racines: string[] }) =>
     Promise.all(
       racines.map(async (racine): Promise<FichierRacine[]> => {

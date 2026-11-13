@@ -1975,3 +1975,28 @@ body {
 .apercu-markdown ol {
   padding-left: 1.6em;
 }
+
+/* Différences git dans la marge de l'éditeur (maquette differences.html a). */
+#editeur .git-ajout,
+#editeur .git-modif {
+  width: 3px !important;
+  margin-left: 3px;
+}
+#editeur .git-ajout {
+  background: var(--vert);
+}
+#editeur .git-modif {
+  background: var(--clavier);
+}
+#editeur .git-suppression::after {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: 2px;
+  border: 4px solid transparent;
+  border-left: 6px solid var(--rouge);
+}
+#editeur .git-suppression.bas::after {
+  top: auto;
+  bottom: -4px;
+}

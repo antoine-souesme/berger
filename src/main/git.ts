@@ -37,3 +37,19 @@ export function etatGit(dossier: string): Promise<{ branche?: string; aPousser: 
     aPousser: n
   }))
 }
+
+// Le texte d'un fichier au dernier commit (`HEAD`) ; `null` s'il n'est pas suivi
+// par git (hors dépôt, nouveau fichier, dépôt sans commit) ou trop gros.
+export function texteAuCommit(chemin: string): Promise<string | null> {
+  const coupe = chemin.lastIndexOf('/')
+  const dossier = chemin.slice(0, coupe) || '/'
+  const nom = chemin.slice(coupe + 1)
+  return new Promise((ok) => {
+    execFile(
+      'git',
+      ['-C', dossier, 'show', `HEAD:./${nom}`],
+      { timeout: 3000, maxBuffer: 20 * 1024 * 1024, encoding: 'utf8' },
+      (erreur, sortie) => ok(erreur ? null : sortie)
+    )
+  })
+}

@@ -62,6 +62,9 @@ Berger. On peut quitter ou relancer Berger, les agents continuent leur travail.
   SchemaStore), YAML et Markdown : complétion, aller à la définition (`F12`,
   `⌘`-clic), références, survol, renommage, erreurs soulignées en tapant,
   « Organiser les imports ».
+- **Différences git dans la marge** : barre verte pour une ligne ajoutée, bleue
+  pour une ligne modifiée, triangle rose là où des lignes ont été supprimées,
+  par rapport au dernier commit. Mis à jour en tapant et après un commit.
 - **Aperçu Markdown** à côté du texte, mis à jour pendant la frappe.
 - **Fichiers modifiés par un agent** : un fichier ouvert et non modifié se
   recharge tout seul ; modifié des deux côtés, Berger demande avant d'écraser.

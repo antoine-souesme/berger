@@ -547,6 +547,55 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  if (scenario === 'git') {
+    // BERGER_SCENARIO_FICHIER : un fichier suivi par git d'un dépôt berger-essai…,
+    // modifié depuis le dernier commit. Lit les marques de la marge, tape une
+    // ligne en tête (une marque verte de plus), puis commite le fichier tel qu'il
+    // est sur le disque : les marques qui restent sont celles de la frappe.
+    const fichier = process.env['BERGER_SCENARIO_FICHIER'] ?? ''
+    if (!fichier.includes('berger-essai')) {
+      console.error(
+        '[berger] git scenario refused: BERGER_SCENARIO_FICHIER must be in a berger-essai… repository'
+      )
+      return
+    }
+    const lire = async (nom: string): Promise<void> => {
+      const r = await wc.executeJavaScript(`(() => {
+        const compter = (c) => document.querySelectorAll('#editeur .' + c).length
+        return { ajout: compter('git-ajout'), modif: compter('git-modif'), suppression: compter('git-suppression') }
+      })()`)
+      console.log(`[berger] scenario: git ${nom} ${JSON.stringify(r)}`)
+    }
+    jouer([
+      [2500, () => wc.send('berger:scenario-fichier', { chemin: fichier })],
+      [4500, () => lire('ouvert')],
+      [4700, () => capture('git-ouvert')],
+      [
+        5000,
+        () =>
+          void wc.executeJavaScript(
+            `window.bergerEssai.editeur.executeEdits('essai', [{ range: new window.bergerEssai.monaco.Range(1, 1, 1, 1), text: '// tapé\\n' }])`
+          )
+      ],
+      [5800, () => lire('apres-frappe')],
+      [
+        6000,
+        () => {
+          const dossier = fichier.slice(0, fichier.lastIndexOf('/'))
+          spawnSync('git', ['-C', dossier, 'commit', '-qam', 'essai'], { encoding: 'utf8' })
+          console.log('[berger] scenario: git commit fait')
+        }
+      ],
+      [11500, () => lire('apres-commit')],
+      [11700, () => capture('git-commit')],
+      [
+        12000,
+        () => void wc.executeJavaScript(`window.bergerEssai.editeur.trigger('essai', 'undo')`)
+      ]
+    ])
+    return
+  }
+
   if (scenario === 'demo') {
     // Captures du README, sans rien d'Antoine : dossier de données à part
     // (BERGER_DONNEES, dont le workspace ouvert au départ range tous les spaces
