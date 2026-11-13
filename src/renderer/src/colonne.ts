@@ -105,6 +105,7 @@ function ligneSpace(space: VueSpace, affiche: boolean): HTMLElement {
   } else {
     git.className = 'gris branche'
     git.textContent = space.branche ?? ''
+    git.title = space.branche ?? ''
   }
   ligne.append(pastille(space.nom), nom, git)
   ligne.onclick = () => afficherSpace(space.id)
