@@ -1,5 +1,8 @@
 import { clipboard, dialog, ipcMain, shell, type BrowserWindow } from 'electron'
 import { spawn } from 'child_process'
+import { mkdtemp, writeFile } from 'fs/promises'
+import { tmpdir } from 'os'
+import { basename, join } from 'path'
 import type { Coeur } from './coeur'
 import { lireFichier, type Lecture } from './lecture'
 import type { FichierRacine } from '../shared/recherche'
@@ -46,6 +49,18 @@ function brancherDisque(fenetre: () => BrowserWindow | null): void {
   const cache = new Map<string, Promise<string[]>>()
   const surveillees = new Map<string, () => void>()
 
+  // Un fichier déposé sans chemin (la vignette d'une capture d'écran, par
+  // exemple) : enregistré dans un dossier temporaire, dont le chemin revient.
+  ipcMain.handle(
+    'berger:enregistrer-depot',
+    async (_e, { nom, octets }: { nom: string; octets: Uint8Array }) => {
+      const dossier = await mkdtemp(join(tmpdir(), 'berger-depot-'))
+      const chemin = join(dossier, basename(nom) || 'fichier')
+      await writeFile(chemin, octets)
+      trace(`dépôt enregistré : ${chemin}`)
+      return chemin
+    }
+  )
   ipcMain.handle('berger:dossier', (_e, { dossier }) => listerDossier(dossier))
   ipcMain.handle('berger:git', (_e, { racine }) => statutGit(racine))
   ipcMain.handle('berger:tous-fichiers', async (_e, { racines }: { racines: string[] }) =>

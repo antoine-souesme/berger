@@ -457,10 +457,13 @@ export function initRanger(): void {
     if (!arbre().contains(ev.relatedTarget as Node)) surligner(null)
   })
   // Dépôt du Finder ailleurs dans la fenêtre : chaque fichier s'ouvre, le dernier est affiché.
+  // L'arbre et les terminaux reçoivent eux-mêmes leurs dépôts.
+  const gereAilleurs = (ev: DragEvent): boolean =>
+    !!(ev.target as Element | null)?.closest?.('#arbre .ligne-arbre, .xterm-hote')
   window.addEventListener(
     'dragover',
     (ev) => {
-      if ((ev.target as Element | null)?.closest?.('#arbre .ligne-arbre')) return
+      if (gereAilleurs(ev)) return
       if (ev.dataTransfer?.types.includes('Files')) {
         ev.preventDefault()
         ev.stopPropagation()
@@ -472,7 +475,7 @@ export function initRanger(): void {
   window.addEventListener(
     'drop',
     (ev) => {
-      if ((ev.target as Element | null)?.closest?.('#arbre .ligne-arbre')) return
+      if (gereAilleurs(ev)) return
       const dt = ev.dataTransfer
       if (!dt || !dt.files.length || dt.types.includes(INTERNE)) return
       ev.preventDefault()

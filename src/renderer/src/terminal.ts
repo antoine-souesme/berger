@@ -5,7 +5,7 @@ import { Terminal, type FontWeight, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import '@xterm/xterm/css/xterm.css'
 import { actionDe } from '../../shared/raccourcis'
-import { CHEMINS_GLISSES, texteDepot } from '../../shared/depot'
+import { CHEMINS_GLISSES, cheminsDesUrl, texteDepot } from '../../shared/depot'
 import { dispositionActuelle, tableActuelle } from './table-raccourcis'
 import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
@@ -217,7 +217,9 @@ export function vueTerminal(adresse: string): HTMLElement {
 function brancherDepot(el: HTMLElement, xterm: Terminal): void {
   const accepte = (ev: DragEvent): boolean => {
     const types = ev.dataTransfer?.types ?? []
-    return types.includes('Files') || types.includes(CHEMINS_GLISSES)
+    return (
+      types.includes('Files') || types.includes(CHEMINS_GLISSES) || types.includes('text/uri-list')
+    )
   }
   el.addEventListener('dragover', (ev) => {
     if (!accepte(ev)) return
@@ -234,16 +236,36 @@ function brancherDepot(el: HTMLElement, xterm: Terminal): void {
     if (!accepte(ev)) return
     ev.preventDefault()
     ev.stopPropagation()
-    const dt = ev.dataTransfer!
-    const interne = dt.getData(CHEMINS_GLISSES)
-    const chemins = interne
-      ? (JSON.parse(interne) as string[])
-      : [...dt.files].map((f) => window.berger.cheminDe(f))
-    const texte = texteDepot(chemins)
-    if (!texte) return
-    xterm.paste(texte)
-    xterm.focus()
+    void cheminsDeposes(ev.dataTransfer!).then((chemins) => {
+      const texte = texteDepot(chemins)
+      if (!texte) return
+      xterm.paste(texte)
+      xterm.focus()
+    })
   })
+}
+
+// Les chemins d'un dépôt : ceux de l'explorateur, ceux des fichiers du Finder,
+// sinon les liens `file://` ; un fichier sans chemin sur le disque (vignette
+// d'une capture d'écran) est d'abord enregistré à part.
+async function cheminsDeposes(dt: DataTransfer): Promise<string[]> {
+  const interne = dt.getData(CHEMINS_GLISSES)
+  if (interne) return JSON.parse(interne) as string[]
+  const fichiers = [...dt.files]
+  const urls = cheminsDesUrl(dt.getData('text/uri-list'))
+  const chemins = fichiers.map((f) => window.berger.cheminDe(f))
+  if (fichiers.length && chemins.every(Boolean)) return chemins
+  if (urls.length) return urls
+  return Promise.all(
+    fichiers.map(async (f, i) =>
+      chemins[i]
+        ? chemins[i]
+        : window.berger.demander<string>('berger:enregistrer-depot', {
+            nom: f.name,
+            octets: new Uint8Array(await f.arrayBuffer())
+          })
+    )
+  )
 }
 
 export function oublierTerminauxSauf(adresses: Set<string>): void {

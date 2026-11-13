@@ -14,3 +14,13 @@ export function texteDepot(chemins: string[]): string {
   const liste = chemins.filter(Boolean)
   return liste.length ? liste.map(echapperChemin).join(' ') + ' ' : ''
 }
+
+// Les chemins d'une liste d'URL déposée (`text/uri-list`) : seulement les
+// `file://`, sans les lignes de commentaire.
+export function cheminsDesUrl(liste: string): string[] {
+  return liste
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.startsWith('file://'))
+    .map((l) => decodeURIComponent(new URL(l).pathname))
+}
