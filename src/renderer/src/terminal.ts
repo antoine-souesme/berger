@@ -17,7 +17,14 @@ type Ouvert = {
   attache: boolean
   cree: number
   ouvert: boolean
+  // Redimensionnement en attente (le cadre bouge encore).
+  attente?: ReturnType<typeof setTimeout>
 }
+
+// Tant que le cadre bouge (séparateur tiré, fenêtre redimensionnée), le
+// terminal garde sa taille : chaque nouvelle taille fait tout effacer et
+// redessiner au programme (Claude Code, lazygit), d'où des terminaux vides.
+const PAUSE_REDIMENSION = 120
 
 // Couleurs et police courantes (thème de l'application, réglages).
 let THEME: ITheme = couleursTerminal(THEMES_FOURNIS[0].theme)
@@ -208,7 +215,11 @@ export function vueTerminal(adresse: string): HTMLElement {
     (e) => actionDe(e, 'terminal', tableActuelle(), dispositionActuelle()) === null
   )
   brancherDepot(el, xterm)
-  new ResizeObserver(() => ajuster(adresse, o)).observe(el)
+  new ResizeObserver(() => {
+    clearTimeout(o.attente)
+    if (!o.attache) return ajuster(adresse, o)
+    o.attente = setTimeout(() => ajuster(adresse, o), PAUSE_REDIMENSION)
+  }).observe(el)
   return el
 }
 
