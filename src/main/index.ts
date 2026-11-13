@@ -222,6 +222,10 @@ app.whenReady().then(() => {
         )
         return r?.value.spaces?.find((s) => s.id === id) ?? null
       })
+      // BERGER_REGLAGES=<rubrique> ouvre les réglages sur cette rubrique.
+      const rubrique = process.env['BERGER_REGLAGES']
+      if (rubrique)
+        setTimeout(() => w.webContents.send('berger:ouvrir-reglages', { section: rubrique }), 2500)
       const adresse = process.env['BERGER_OUVRIR']
       if (!adresse) return
       setTimeout(() => w.webContents.send('berger:ouvrir', { adresse }), 1500)
