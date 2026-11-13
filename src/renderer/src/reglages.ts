@@ -4,6 +4,7 @@
 // suit les poussées `berger:reglages` (une modification à la main s'y voit).
 import * as monaco from 'monaco-editor'
 import type { EtatReglages } from '../../shared/reglages'
+import type { EtatMajCore } from '../../shared/maj-core'
 import {
   COMMANDES,
   conflitDe,
@@ -20,14 +21,16 @@ import { changer, ouvrirChemins } from './etat'
 import { icone } from './icones'
 import { dispositionActuelle } from './table-raccourcis'
 
-export type Section = 'apparence' | 'editeur' | 'terminal' | 'alertes' | 'raccourcis'
+export type Section =
+  'apparence' | 'editeur' | 'terminal' | 'alertes' | 'raccourcis' | 'mises-a-jour'
 
 const SECTIONS: [Section, string, string][] = [
   ['apparence', 'Apparence', 'palette'],
   ['editeur', 'Éditeur', 'code'],
   ['terminal', 'Terminal', 'square-terminal'],
   ['alertes', 'Alertes', 'bell'],
-  ['raccourcis', 'Raccourcis', 'keyboard']
+  ['raccourcis', 'Raccourcis', 'keyboard'],
+  ['mises-a-jour', 'Mises à jour', 'refresh-cw']
 ]
 
 const APERCU = `// Enregistre le fichier ouvert.
@@ -410,6 +413,70 @@ function pageAlertes(e: EtatReglages): HTMLElement[] {
   ]
 }
 
+// --- Mises à jour ---
+
+let majCore: EtatMajCore | null = null
+
+const heure = (ms: number): string =>
+  new Date(ms).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })
+
+function pageMisesAJour(): HTMLElement[] {
+  const m = majCore
+  const etat = !m
+    ? 'Vérification…'
+    : m.enCours
+      ? 'Mise à jour en cours…'
+      : m.erreur
+        ? m.erreur
+        : m.disponible
+          ? `${m.disponible} est prête. Tes terminaux restent ouverts pendant la mise à jour.`
+          : m.verifieA
+            ? `À jour. Vérifié à ${heure(m.verifieA)}.`
+            : 'Vérification…'
+  const verifier = creer('button', 'bouton-reglage', 'Vérifier maintenant')
+  verifier.disabled = Boolean(m?.enCours)
+  verifier.onclick = async () => {
+    verifier.disabled = true
+    verifier.textContent = 'Vérification…'
+    majCore = await window.berger.demander<EtatMajCore>('berger:verifier-core')
+    surMajCore()
+  }
+  const boutons: HTMLElement[] = [verifier]
+  if (m?.disponible) {
+    const maj = creer('button', 'bouton-reglage principal', 'Mettre à jour herdr-core')
+    maj.disabled = m.enCours
+    maj.onclick = async () => {
+      majCore = await window.berger.demander<EtatMajCore>('berger:mettre-a-jour-core')
+      surMajCore()
+    }
+    boutons.push(maj)
+  }
+  const note = creer(
+    'p',
+    'note-reglages',
+    'Berger vérifie toutes les heures. herdr-core fait tourner tes terminaux : ils continuent pendant ses mises à jour.'
+  )
+  return [ligne(`herdr-core ${m?.actuelle ?? ''}`.trim(), etat, ...boutons), note]
+}
+
+// Le rond bleu sur « Réglages » et sur la rubrique, et la page si elle est ouverte.
+function surMajCore(): void {
+  document
+    .getElementById('ouvrir-reglages')
+    ?.classList.toggle('avec-rond', Boolean(majCore?.disponible))
+  // Ailleurs, redessiner perdrait un texte en cours de saisie : seul le rond change.
+  if (!ouvert) return
+  if (ouvert.section === 'mises-a-jour') ouvert.dessiner()
+  else
+    document
+      .querySelector('.section-reglages[data-section="mises-a-jour"]')
+      ?.replaceChildren(
+        icone('refresh-cw', 'currentColor', 15, 1.75),
+        'Mises à jour',
+        ...(majCore?.disponible ? [creer('span', 'rond-maj')] : [])
+      )
+}
+
 // --- Raccourcis ---
 
 function kbds(touches: string): HTMLElement {
@@ -582,6 +649,7 @@ export function ouvrirReglages(section: Section = 'apparence'): void {
         const b = creer('button', 'section-reglages' + (id === etat.section ? ' choisie' : ''))
         b.dataset['section'] = id
         b.append(icone(ic, 'currentColor', 15, 1.75), nom)
+        if (id === 'mises-a-jour' && majCore?.disponible) b.append(creer('span', 'rond-maj'))
         b.onclick = () => {
           etat.section = id
           attente = null
@@ -600,7 +668,9 @@ export function ouvrirReglages(section: Section = 'apparence'): void {
             ? pageTerminal(e)
             : etat.section === 'alertes'
               ? pageAlertes(e)
-              : pageRaccourcis(e)
+              : etat.section === 'mises-a-jour'
+                ? pageMisesAJour()
+                : pageRaccourcis(e)
     const defilement = page.querySelector('.contenu-reglages')?.scrollTop ?? 0
     const zone = creer(
       'div',
@@ -662,13 +732,23 @@ export function ouvrirReglages(section: Section = 'apparence'): void {
 }
 
 export function initReglages(): void {
-  window.berger.ecouter('berger:ouvrir-reglages', () => ouvrirReglages())
+  window.berger.ecouter('berger:ouvrir-reglages', (d?: { section?: Section }) =>
+    ouvrirReglages(d?.section)
+  )
   const bouton = document.getElementById('ouvrir-reglages')
   if (bouton) {
     bouton.prepend(icone('settings', 'currentColor', 14, 1.75))
     bouton.onclick = () => ouvrirReglages()
   }
   surReglages(() => ouvert?.dessiner())
+  window.berger.ecouter('berger:maj-core', (e: EtatMajCore) => {
+    majCore = e
+    surMajCore()
+  })
+  void window.berger.demander<EtatMajCore>('berger:maj-core').then((e) => {
+    majCore ??= e
+    surMajCore()
+  })
   apresThemeEditeur(() => {
     if (ouvert?.section === 'apparence') ouvert.dessiner()
   })

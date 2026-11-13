@@ -1279,6 +1279,20 @@ body {
   background: var(--survol);
   color: var(--texte);
 }
+/* Une mise à jour de herdr-core attend (comme le rond de Herdr). */
+.rond-maj,
+.bouton-pied.avec-rond::after {
+  width: 7px;
+  height: 7px;
+  margin-left: auto;
+  border-radius: 50%;
+  background: var(--clavier);
+  flex-shrink: 0;
+}
+.bouton-pied.avec-rond::after {
+  content: '';
+  margin-right: 4px;
+}
 
 /* La fenêtre des réglages (maquette reglages.html). */
 .voile-reglages {
@@ -1530,6 +1544,25 @@ body {
 }
 .bouton-reglage:hover {
   background: var(--survol);
+}
+.bouton-reglage:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.bouton-reglage.principal {
+  background: var(--clavier);
+  border-color: var(--clavier);
+  color: var(--fond) !important;
+}
+.bouton-reglage.principal:hover {
+  background: color-mix(in srgb, var(--clavier) 85%, var(--texte));
+}
+.note-reglages {
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid var(--bord);
+  font-size: 12px;
+  color: var(--gris);
 }
 .couleur-reglage {
   display: flex;
