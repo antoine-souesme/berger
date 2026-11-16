@@ -62,7 +62,7 @@ import {
   retirerOnglet
 } from './editeur'
 import { adressesDeLOngletAffiche, dessinerOnglet, viderZoneTerminaux } from './panneaux'
-import { initTerminaux, oublierTerminauxSauf } from './terminal'
+import { brancherLiensFichiers, initTerminaux, oublierTerminauxSauf } from './terminal'
 import { brancherClavier, choisirPlace } from './clavier'
 import { initWorkspaces } from './workspaces'
 import type { EtatWorkspaces } from '../../shared/workspaces'
@@ -185,6 +185,23 @@ void (async () => {
     modeleOuvert,
     annoncerArret,
     annoncer: annoncerFichier
+  })
+  // ⌘-clic sur un chemin dans un terminal : le fichier s'ouvre, à sa ligne.
+  brancherLiensFichiers({
+    maison,
+    dossier: (adresse) => etat().vue.terminaux[adresse]?.cwd || maison,
+    ouvrir: async ({ chemin, ligne, colonne }) => {
+      ouvrirChemins([chemin])
+      if (!ligne) return
+      await attendreAffichage(chemin)
+      const p = { lineNumber: ligne, column: colonne ?? 1 }
+      revelerPlage(chemin, {
+        startLineNumber: p.lineNumber,
+        startColumn: p.column,
+        endLineNumber: p.lineNumber,
+        endColumn: p.column
+      })
+    }
   })
   initExplorateur(maison)
   initRanger()

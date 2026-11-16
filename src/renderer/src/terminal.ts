@@ -1,7 +1,7 @@
 // Un xterm par terminal affiché, branché sur le processus principal. Il est
 // gardé tant que son onglet est affiché ; les autres sont détachés (jamais
 // tués) et rattachés au retour.
-import { Terminal, type FontWeight, type ITheme } from '@xterm/xterm'
+import { Terminal, type FontWeight, type ILink, type ITheme } from '@xterm/xterm'
 import { WebglAddon } from '@xterm/addon-webgl'
 import { WebLinksAddon } from '@xterm/addon-web-links'
 import '@xterm/xterm/css/xterm.css'
@@ -12,6 +12,13 @@ import { dispositionActuelle, tableActuelle } from './table-raccourcis'
 import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
 import { REGLAGES_PAR_DEFAUT, type Reglages } from '../../shared/reglages'
+import { lienWeb } from '../../shared/liens'
+import {
+  candidatsFichiers,
+  cibleLienFichier,
+  resoudreChemin,
+  type CibleFichier
+} from '../../shared/liens-fichiers'
 
 type Ouvert = {
   el: HTMLElement
@@ -70,6 +77,16 @@ const policePrete = document.fonts.load("12px 'IBM Plex Mono'").catch(() => [])
 const arretes = new Map<string, string>()
 const encodeur = new TextEncoder()
 let surFin: (adresse: string) => void = () => {}
+// Ouvrir un fichier dans l'éditeur, et d'où partent les chemins relatifs.
+let liensFichiers: {
+  dossier: (adresse: string) => string
+  maison: string
+  ouvrir: (cible: CibleFichier) => void
+} | null = null
+
+export function brancherLiensFichiers(l: NonNullable<typeof liensFichiers>): void {
+  liensFichiers = l
+}
 
 function envoyerTaille(adresse: string, o: Ouvert): void {
   if (!o.attache || !document.hasFocus()) return
@@ -201,10 +218,16 @@ export function vueTerminal(adresse: string): HTMLElement {
     allowTransparency: true,
     theme: THEME,
     // Liens posés par le programme (OSC 8, comme ceux de Claude Code).
-    linkHandler: { activate: ouvrirLien, allowNonHttpProtocols: false }
+    // Liens posés par le programme (OSC 8, comme ceux de Claude Code) : web
+    // ou `file://`.
+    linkHandler: { activate: ouvrirLien, allowNonHttpProtocols: true }
   })
   // Adresses web écrites en clair dans le terminal.
   xterm.loadAddon(new WebLinksAddon(ouvrirLien))
+  // Chemins de fichiers écrits en clair (ceux qui existent sur le disque).
+  xterm.registerLinkProvider({
+    provideLinks: (y, rendre) => void liensDeFichiers(adresse, xterm, y).then(rendre)
+  })
   const o: Ouvert = { el, xterm, attache: false, cree: Date.now(), ouvert: false }
   ouverts.set(adresse, o)
   xterm.onData((texte) =>
@@ -237,12 +260,78 @@ export function vueTerminal(adresse: string): HTMLElement {
   return el
 }
 
-// ⌘-clic sur un lien : il s'ouvre dans le navigateur. Un clic seul reste au
-// terminal (sélection, programmes qui suivent la souris).
+// ⌘-clic sur un lien : une adresse web s'ouvre dans le navigateur, un fichier
+// dans l'éditeur. Un clic seul reste au terminal (sélection, programmes qui
+// suivent la souris).
 function ouvrirLien(ev: MouseEvent, url: string): void {
   if (!ev.metaKey) return
   ev.preventDefault()
-  window.berger.envoyer('berger:ouvrir-lien', { url })
+  const fichier = cibleLienFichier(url)
+  if (fichier) return ouvrirFichier(fichier)
+  if (lienWeb(url)) window.berger.envoyer('berger:ouvrir-lien', { url })
+}
+
+function ouvrirFichier(cible: CibleFichier): void {
+  liensFichiers?.ouvrir(cible)
+}
+
+// Les chemins de fichiers de la ligne `y` (comptée à partir de 1), avec les
+// lignes qu'elle continue ou qui la continuent quand le texte a été coupé par
+// la largeur du terminal. Seuls ceux qui existent deviennent des liens.
+async function liensDeFichiers(adresse: string, xterm: Terminal, y: number): Promise<ILink[]> {
+  const l = liensFichiers
+  if (!l) return []
+  const buf = xterm.buffer.active
+  let haut = y - 1
+  while (haut > 0 && buf.getLine(haut)?.isWrapped) haut--
+  let bas = y - 1
+  while (buf.getLine(bas + 1)?.isWrapped) bas++
+  // Une ligne trop longue (sortie sans retour) : on ne la parcourt pas.
+  if (bas - haut > 20) return []
+  // Le texte, et pour chacun de ses caractères la case où il est dessiné (un
+  // accent combiné ou un emoji n'occupe pas autant de cases que de caractères).
+  let texte = ''
+  const cases: { x: number; y: number }[] = []
+  for (let i = haut; i <= bas; i++) {
+    const ligne = buf.getLine(i)
+    if (!ligne) break
+    for (let x = 0; x < ligne.length; x++) {
+      const c = ligne.getCell(x)
+      if (!c || c.getWidth() === 0) continue
+      const car = c.getChars() || ' '
+      texte += car
+      for (let k = 0; k < car.length; k++) cases.push({ x: x + 1, y: i + 1 })
+    }
+  }
+  const candidats = candidatsFichiers(texte)
+  if (!candidats.length) return []
+  const dossier = l.dossier(adresse)
+  const absolus = candidats.map((c) => resoudreChemin(c.chemin, dossier, l.maison))
+  const existants = new Set(
+    await window.berger
+      .demander<string[]>('berger:fichiers-seuls', { chemins: [...new Set(absolus)] })
+      .catch(() => [] as string[])
+  )
+  const liens: ILink[] = []
+  candidats.forEach((c, i) => {
+    const chemin = absolus[i]
+    if (!existants.has(chemin)) return
+    const debut = cases[c.debut]
+    const fin = cases[c.fin - 1]
+    // xterm ne demande que les liens qui touchent la ligne `y`.
+    if (!debut || !fin || debut.y > y || fin.y < y) return
+    liens.push({
+      range: { start: debut, end: fin },
+      text: texte.slice(c.debut, c.fin),
+      decorations: { pointerCursor: true, underline: true },
+      activate: (ev) => {
+        if (!ev.metaKey) return
+        ev.preventDefault()
+        ouvrirFichier({ chemin, ligne: c.ligne, colonne: c.colonne })
+      }
+    })
+  })
+  return liens
 }
 
 // Des fichiers déposés (du Finder ou de l'explorateur) : leurs chemins

@@ -1,6 +1,7 @@
 import {
   appendFileSync,
   existsSync,
+  mkdtempSync,
   readdirSync,
   readFileSync,
   unlinkSync,
@@ -674,7 +675,8 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         console.log(`[berger] scenario: demo spaces fermés ${crees.join(',')}`)
       }
     ]
-    jouer(liste.map((f, i) => [3000 + i * 1500, f]))
+    // Le ⌘-clic sur le fichier peut attendre jusqu'à 10 s le dossier du terminal.
+    jouer(liste.map((f, i) => [3000 + i * 1500 + (i === liste.length - 1 ? 12000 : 0), f]))
     return
   }
 
@@ -760,15 +762,18 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
   if (scenario === 'liens') {
     // Dans un space qu'il crée puis ferme, un terminal affiche une adresse web :
     // un clic seul ne l'ouvre pas, un ⌘-clic la donne au navigateur (journalisée
-    // « lien ouvert », sans ouvrir le navigateur).
+    // « lien ouvert », sans ouvrir le navigateur). Puis un chemin relatif suivi
+    // d'une ligne (`note.md:3`) : le ⌘-clic l'ouvre dans l'éditeur, à sa ligne.
     let space = ''
+    const essai = mkdtempSync(join(tmpdir(), 'berger-essai-liens-'))
+    writeFileSync(join(essai, 'note.md'), 'un\ndeux\ntrois\nquatre\n')
     const adresse = (): Promise<string> =>
       wc.executeJavaScript(
         `document.querySelector('#zone-terminaux .panneau.clavier .xterm-hote')?.dataset.adresse ?? ''`
       )
-    const clic = async (modifiers: Mod[]): Promise<void> => {
+    const clic = async (modifiers: Mod[], texte = 'https://'): Promise<void> => {
       const p = (await wc.executeJavaScript(
-        `window.bergerPositionTexte?.(${JSON.stringify(await adresse())}, 'https://')`
+        `window.bergerPositionTexte?.(${JSON.stringify(await adresse())}, ${JSON.stringify(texte)})`
       )) as null | { x: number; y: number }
       if (!p) return console.log('[berger] scenario: liens adresse introuvable')
       const { x, y } = { x: Math.round(p.x), y: Math.round(p.y) }
@@ -801,6 +806,29 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       () => clic([]),
       () => clic(['meta']),
       () => capture('liens'),
+      () => wc.insertText(`clear; cd ${JSON.stringify(essai)}; echo "Modifié note.md:3 aussi"`),
+      () => touche('Enter'),
+      // Le core met quelques secondes à donner le nouveau dossier du terminal :
+      // on attend que le bandeau du panneau le montre, puis on clique.
+      async () => {
+        for (let n = 0; n < 40; n++) {
+          const ok = await wc.executeJavaScript(
+            `document.querySelector('#zone-terminaux .panneau.clavier')?.textContent.includes(${JSON.stringify(basename(essai))}) ?? false`
+          )
+          if (ok) break
+          await new Promise((f) => setTimeout(f, 250))
+        }
+        // La souris quitte la ligne : xterm redemande alors ses liens.
+        wc.sendInputEvent({ type: 'mouseMove', x: 1200, y: 600 })
+        await new Promise((f) => setTimeout(f, 300))
+        await clic(['meta'], 'note.md')
+        await new Promise((f) => setTimeout(f, 1500))
+        const r = await wc.executeJavaScript(
+          `(() => { const e = window.bergerEssai?.editeur; const m = e?.getModel(); return m ? m.uri.path + ' ligne ' + e.getPosition().lineNumber : 'aucun fichier' })()`
+        )
+        console.log(`[berger] scenario: liens fichier ${r}`)
+        await capture('liens-fichier')
+      },
       () =>
         void wc.executeJavaScript(
           `window.berger.demander('berger:structure', { type: 'space.fermer', space: ${JSON.stringify(space)} })`
