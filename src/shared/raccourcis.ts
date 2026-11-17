@@ -27,6 +27,7 @@ export type ActionClavier =
   | { type: 'colonne.basculer' }
   | { type: 'zoom'; pas: 1 | -1 | 0 }
   | { type: 'fichier.enregistrer' }
+  | { type: 'fichier.nouveau' }
   | { type: 'fichier.chercher' }
   | { type: 'fichier.rechercher' }
   | { type: 'explorateur.basculer' }
@@ -99,6 +100,7 @@ export const COMMANDES: Commande[] = [
     'cmd-shift-e'
   ),
   cmd('onglet.renommer', "Renommer l'onglet", { type: 'onglet.renommer' }, 'f2'),
+  cmd('fichier.nouveau', 'Nouveau fichier', { type: 'fichier.nouveau' }, 'cmd-n'),
   cmd('fichier.enregistrer', 'Enregistrer', { type: 'fichier.enregistrer' }, 'cmd-s'),
   cmd('reglages.ouvrir', 'Ouvrir les réglages', { type: 'reglages.ouvrir' }, 'cmd-,'),
   cmd(
@@ -118,7 +120,7 @@ export const COMMANDES: Commande[] = [
   ...chiffres.map((n) =>
     cmd(`onglet.${n}`, `Aller à l'onglet ${n}`, { type: 'onglet.n', n }, `cmd-${n}`)
   ),
-  cmd('space.nouveau', 'Nouveau space', { type: 'space.nouveau' }, 'cmd-n'),
+  cmd('space.nouveau', 'Nouveau space', { type: 'space.nouveau' }),
   cmd('space.renommer', 'Renommer le space', { type: 'space.renommer' }, 'shift-f2'),
   ...chiffres.map((n) =>
     cmd(`space.${n}`, `Aller au space ${n}`, { type: 'space.n', n }, `ctrl-${n}`)
@@ -327,7 +329,8 @@ const PRIS_A_L_EDITEUR = new Set<ActionClavier['type']>([
   'rien',
   'editeur.retourLigne',
   'reglages.ouvrir',
-  'fichier.enregistrer'
+  'fichier.enregistrer',
+  'fichier.nouveau'
 ])
 
 export function actionDe(

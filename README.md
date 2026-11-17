@@ -21,7 +21,7 @@ The interface is in French.
 - **Workspaces**: groups of projects, each with its own emoji in the left bar.
   A badge shows which workspace has an agent waiting for you or done.
 - **Spaces**: one space per project, showing its git branch (or `↑n` when
-  commits are waiting to be pushed). Create them (`⌘N`), rename them, reorder
+  commits are waiting to be pushed). Create them, rename them, reorder
   them by dragging, and switch between them (`⌃1`, `⌃2`…).
 - **Agents**: the list of agents in the workspace, with their state (working,
   waiting for you, done), how long they have been running and their space. One
@@ -50,6 +50,8 @@ The interface is in French.
 - **Quick open** (`⌘P`) with recent files.
 - **File tabs** that can be pinned and reordered by dragging; the folder is
   shown when two files have the same name.
+- **Untitled files** (`⌘N`, or double-click the tab bar), saved where you
+  choose on the first `⌘S`.
 - **Viewer** for images and videos.
 
 ### Editor

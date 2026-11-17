@@ -18,6 +18,7 @@ import {
   changerFichiers,
   etat,
   fichiersDuWorkspace,
+  nouveauFichierTemporaire,
   ongletAffiche,
   ongletsAffiches,
   spaceAffiche
@@ -229,6 +230,10 @@ function lesConteneurs(): NonNullable<typeof conteneurs> {
     },
     { passive: false }
   )
+  // Double clic dans la barre, hors d'un onglet : un fichier temporaire (comme VS Code).
+  barreEl().addEventListener('dblclick', (e) => {
+    if (!(e.target as Element).closest('.onglet')) nouveauFichierTemporaire()
+  })
   barreEl().replaceChildren(terminaux, trait, fichiers)
   conteneurs = { terminaux, trait, fichiers }
   return conteneurs

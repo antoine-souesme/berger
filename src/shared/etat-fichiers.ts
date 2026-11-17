@@ -5,6 +5,7 @@
 // `antoine`. Toutes les fonctions rendent un nouvel
 // objet quand quelque chose change, et le même sinon.
 import { estVideo } from './media'
+import { estSansTitre } from './sans-titre'
 
 export type FichiersWorkspace = {
   epingles: string[]
@@ -116,14 +117,14 @@ export function ongletsFichiers(e: EtatFichiers, ws: string): OngletFichier[] {
 }
 
 // Chaque fichier ouvert (s'il ne l'est pas déjà) va à la fin des ouverts et
-// en tête des récents.
+// en tête des récents (sauf un fichier temporaire).
 export function ouvrirFichiers(e: EtatFichiers, ws: string, chemins: string[]): EtatFichiers {
   return modifier(e, ws, (w) => {
     const ouverts = [...w.ouverts]
     let recents = w.recents
     for (const c of chemins) {
       if (!w.epingles.includes(c) && !ouverts.includes(c)) ouverts.push(c)
-      recents = [c, ...sans(recents, c)].slice(0, MAX_RECENTS)
+      if (!estSansTitre(c)) recents = [c, ...sans(recents, c)].slice(0, MAX_RECENTS)
     }
     return { ouverts, recents }
   })

@@ -135,9 +135,9 @@ test('⌃3 choisit le space 3', () =>
 test('⌃C part au terminal', () =>
   expect(actionDe(t('KeyC', { ctrlKey: true }), 'terminal')).toBeNull())
 
-test('⌘N crée un space, même depuis l’éditeur', () => {
-  expect(actionDe(t('KeyN', cmd), 'terminal')).toEqual({ type: 'space.nouveau' })
-  expect(actionDe(t('KeyN', cmd), 'editeur')).toEqual({ type: 'space.nouveau' })
+test('⌘N crée un fichier temporaire, même depuis l’éditeur', () => {
+  expect(actionDe(t('KeyN', cmd), 'terminal')).toEqual({ type: 'fichier.nouveau' })
+  expect(actionDe(t('KeyN', cmd), 'editeur')).toEqual({ type: 'fichier.nouveau' })
 })
 
 test("⌥Z bascule le retour à la ligne dans l'éditeur et l'explorateur seulement", () => {

@@ -17,6 +17,7 @@ import {
   type EtatWorkspaces,
   type Workspace
 } from '../../shared/workspaces'
+import { prochainSansTitre, sansTemporaires } from '../../shared/sans-titre'
 
 export type EtatUi = EtatFenetre & {
   vue: Vue
@@ -60,7 +61,7 @@ export function surChangement(f: (e: EtatUi) => void): void {
 function retenir(): void {
   if (e.fichiersWs && e.fichiersWs !== fichiersRetenus) {
     fichiersRetenus = e.fichiersWs
-    window.berger.envoyer('berger:retenir-fichiers', e.fichiersWs)
+    window.berger.envoyer('berger:retenir-fichiers', sansTemporaires(e.fichiersWs))
   }
   if (!charge) return
   const a = ongletAffiche()
@@ -170,6 +171,15 @@ export function ouvrirChemins(chemins: string[]): void {
   changerFichiers((x, ws) => ouvrirFichiers(x, ws, chemins))
   if (!workspaceOuvert() || !e.fichiersWs) return
   changer((x) => (x.onglet = { type: 'fichier', chemin: chemins[chemins.length - 1] }))
+}
+
+// ⌘N ou double clic dans la barre d'onglets : un fichier temporaire « Sans
+// titre-N », numéroté parmi les fichiers ouverts de tous les workspaces (ils
+// partagent les modèles de l'éditeur).
+export function nouveauFichierTemporaire(): void {
+  if (!spaceAffiche() || !e.fichiersWs) return
+  const tous = Object.values(e.fichiersWs).flatMap((w) => [...w.epingles, ...w.ouverts])
+  ouvrirChemins([prochainSansTitre(tous)])
 }
 
 // Workspace vide : aucun onglet (les fichiers ouverts reviennent avec un space).

@@ -164,8 +164,22 @@ export function brancherFichiers(coeur: Coeur, fenetre: () => BrowserWindow | nu
     return response === 0
   }
 
-  ipcMain.handle('berger:ecrire', async (_e, { chemin, texte, texteCharge }) => {
-    const actuel = await lire(chemin)
+  // Un fichier temporaire à enregistrer : le sélecteur de macOS (qui demande
+  // lui-même avant de remplacer un fichier) ; rend le chemin choisi ou null.
+  ipcMain.handle('berger:enregistrer-sous', async (_e, { dossier, nom }) => {
+    // Scénario `temporaire` (développement) : le chemin choisi d'avance.
+    const choisi = process.env['BERGER_SCENARIO_FICHIER']
+    if (process.env['BERGER_SCENARIO'] === 'temporaire' && choisi?.includes('berger-essai'))
+      return choisi
+    const w = fenetre()
+    const options = { defaultPath: dossier ? join(dossier, nom) : nom }
+    const r = w ? await dialog.showSaveDialog(w, options) : await dialog.showSaveDialog(options)
+    return r.canceled || !r.filePath ? null : r.filePath
+  })
+
+  // `nouveau` : le fichier vient d'être choisi dans le sélecteur, rien à relire.
+  ipcMain.handle('berger:ecrire', async (_e, { chemin, texte, texteCharge, nouveau }) => {
+    const actuel = nouveau ? { texte: texteCharge } : await lire(chemin)
     if ('erreur' in actuel) {
       const ok = await confirmer(
         `Le fichier n'a pas pu être relu (${actuel.erreur.replace(/\.$/, '')}). Enregistrer quand même ?`

@@ -7,6 +7,7 @@ import { actionDe, type ActionClavier, type Cible } from '../../shared/raccourci
 import {
   afficherSpace,
   changer,
+  nouveauFichierTemporaire,
   ongletAffiche,
   ongletsAffiches,
   rendreVisible,
@@ -126,6 +127,9 @@ function executer(a: ActionClavier): void {
       if (f) void enregistrer(f)
       return
     }
+    case 'fichier.nouveau':
+      nouveauFichierTemporaire()
+      return
     case 'fichier.chercher':
       if (fichierAffiche()) chercher()
       return

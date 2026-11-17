@@ -22,8 +22,10 @@ import { replisMarkdown } from '../../shared/replis-markdown'
 import { initJson, suivreJson } from './json'
 import { organiserImports, suivreModele } from './langage'
 import { dossierAffiche } from '../../shared/libelles'
-import { fermerFichierWs } from '../../shared/etat-fichiers'
-import { changer, changerFichiers, etat, redessiner, surChangement } from './etat'
+import { fermerFichierWs, ouvrirFichiers, suivreDeplacement } from '../../shared/etat-fichiers'
+import { estSansTitre, nomSansTitre } from '../../shared/sans-titre'
+import { changer, changerFichiers, etat, redessiner, spaceAffiche, surChangement } from './etat'
+import { dossierDuClavier } from './panneaux'
 import { retourLigneApresReglage } from '../../shared/etat-fenetre'
 import { icone } from './icones'
 import { boutonApercu, initApercu, suivreApercu } from './apercu-markdown'
@@ -119,7 +121,9 @@ function nomDuLangage(id: string): string {
 }
 
 function dessinerBandeau(chemin: string): void {
-  const morceaux = dossierAffiche(chemin, maison).split('/').filter(Boolean)
+  const morceaux = estSansTitre(chemin)
+    ? [nomSansTitre(chemin)]
+    : dossierAffiche(chemin, maison).split('/').filter(Boolean)
   const enfants: Node[] = [icone('file', 'var(--gris-clair)')]
   morceaux.forEach((m, i) => {
     const s = document.createElement('span')
@@ -216,7 +220,7 @@ async function appliquerReglages(e: EtatReglages): Promise<void> {
 async function apresDisque(chemins: string[]): Promise<void> {
   for (const chemin of new Set(chemins)) {
     const o = ouverts.get(chemin)
-    if (!o) continue
+    if (!o || estSansTitre(chemin)) continue
     const r = await window.berger.demander<{ texte?: string }>('berger:lire', { chemin })
     if (ouverts.get(chemin) !== o || o.modele.isDisposed()) continue
     if (quoiFaire(modifie(chemin), o.texteCharge, r.texte ?? null) !== 'recharger') continue
@@ -320,6 +324,21 @@ function adopter(chemin: string, texte: string): Ouvert {
   return o
 }
 
+// Un fichier temporaire : un modèle vide, en texte brut, sans fichier derrière.
+function temporaire(chemin: string): Ouvert {
+  const uri = monaco.Uri.from({ scheme: 'untitled', path: nomSansTitre(chemin) })
+  monaco.editor.getModel(uri)?.dispose()
+  const modele = monaco.editor.createModel('', 'plaintext', uri)
+  const o: Ouvert = {
+    modele,
+    texteCharge: '',
+    versionEnregistree: modele.getAlternativeVersionId(),
+    vue: null
+  }
+  ouverts.set(chemin, o)
+  return o
+}
+
 function brancherModele(chemin: string, modele: monaco.editor.ITextModel): void {
   if (serveurDe(chemin)) suivreModele(chemin, modele)
   if (modele.getLanguageId() === 'json') suivreJson(chemin, modele)
@@ -356,7 +375,11 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   // Déjà ouvert : il a pu changer sur le disque pendant qu'on était ailleurs
   // (un autre workspace n'a pas ses dossiers surveillés).
   if (o) void apresDisque([chemin])
-  else {
+  else if (estSansTitre(chemin)) {
+    await colorationPrete
+    if (affiche !== chemin) return true
+    o = ouverts.get(chemin) ?? temporaire(chemin)
+  } else {
     const r = await window.berger.demander<{ texte?: string; erreur?: string }>('berger:lire', {
       chemin
     })
@@ -376,7 +399,7 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
   const bouton = boutonApercu(o.modele)
   if (bouton) el('fichier-bandeau').append(bouton)
   suivreApercu(o.modele)
-  suivreMargesGit(o.modele)
+  suivreMargesGit(estSansTitre(chemin) ? null : o.modele)
   el('fichier-langage').textContent = nomDuLangage(o.modele.getLanguageId())
   dessinerPosition()
   annoncer('')
@@ -405,6 +428,7 @@ export function fichierAffiche(): string | null {
 export async function enregistrer(chemin: string): Promise<boolean> {
   const o = ouverts.get(chemin)
   if (!o) return true
+  if (estSansTitre(chemin)) return enregistrerSous(chemin, o)
   const texte = o.modele.getValue()
   const version = o.modele.getAlternativeVersionId()
   const r = await window.berger.demander<{ ok?: boolean; annule?: boolean; erreur?: string }>(
@@ -420,6 +444,45 @@ export async function enregistrer(chemin: string): Promise<boolean> {
   }
   if (r.erreur && affiche === chemin) annoncer(r.erreur)
   return false
+}
+
+// Un fichier temporaire : le sélecteur de macOS choisit où l'écrire (dans le
+// dossier du space affiché), puis l'onglet devient celui du vrai fichier, à
+// la même place.
+async function enregistrerSous(chemin: string, o: Ouvert): Promise<boolean> {
+  const space = spaceAffiche()
+  const premier = space?.onglets[0] ?? null
+  const dossier = space ? dossierDuClavier(space, premier) : ''
+  const cible = await window.berger.demander<string | null>('berger:enregistrer-sous', {
+    dossier,
+    nom: nomSansTitre(chemin)
+  })
+  if (!cible || ouverts.get(chemin) !== o) return false
+  const texte = o.modele.getValue()
+  const r = await window.berger.demander<{ ok?: boolean; erreur?: string }>('berger:ecrire', {
+    chemin: cible,
+    texte,
+    nouveau: true
+  })
+  if (!r.ok) {
+    if (r.erreur && affiche === chemin) annoncer(r.erreur)
+    return false
+  }
+  const paire: [string, string][] = [[chemin, cible]]
+  suivreDeplacementEditeur(paire)
+  changerFichiers((x, ws) => ouvrirFichiers(suivreDeplacement(x, paire), ws, [cible]))
+  const n = ouverts.get(cible)
+  if (n) {
+    n.texteCharge = n.modele.getValue()
+    n.versionEnregistree = n.modele.getAlternativeVersionId()
+    suivreModifies(cible)
+  }
+  if (affiche === cible) {
+    el('fichier-langage').textContent = nomDuLangage(n?.modele.getLanguageId() ?? 'plaintext')
+    suivreMargesGit(n?.modele ?? null)
+    annoncer('Enregistré', 1500)
+  }
+  return true
 }
 
 // Oublie le modèle d'un fichier (sans question) : son onglet a été fermé.
@@ -447,7 +510,9 @@ const question = (q: {
 // Fermer un onglet de fichier : la question de VS Code s'il est modifié.
 export async function fermerFichierAvecQuestion(chemin: string): Promise<boolean> {
   if (modifie(chemin)) {
-    const nom = chemin.slice(chemin.lastIndexOf('/') + 1)
+    const nom = estSansTitre(chemin)
+      ? nomSansTitre(chemin)
+      : chemin.slice(chemin.lastIndexOf('/') + 1)
     const r = await question({
       message: `Voulez-vous enregistrer les modifications de ${nom} ?`,
       detail: 'Vos modifications seront perdues si vous ne les enregistrez pas.',

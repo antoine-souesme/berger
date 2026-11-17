@@ -716,6 +716,63 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  if (scenario === 'temporaire') {
+    // ⌘N ouvre « Sans titre-1 », une frappe le marque modifié, un double clic
+    // dans la barre ouvre « Sans titre-2 » que ⌘W ferme sans question, puis ⌘S
+    // enregistre « Sans titre-1 » dans BERGER_SCENARIO_FICHIER (un fichier
+    // berger-essai… qui n'existe pas encore, le sélecteur est sauté) et ⌘W le ferme.
+    const fichier = process.env['BERGER_SCENARIO_FICHIER'] ?? ''
+    if (!fichier.includes('berger-essai')) {
+      console.error(
+        '[berger] temporaire scenario refused: BERGER_SCENARIO_FICHIER must be berger-essai…'
+      )
+      return
+    }
+    const lire = async (nom: string): Promise<void> => {
+      const r =
+        await wc.executeJavaScript(`[...document.querySelectorAll('.onglet-fichier')].map((o) =>
+        o.textContent.replace(/\\s+/g, ' ').trim() + (o.classList.contains('actif') ? ' [actif]' : ''))`)
+      const bandeau = await wc.executeJavaScript(
+        `document.getElementById('fichier-bandeau').textContent + ' | ' + document.getElementById('fichier-langage').textContent`
+      )
+      console.log(`[berger] scenario: temporaire ${nom} ${JSON.stringify(r)} ${bandeau}`)
+    }
+    const doubleClic = async (): Promise<void> => {
+      const p = (await wc.executeJavaScript(`(() => {
+        const b = document.getElementById('barre-onglets').getBoundingClientRect()
+        return { x: Math.round(b.right - 20), y: Math.round(b.top + b.height / 2) }
+      })()`)) as { x: number; y: number }
+      for (const clickCount of [1, 2]) {
+        wc.sendInputEvent({ type: 'mouseDown', ...p, button: 'left', clickCount })
+        wc.sendInputEvent({ type: 'mouseUp', ...p, button: 'left', clickCount })
+      }
+    }
+    jouer([
+      [3000, () => touche('n', ['meta'])],
+      [4000, () => lire('cmd-n')],
+      [4500, () => wc.insertText('Bonjour depuis Berger')],
+      [5000, () => lire('frappe')],
+      [5200, () => capture('temporaire-modifie')],
+      [5500, () => doubleClic()],
+      [6500, () => lire('double-clic')],
+      [7000, () => touche('w', ['meta'])],
+      [8000, () => lire('ferme-2')],
+      [8500, () => touche('s', ['meta'])],
+      [9500, () => lire('enregistre')],
+      [9700, () => capture('temporaire-enregistre')],
+      [
+        10000,
+        () =>
+          console.log(
+            `[berger] scenario: temporaire disque ${JSON.stringify(existsSync(fichier) ? readFileSync(fichier, 'utf8') : null)}`
+          )
+      ],
+      [10500, () => touche('w', ['meta'])],
+      [11500, () => lire('ferme-1')]
+    ])
+    return
+  }
+
   if (scenario === 'apercu') {
     // Ouvre BERGER_SCENARIO_FICHIER (un .md d'un dossier berger-essai…), ouvre
     // l'aperçu par le bouton du bandeau, tape une ligne (l'aperçu suit), défait la
