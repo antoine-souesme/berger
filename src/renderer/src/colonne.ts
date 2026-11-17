@@ -15,7 +15,7 @@ import {
   workspaceOuvert
 } from './etat'
 import { glisseEnCours, rendreGlissable } from './glisser'
-import { ANNEAU_TRAVAIL, icone } from './icones'
+import { ANNEAU_TRAVAIL, faireTourner, icone } from './icones'
 import { ouvrirDialogue } from './dialogue'
 import { ouvrirMenu } from './menus'
 
@@ -158,7 +158,7 @@ function iconeEtat(agent: LigneAgent['agent']): HTMLElement {
   c.className = 'etat-agent'
   if (agent === 'travail') {
     c.innerHTML = ANNEAU_TRAVAIL
-    c.classList.add('tourne')
+    faireTourner(c)
     c.style.color = COULEUR_ETAT.travail
     c.setAttribute('aria-label', 'au travail')
   } else if (agent === 'fini') {

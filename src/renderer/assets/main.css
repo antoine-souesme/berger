@@ -1236,7 +1236,7 @@ body {
   box-sizing: border-box;
 }
 
-/* L'icône d'un agent au travail tourne. */
+/* L’icône d’un agent au travail tourne (durée reprise par TOUR_MS dans icones.ts). */
 .tourne {
   animation: tourner 0.9s linear infinite;
 }

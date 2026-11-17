@@ -140,6 +140,17 @@ export function iconeMaterial(nom: string, taille = 16): HTMLImageElement {
 }
 
 // L'anneau qui tourne d'un agent au travail (comme Herdr), pour la liste des
-// agents et la barre des workspaces ; il tourne avec la classe `tourne`.
+// agents et la barre des workspaces ; il tourne avec `faireTourner`.
 export const ANNEAU_TRAVAIL =
   '<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9.4" stroke-opacity="0.24"/><path d="M12 2.6a9.4 9.4 0 0 1 9.4 9.4"/></svg>'
+
+// Durée d'un tour de l'anneau, la même que l'animation `tourner` de main.css.
+const TOUR_MS = 900
+
+// Fait tourner un élément. La liste est redessinée à chaque changement d'état :
+// sans ce décalage, chaque anneau recréé repartirait de zéro et sauterait.
+// Calé sur l'horloge de la page, il reprend où en était le précédent.
+export function faireTourner(e: HTMLElement): void {
+  e.classList.add('tourne')
+  e.style.animationDelay = `-${Math.round(performance.now() % TOUR_MS)}ms`
+}

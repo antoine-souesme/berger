@@ -16,7 +16,7 @@ import {
 } from './etat'
 import { glisseEnCours, rendreGlissable } from './glisser'
 import { basculerExplorateur } from './explorateur'
-import { ANNEAU_TRAVAIL, icone } from './icones'
+import { ANNEAU_TRAVAIL, faireTourner, icone } from './icones'
 import { ouvrirMenu } from './menus'
 
 const nav = (): HTMLElement => document.getElementById('workspaces')!
@@ -147,8 +147,9 @@ function dessiner(): void {
       const p = document.createElement('span')
       if (urgent === 'travail') {
         // Au travail : l'anneau qui tourne, comme dans la liste des agents.
-        p.className = 'pastille-etat anneau tourne'
+        p.className = 'pastille-etat anneau'
         p.innerHTML = ANNEAU_TRAVAIL
+        faireTourner(p)
         p.style.color = COULEUR_ETAT.travail
       } else {
         p.className = 'pastille-etat'
