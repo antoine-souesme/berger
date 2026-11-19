@@ -23,7 +23,8 @@ test('défauts', () => {
       graisse: 600,
       graisseGras: 700,
       interligne: 1.1,
-      espacement: 0
+      espacement: 0,
+      copierSelection: false
     },
     sons: { actifs: true, fini: null, attente: null },
     raccourcis: {}
@@ -80,6 +81,13 @@ test('graisses, interligne et espacement du terminal bornés', () => {
     expect(t({ graisse, graisseGras: graisse })).toMatchObject({ graisse: 600, graisseGras: 700 })
   for (const interligne of [0.9, 2.1, '1.2', NaN]) expect(t({ interligne }).interligne).toBe(1.1)
   for (const espacement of [-3, 11, 0.5]) expect(t({ espacement }).espacement).toBe(0)
+})
+
+test('copie de la sélection du terminal', () => {
+  const t = (terminal: unknown) => lireReglages({ terminal }).terminal.copierSelection
+  expect(t({ copierSelection: true })).toBe(true)
+  expect(t({ copierSelection: 'oui' })).toBe(false)
+  expect(t({})).toBe(false)
 })
 
 test('raccourcis', () => {

@@ -181,7 +181,8 @@ export function initTerminaux(rappels: { fin: (adresse: string) => void }): void
 // Couleurs (thème de l'application) et police (réglages) : appliquées aux
 // terminaux ouverts, qui sont remesurés, et prises par les suivants.
 export function appliquerTerminal(couleurs: CouleursTerminal, police: Reglages['terminal']): void {
-  const policeChange = JSON.stringify(police) !== JSON.stringify(POLICE)
+  const policeChange =
+    JSON.stringify(optionsPolice(police)) !== JSON.stringify(optionsPolice(POLICE))
   THEME = couleurs
   POLICE = police
   for (const [adresse, o] of ouverts) {
@@ -194,6 +195,30 @@ export function appliquerTerminal(couleurs: CouleursTerminal, police: Reglages['
       .catch(() => [])
       .then(() => ajuster(adresse, o))
   }
+}
+
+// Le texte sélectionné à la souris part dans le presse-papiers quand le bouton
+// est relâché (même hors du terminal). Seule la sélection de xterm compte : un
+// programme qui prend la souris (Claude Code en plein écran) fait la sienne et
+// la copie lui-même, xterm n'en voit rien, donc pas de seconde copie.
+function brancherCopieSelection(el: HTMLElement, xterm: Terminal): void {
+  el.addEventListener(
+    'mousedown',
+    (e) => {
+      if (e.button !== 0) return
+      window.addEventListener(
+        'mouseup',
+        () =>
+          setTimeout(() => {
+            if (!POLICE.copierSelection || !xterm.hasSelection()) return
+            const texte = xterm.getSelection()
+            if (texte) void navigator.clipboard.writeText(texte).catch(() => {})
+          }),
+        { once: true, capture: true }
+      )
+    },
+    true
+  )
 }
 
 export function raisonArret(adresse: string): string | undefined {
@@ -252,6 +277,7 @@ export function vueTerminal(adresse: string): HTMLElement {
     return false
   })
   brancherDepot(el, xterm)
+  brancherCopieSelection(el, xterm)
   new ResizeObserver(() => {
     clearTimeout(o.attente)
     if (!o.attache) return ajuster(adresse, o)

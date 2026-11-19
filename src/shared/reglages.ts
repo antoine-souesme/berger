@@ -19,7 +19,10 @@ export type Reglages = {
     tabulations: number
   }
   // Graisses de 100 à 900 (400 : normal) ; interligne en multiple de la
-  // taille ; espacement des lettres en pixels.
+  // taille ; espacement des lettres en pixels. `copierSelection` : le texte
+  // sélectionné à la souris part dans le presse-papiers (seulement la sélection
+  // de Berger : celle d'un programme qui prend la souris, comme Claude Code en
+  // plein écran, reste à ce programme, qui copie déjà de lui-même).
   terminal: {
     police: string
     taille: number
@@ -27,6 +30,7 @@ export type Reglages = {
     graisseGras: number
     interligne: number
     espacement: number
+    copierSelection: boolean
   }
   // Sons des agents ; `fini` et `attente` : un fichier son à la place de celui
   // de macOS (null : celui de macOS).
@@ -67,7 +71,8 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
     graisse: 600,
     graisseGras: 700,
     interligne: 1.1,
-    espacement: 0
+    espacement: 0,
+    copierSelection: false
   },
   sons: { actifs: true, fini: null, attente: null },
   raccourcis: {}
@@ -131,7 +136,8 @@ export function lireReglages(brut: unknown): Reglages {
       graisse: graisse(t['graisse'], d.terminal.graisse),
       graisseGras: graisse(t['graisseGras'], d.terminal.graisseGras),
       interligne: nombre(t['interligne'], 1, 2, d.terminal.interligne),
-      espacement: entier(t['espacement'], -2, 10, d.terminal.espacement)
+      espacement: entier(t['espacement'], -2, 10, d.terminal.espacement),
+      copierSelection: booleen(t['copierSelection'], d.terminal.copierSelection)
     },
     sons: {
       actifs: booleen(s['actifs'], d.sons.actifs),

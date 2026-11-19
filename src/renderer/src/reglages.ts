@@ -398,6 +398,11 @@ function pageTerminal(e: EtatReglages): HTMLElement[] {
         (v) => void changerReglage(['terminal', 'espacement'], Number(v)),
         'etroite'
       )
+    ),
+    ligne(
+      'Copier la sélection',
+      'Le texte sélectionné à la souris part dans le presse-papiers. Claude Code en plein écran garde sa propre copie.',
+      bascule(r.copierSelection, (v) => void changerReglage(['terminal', 'copierSelection'], v))
     )
   ]
 }
