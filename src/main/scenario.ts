@@ -484,6 +484,54 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  // BERGER_SCENARIO=defilement BERGER_SCENARIO_SPACE=<spbergertest…>
+  //   BERGER_SCENARIO_FICHIER=<dossier berger-essai…>/<long fichier> : ouvre le fichier dans le
+  //   space de test, le fait défiler à la molette (le curseur reste en place), passe sur
+  //   l'onglet du terminal puis revient, et journalise la première ligne visible à chaque fois.
+  if (scenario === 'defilement') {
+    const space = process.env['BERGER_SCENARIO_SPACE'] ?? ''
+    const fichier = process.env['BERGER_SCENARIO_FICHIER'] ?? ''
+    if (!space.startsWith('spbergertest') || !fichier.includes('berger-essai')) {
+      console.error('[berger] defilement scenario refused: spbergertest space and berger-essai file')
+      return
+    }
+    const souris = pointeur(wc)
+    const haut = async (quoi: string): Promise<void> =>
+      console.log(
+        `[berger] scenario: ${quoi}: ` +
+          JSON.stringify(
+            await wc.executeJavaScript(`(() => {
+              const e = window.bergerEssai?.editeur
+              return e ? { haut: e.getScrollTop(), hauteur: e.getLayoutInfo().height, ligne: e.getVisibleRanges()[0]?.startLineNumber,
+                curseur: e.getPosition()?.lineNumber } : null
+            })()`)
+          )
+      )
+    // Comme la molette : la vue bouge, le curseur reste où il est.
+    const molette = (haut: number): Promise<void> =>
+      wc.executeJavaScript(`window.bergerEssai?.editeur.setScrollTop(${haut})`)
+    jouer([
+      [2000, () => wc.send('berger:scenario-space', { space })],
+      [3000, () => wc.send('berger:scenario-fichier', { chemin: fichier })],
+      [4000, () => haut('ouvert')],
+      [4100, () => molette(3000)],
+      [4800, () => haut('après la première molette')],
+      [5000, () => souris('left', '.onglets-terminaux .onglet')],
+      [5100, () => haut('terminal affiché (immédiat)')],
+      [5500, () => haut('terminal affiché')],
+      [5600, () => souris('left', '.onglet-fichier')],
+      [5610, () => haut('retour 1 (immédiat)')],
+      [6400, () => haut('retour 1')],
+      [6500, () => molette(1500)],
+      [7200, () => haut('après la deuxième molette')],
+      [7300, () => souris('left', '.onglets-terminaux .onglet')],
+      [7900, () => souris('left', '.onglet-fichier')],
+      [8700, () => haut('retour 2')],
+      [8800, () => capture('retour')]
+    ])
+    return
+  }
+
   if (scenario === 'onglets') {
     const fichiers = (process.env['BERGER_SCENARIO_FICHIERS'] ?? '')
       .split(':')

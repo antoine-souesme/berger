@@ -393,6 +393,9 @@ export async function afficherFichier(chemin: string): Promise<boolean> {
     o = ouverts.get(chemin)
     if (!o) o = adopter(chemin, r.texte ?? '')
   }
+  // Remis à sa taille avant de reprendre la vue : caché, l'éditeur a été mis à la taille
+  // de rien (lignes coupées à chaque lettre), et la vue reprise là finirait tout en bas.
+  editeur.layout()
   editeur.setModel(o.modele)
   if (o.vue) editeur.restoreViewState(o.vue)
   dessinerBandeau(chemin)
