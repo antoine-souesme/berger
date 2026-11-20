@@ -2,6 +2,7 @@
 // écrit par la fenêtre des réglages et modifiable à la main). Une valeur
 // absente ou invalide prend sa valeur par défaut ; les autres sont gardées.
 import type { ThemeConnu } from './themes'
+import { lireNotifications, type SorteNotification } from './notifications'
 
 export type Reglages = {
   apparence: {
@@ -35,6 +36,8 @@ export type Reglages = {
   // Sons des agents ; `fini` et `attente` : un fichier son à la place de celui
   // de macOS (null : celui de macOS).
   sons: { actifs: boolean; fini: string | null; attente: string | null }
+  // Bulles en bas à droite, allumées ou éteintes par sorte (voir notifications.ts).
+  notifications: Record<SorteNotification, boolean>
   raccourcis: Record<string, string[]> // id de commande → touches ('cmd-shift-d'), [] = aucun
 }
 
@@ -75,6 +78,7 @@ export const REGLAGES_PAR_DEFAUT: Reglages = {
     copierSelection: false
   },
   sons: { actifs: true, fini: null, attente: null },
+  notifications: lireNotifications(undefined),
   raccourcis: {}
 }
 
@@ -144,6 +148,7 @@ export function lireReglages(brut: unknown): Reglages {
       fini: fichier(s['fini']),
       attente: fichier(s['attente'])
     },
+    notifications: lireNotifications(o['notifications']),
     raccourcis: raccourcis(o['raccourcis'])
   }
 }

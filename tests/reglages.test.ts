@@ -27,6 +27,7 @@ test('défauts', () => {
       copierSelection: false
     },
     sons: { actifs: true, fini: null, attente: null },
+    notifications: { copie: true },
     raccourcis: {}
   })
   expect(lireReglages(null)).toEqual(REGLAGES_PAR_DEFAUT)
