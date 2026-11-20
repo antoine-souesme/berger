@@ -19,8 +19,7 @@ export const SORTES_NOTIFICATIONS: {
 ]
 
 export function lireNotifications(x: unknown): Record<SorteNotification, boolean> {
-  const o =
-    x && typeof x === 'object' && !Array.isArray(x) ? (x as Record<string, unknown>) : {}
+  const o = x && typeof x === 'object' && !Array.isArray(x) ? (x as Record<string, unknown>) : {}
   const r = {} as Record<SorteNotification, boolean>
   for (const s of SORTES_NOTIFICATIONS)
     r[s.id] = typeof o[s.id] === 'boolean' ? (o[s.id] as boolean) : s.parDefaut
@@ -29,5 +28,10 @@ export function lireNotifications(x: unknown): Record<SorteNotification, boolean
 
 // La ligne grise sous le titre : la première ligne non vide du texte.
 export function apercuTexte(texte: string): string {
-  return texte.split('\n').map((l) => l.trim()).find((l) => l) ?? ''
+  return (
+    texte
+      .split('\n')
+      .map((l) => l.trim())
+      .find((l) => l) ?? ''
+  )
 }
