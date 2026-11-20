@@ -13,6 +13,8 @@ import { couleursTerminal, type CouleursTerminal } from '../../shared/themes'
 import { THEMES_FOURNIS } from '../../shared/themes-fournis'
 import { REGLAGES_PAR_DEFAUT, type Reglages } from '../../shared/reglages'
 import { lienWeb } from '../../shared/liens'
+import { apercuTexte } from '../../shared/notifications'
+import { notifier } from './notifications'
 import {
   candidatsFichiers,
   cibleLienFichier,
@@ -212,7 +214,11 @@ function brancherCopieSelection(el: HTMLElement, xterm: Terminal): void {
           setTimeout(() => {
             if (!POLICE.copierSelection || !xterm.hasSelection()) return
             const texte = xterm.getSelection()
-            if (texte) void navigator.clipboard.writeText(texte).catch(() => {})
+            if (!texte) return
+            void navigator.clipboard
+              .writeText(texte)
+              .then(() => notifier('copie', 'Texte copié', apercuTexte(texte)))
+              .catch(() => {})
           }),
         { once: true, capture: true }
       )

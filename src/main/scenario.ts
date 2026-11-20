@@ -417,6 +417,56 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
     return
   }
 
+  // BERGER_SCENARIO=copie : dans un space créé pour l'essai (et fermé à la fin),
+  //   affiche une ligne, la sélectionne à la souris et journalise les bulles de
+  //   notification (« Copier la sélection » doit être allumé).
+  if (scenario === 'copie') {
+    let space = ''
+    const bulles = async (quand: string): Promise<void> =>
+      console.log(
+        `[berger] scenario: ${quand} bulles=` +
+          JSON.stringify(
+            await wc.executeJavaScript(
+              `[...document.querySelectorAll('.notification')].map((b) => b.innerText)`
+            )
+          )
+      )
+    const liste: (() => void | Promise<void>)[] = [
+      async () => {
+        const r: { space?: string } = await wc.executeJavaScript(
+          `window.berger.demander('berger:structure', { type: 'space.nouveau' })`
+        )
+        space = r.space ?? ''
+        console.log(`[berger] scenario: space d'essai ${space}`)
+        wc.send('berger:scenario-space', { space })
+      },
+      () => wc.insertText('clear; echo bonjour-berger'),
+      () => touche('Enter'),
+      async () => {
+        const r: { x: number; y: number; w: number } = await wc.executeJavaScript(
+          `(() => { const r = document.querySelector('#zone-terminaux .panneau.clavier .xterm-screen').getBoundingClientRect(); return { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.width) } })()`
+        )
+        const y = r.y + 8
+        wc.sendInputEvent({ type: 'mouseDown', x: r.x + 2, y, button: 'left', clickCount: 1 })
+        for (let i = 1; i <= 5; i++)
+          wc.sendInputEvent({ type: 'mouseMove', x: r.x + 2 + i * 30, y, button: 'left' })
+        wc.sendInputEvent({ type: 'mouseUp', x: r.x + 152, y, button: 'left', clickCount: 1 })
+      },
+      async () => {
+        await bulles('après sélection')
+        await capture('01-bulle')
+      },
+      () => bulles('3 s plus tard'),
+      () =>
+        void wc.executeJavaScript(
+          `window.berger.demander('berger:structure', { type: 'space.fermer', space: ${JSON.stringify(space)} })`
+        )
+    ]
+    // La bulle part au bout de 2,5 s : la relecture « 3 s plus tard » attend d'autant.
+    jouer(liste.map((f, i) => [3000 + i * 1200 + (i >= 5 ? 2000 : 0), f]))
+    return
+  }
+
   if (scenario === 'onglets') {
     const fichiers = (process.env['BERGER_SCENARIO_FICHIERS'] ?? '')
       .split(':')

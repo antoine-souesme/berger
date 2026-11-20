@@ -1,6 +1,7 @@
 // Icônes de l'interface, tirées du paquet `lucide` (ISC).
 import {
   ArrowUp,
+  BellRing,
   Bot,
   Check,
   Circle,
@@ -70,6 +71,7 @@ const ICONES: Record<string, IconNode> = {
   palette: Palette,
   keyboard: Keyboard,
   bell: Bell,
+  'bell-ring': BellRing,
   'file-cog': FileCog,
   'rotate-ccw': RotateCcw,
   'refresh-cw': RefreshCw,

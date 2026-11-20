@@ -21,15 +21,17 @@ import { changer, ouvrirChemins } from './etat'
 import { icone } from './icones'
 import { dispositionActuelle } from './table-raccourcis'
 import { optionsPolices, optionsSons } from '../../shared/choix-reglages'
+import { SORTES_NOTIFICATIONS } from '../../shared/notifications'
 
 export type Section =
-  'apparence' | 'editeur' | 'terminal' | 'alertes' | 'raccourcis' | 'mises-a-jour'
+  'apparence' | 'editeur' | 'terminal' | 'alertes' | 'notifications' | 'raccourcis' | 'mises-a-jour'
 
 const SECTIONS: [Section, string, string][] = [
   ['apparence', 'Apparence', 'palette'],
   ['editeur', 'Éditeur', 'code'],
   ['terminal', 'Terminal', 'square-terminal'],
   ['alertes', 'Alertes', 'bell'],
+  ['notifications', 'Notifications', 'bell-ring'],
   ['raccourcis', 'Raccourcis', 'keyboard'],
   ['mises-a-jour', 'Mises à jour', 'refresh-cw']
 ]
@@ -452,6 +454,21 @@ function pageAlertes(e: EtatReglages): HTMLElement[] {
   ]
 }
 
+// --- Notifications ---
+
+function pageNotifications(e: EtatReglages): HTMLElement[] {
+  return SORTES_NOTIFICATIONS.map((s) =>
+    ligne(
+      s.nom,
+      s.description,
+      bascule(
+        e.reglages.notifications[s.id],
+        (v) => void changerReglage(['notifications', s.id], v)
+      )
+    )
+  )
+}
+
 // --- Mises à jour ---
 
 let majCore: EtatMajCore | null = null
@@ -707,9 +724,11 @@ export function ouvrirReglages(section: Section = 'apparence'): void {
             ? pageTerminal(e)
             : etat.section === 'alertes'
               ? pageAlertes(e)
-              : etat.section === 'mises-a-jour'
-                ? pageMisesAJour()
-                : pageRaccourcis(e)
+              : etat.section === 'notifications'
+                ? pageNotifications(e)
+                : etat.section === 'mises-a-jour'
+                  ? pageMisesAJour()
+                  : pageRaccourcis(e)
     const defilement = page.querySelector('.contenu-reglages')?.scrollTop ?? 0
     const zone = creer(
       'div',
