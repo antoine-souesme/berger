@@ -439,6 +439,8 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
         space = r.space ?? ''
         console.log(`[berger] scenario: space d'essai ${space}`)
         wc.send('berger:scenario-space', { space })
+        // Le presse-papiers refuse d'écrire quand la fenêtre n'a pas le focus.
+        w.focus()
       },
       () => wc.insertText('clear; echo bonjour-berger'),
       () => touche('Enter'),
@@ -455,6 +457,21 @@ export function jouerScenario(w: BrowserWindow, lireSpace: LireSpace): void {
       async () => {
         await bulles('après sélection')
         await capture('01-bulle')
+        // Un clic sur la bulle la ferme sans retirer la main au terminal.
+        const p: { x: number; y: number } = await wc.executeJavaScript(
+          `(() => { const r = document.querySelector('.notification').getBoundingClientRect(); return { x: Math.round(r.x + 20), y: Math.round(r.y + 10) } })()`
+        )
+        wc.sendInputEvent({ type: 'mouseDown', x: p.x, y: p.y, button: 'left', clickCount: 1 })
+        wc.sendInputEvent({ type: 'mouseUp', x: p.x, y: p.y, button: 'left', clickCount: 1 })
+        setTimeout(
+          () =>
+            void wc
+              .executeJavaScript(`document.activeElement?.className ?? ''`)
+              .then((c: string) =>
+                console.log(`[berger] scenario: après clic sur la bulle, main à « ${c} »`)
+              ),
+          200
+        )
       },
       () => bulles('3 s plus tard'),
       () =>

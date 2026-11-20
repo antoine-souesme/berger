@@ -41,6 +41,8 @@ export function notifier(sorte: SorteNotification, titre: string, texte?: string
   }
   const minuterie = setTimeout(fermer, DUREE)
   bulle.onclick = fermer
+  // Le clic ferme la bulle sans retirer la main au terminal ou à l'éditeur.
+  bulle.onmousedown = (e) => e.preventDefault()
   pile.append(bulle)
   while (pile.children.length > MAXIMUM) (pile.firstElementChild as HTMLElement).click()
 }
